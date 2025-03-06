@@ -1,0 +1,9 @@
+{
+  "position": 3,
+  "label": "API Reference",
+  "collapsed": false,
+  "link": {
+    "type": "generated-index",
+    "description": "Detailed guides to assist you in using and mastering the tools."
+  }
+}

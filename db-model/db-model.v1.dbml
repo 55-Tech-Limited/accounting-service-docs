@@ -1,0 +1,174 @@
+//// Docs: https://dbml.dbdiagram.io/docs
+Table accounts {
+  id int [pk]
+  name varchar [not null]
+  email varchar(255) [not null]
+  email_verified_at timestampz [null]
+  api_key varchar
+  api_secret varchar
+  password varchar [not null]
+  api_key_generated_at timestampz
+  created_at timestampz [default: `now()`]
+  updated_at timestampz [default: `now()`]
+
+  indexes {
+    email [unique]
+  }
+}
+
+enum user_role {
+  user
+  admin
+}
+
+Table users {
+  id int [pk]
+  account_id int [not null]
+  customer_id varchar [not null, note: 'This is an id provided by the customer or the account owner consuming the api']
+  name varchar(255)
+  role user_role [default: `user`]
+  preferences json
+  password varchar [null]
+  balance float [default: 0.0]
+  exposure float [default: 0.0]
+  created_at timestampz [default: `now()`]
+  updated_at timestampz [default: `now()`]
+
+  indexes {
+    (account_id, customer_id) [unique, name: "idx_users__account_id__customer_id"]
+  }
+}
+
+Ref: users.account_id > accounts.id
+
+enum auth_tokens_type {
+  email
+  phone_number
+  password
+}
+
+Table auth_tokens {
+  token varchar [not null, pk]
+  account_id int [ref: > accounts.id]
+  user_id int [ref: > users.id]
+  type auth_tokens_type [default: "password"]
+  meta json
+  expires_at timestampz
+  created_at timestampz [default: `now()`]
+}
+
+enum bet_outcome {
+  undecided
+  win
+  loss
+  push
+  "half-win"
+  "half-loss"
+  void
+  no_action
+}
+
+// Betfair exchange
+Table wagers {
+  id int [pk]
+  reference varchar [not null]
+  account_id int [not null]
+  outcome bet_outcome
+  created_at timestampz [default: `now()`]
+  updated_at timestampz [default: `now()`]
+
+  indexes {
+    (reference, account_id) [unique]
+  }
+}
+
+Ref: wagers.account_id > accounts.id
+
+enum bet_offer_status {
+  requesting
+  accepting
+  accepted
+  expired
+}
+
+Table bets {
+  id int [pk]
+  account_id int [not null]
+  accepting_user_id int
+  requesting_user_id int
+  wager_id int
+  offer_status bet_offer_status [default: `requesting`, not null]
+
+  requesting_odd float [not null]
+  requesting_amount float [not null]
+
+  accepting_amount float
+  accepting_odd float
+
+  potential_win float [not null]
+
+  meta json 
+  created_at timestampz [default: `now()`]
+  updated_at timestampz [default: `now()`]
+}
+
+Ref: bets.wager_id > wagers.id
+Ref: bets.account_id > accounts.id
+Ref: bets.accepting_user_id - users.id
+Ref: bets.requesting_user_id - users.id
+
+Table bet_trails {
+  id int [pk]
+  bet_id int [not null]
+  account_id int [not null]
+  wager_id int [not null]
+
+  offer_status bet_offer_status [not null]
+  description varchar
+  meta json 
+  outcome bet_outcome
+  requesting_odd float 
+  requesting_amount float 
+
+  accepting_amount float
+  accepting_odd float
+  
+  created_at timestampz [default: `now()`]
+}
+
+Ref: bet_trails.bet_id > bets.id
+Ref: bet_trails.account_id > accounts.id
+Ref: bet_trails.wager_id > wagers.id
+
+enum transaction_type {
+  credit
+  debit
+  "no-action"
+}
+
+enum transaction_source {
+  funding
+  bet
+  withdrawal
+}
+
+Table transactions {
+  id int [pk]
+  account_id int [not null]
+  bet_trail_id int [null]
+  reference varchar
+  amount float
+  description varchar
+  user_id int [not null]
+  transaction_type transaction_type [not null]
+  transaction_source transaction_source [not null]
+  created_at timestampz [default: `now()`]
+
+  indexes {
+    reference [unique]
+  }
+}
+
+Ref: transactions.account_id > accounts.id
+Ref: transactions.bet_trail_id - bet_trails.id
+Ref: transactions.user_id > users.id

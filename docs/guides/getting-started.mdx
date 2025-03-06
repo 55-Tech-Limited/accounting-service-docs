@@ -1,0 +1,1864 @@
+---
+sidebar_position: 2
+description: This guide will take you through the journey of managing users, accounts, and transactions within your betting application using our API
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+# Getting Started
+
+Welcome to the accounting service API documentation. This guide will take you through the journey of managing users, accounts, and transactions within your betting application using our API. Let's get started!
+
+## Setting Up Your Betting Business
+
+Imagine you are the owner of a new betting platform, and you need to set up an account to manage your finances and bet settlements. The first step is to create an account.
+
+### Creating an Account
+
+To create an account, you need to send a POST request to our API with your betting business details. Here's how you can do it using different clients:
+
+<Tabs groupId="programming-language">
+  <TabItem value="curl" label="cURL">
+  
+  <!-- prettier-ignore-start -->
+  ```bash
+  curl -X POST "$baseUrl/api/auth/register/account" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "name": "My Betting Business",
+      "email": "owner@mybetting.com",
+      "password": "secure_password_here"
+    }'
+  ```
+  <!-- prettier-ignore-end -->
+  
+  </TabItem>
+  <TabItem value="javascript" label="JavaScript">
+  
+  <!-- prettier-ignore-start -->
+  ```javascript
+  const createAccount = async () => {
+    try {
+      const response = await fetch(`${baseUrl}/api/auth/register/account`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: 'My Betting Business',
+          email: 'owner@mybetting.com',
+          password: 'secure_password_here'
+        }),
+      });
+      
+      const data = await response.json();
+      console.log('Account created:', data);
+    } catch (error) {
+      console.error('Error creating account:', error);
+    }
+  };
+  
+  createAccount();
+  ```
+  <!-- prettier-ignore-end -->
+  
+  </TabItem>
+  <TabItem value="rust" label="Rust">
+  
+  <!-- prettier-ignore-start -->
+  ```rust
+  use reqwest::Client;
+  use serde::{Deserialize, Serialize};
+
+#[derive(Serialize)]
+struct AccountRequest {
+name: String,
+email: String,
+password: String,
+}
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+let client = Client::new();
+
+      let account_request = AccountRequest {
+          name: "My Betting Business".to_string(),
+          email: "owner@mybetting.com".to_string(),
+          password: "secure_password_here".to_string(),
+      };
+
+      let response = client
+          .post(&format!("{}/api/auth/register/account", baseUrl))
+          .json(&account_request)
+          .send()
+          .await?;
+
+      println!("Response: {:?}", response.json::<serde_json::Value>().await?);
+      Ok(())
+
+}
+
+````
+<!-- prettier-ignore-end -->
+
+</TabItem>
+</Tabs>
+
+Upon successful creation, the API will respond with your account details:
+
+```json
+{
+    "message": "Account created successfully"
+}
+````
+
+## Authentication
+
+Before creating users or performing other operations, you need to authenticate your account. There are two methods for authentication:
+
+### 1. Token Authentication
+
+You can log in with your account credentials to obtain a token:
+
+<Tabs groupId="programming-language">
+  <TabItem value="curl" label="cURL">
+  
+  <!-- prettier-ignore-start -->
+  ```bash
+  curl -X POST "$baseUrl/api/auth/login/account" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "email": "owner@mybetting.com",
+      "password": "secure_password_here"
+    }'
+  ```
+  <!-- prettier-ignore-end -->
+  
+  </TabItem>
+  <TabItem value="javascript" label="JavaScript">
+  
+  <!-- prettier-ignore-start -->
+  ```javascript
+  const loginAccount = async () => {
+    try {
+      const response = await fetch(`${baseUrl}/api/auth/login/account`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: 'owner@mybetting.com',
+          password: 'secure_password_here'
+        }),
+      });
+      
+      const data = await response.json();
+      console.log('Login successful:', data);
+      
+      // Store the token for future requests
+      const token = data.data.token;
+      return token;
+    } catch (error) {
+      console.error('Error logging in:', error);
+    }
+  };
+  ```
+  <!-- prettier-ignore-end -->
+  
+  </TabItem>
+  <TabItem value="rust" label="Rust">
+  
+  <!-- prettier-ignore-start -->
+  ```rust
+  use reqwest::Client;
+  use serde::{Deserialize, Serialize};
+
+#[derive(Serialize)]
+struct LoginRequest {
+email: String,
+password: String,
+}
+
+#[derive(Deserialize)]
+struct LoginResponse {
+data: LoginData,
+message: String,
+}
+
+#[derive(Deserialize)]
+struct LoginData {
+token: String,
+}
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+let client = Client::new();
+
+      let login_request = LoginRequest {
+          email: "owner@mybetting.com".to_string(),
+          password: "secure_password_here".to_string(),
+      };
+
+      let response = client
+          .post(&format!("{}/api/auth/login/account", baseUrl))
+          .json(&login_request)
+          .send()
+          .await?;
+
+      let login_response: LoginResponse = response.json().await?;
+      println!("Login successful: {}", login_response.message);
+      println!("Token: {}", login_response.data.token);
+
+      // Store the token for future requests
+      let token = login_response.data.token;
+      Ok(())
+
+}
+
+````
+<!-- prettier-ignore-end -->
+
+</TabItem>
+</Tabs>
+
+The API will respond with a token:
+
+```json
+{
+"data": {
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+},
+"message": "Logged into account successfully"
+}
+````
+
+This token should be included as a Bearer token in the Authorization header for all subsequent requests:
+
+```
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+### 2. API Key Authentication
+
+Alternatively, you can generate API keys for more secure, long-term authentication:
+
+<Tabs groupId="programming-language">
+  <TabItem value="curl" label="cURL">
+  
+  <!-- prettier-ignore-start -->
+  ```bash
+  # First, log in to get a token
+  token=$(curl -X POST "$baseUrl/api/auth/login/account" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "email": "owner@mybetting.com",
+      "password": "secure_password_here"
+    }' | jq -r '.data.token')
+  
+  # Then use the token to generate API keys
+  curl -X POST "$baseUrl/api/auth/account/generate-keys" \
+    -H "Authorization: Bearer $token" \
+    -H "Content-Type: application/json"
+  ```
+  <!-- prettier-ignore-end -->
+  
+  </TabItem>
+  <TabItem value="javascript" label="JavaScript">
+  
+  <!-- prettier-ignore-start -->
+  ```javascript
+  const generateApiKeys = async (token) => {
+    try {
+      const response = await fetch(`${baseUrl}/api/auth/account/generate-keys`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      const data = await response.json();
+      console.log('API keys generated:', data);
+      
+      // Store the API keys for future requests
+      const { api_key, api_secret, base64_encoded } = data.data;
+      return { api_key, api_secret, base64_encoded };
+    } catch (error) {
+      console.error('Error generating API keys:', error);
+    }
+  };
+  
+  // Usage
+  const getAuthentication = async () => {
+    const token = await loginAccount();
+    const apiKeys = await generateApiKeys(token);
+    
+    // Now you can use either token or apiKeys for authentication
+    return { token, apiKeys };
+  };
+  ```
+  <!-- prettier-ignore-end -->
+  
+  </TabItem>
+  <TabItem value="rust" label="Rust">
+  
+  <!-- prettier-ignore-start -->
+  ```rust
+  use reqwest::Client;
+  use serde::{Deserialize, Serialize};
+
+#[derive(Deserialize)]
+struct ApiKeysResponse {
+data: ApiKeys,
+message: String,
+}
+
+#[derive(Deserialize)]
+struct ApiKeys {
+api_key: String,
+api_secret: String,
+base64_encoded: String,
+}
+
+async fn generate_api_keys(client: &Client, base_url: &str, token: &str)
+-> Result<ApiKeys, Box<dyn std::error::Error>> {
+
+      let response = client
+          .post(&format!("{}/api/auth/account/generate-keys", base_url))
+          .header("Authorization", format!("Bearer {}", token))
+          .header("Content-Type", "application/json")
+          .send()
+          .await?;
+
+      let api_keys_response: ApiKeysResponse = response.json().await?;
+      println!("API keys generated: {}", api_keys_response.message);
+
+      Ok(api_keys_response.data)
+
+}
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+// First login to get a token (reusing previous login code)
+// ...
+
+      // Then generate API keys
+      let api_keys = generate_api_keys(&client, baseUrl, &token).await?;
+      println!("API Key: {}", api_keys.api_key);
+      println!("API Secret: {}", api_keys.api_secret);
+      println!("Base64 Encoded: {}", api_keys.base64_encoded);
+
+      Ok(())
+
+}
+
+````
+<!-- prettier-ignore-end -->
+
+</TabItem>
+</Tabs>
+
+The API will respond with your API keys:
+
+```json
+{
+"data": {
+  "api_key": "jk8sa7dfg98s7df98g7sdfg87",
+  "api_secret": "8sd7fg8sd7fg8sd7f98gs7df98g",
+  "base64_encoded": "ams4c2E3ZGZnOThzN2RmOThnN3NkZmc4Nzo4c2Q3Zmc4c2Q3Zmc4c2Q3Zjk4Z3M3ZGY5OGc="
+},
+"message": "Api keys generated successfully"
+}
+````
+
+You can use these API keys in one of two ways:
+
+1. Using the `base64_encoded` value directly:
+
+```
+Authorization: Basic ams4c2E3ZGZnOThzN2RmOThnN3NkZmc4Nzo4c2Q3Zmc4c2Q3Zmc4c2Q3Zjk4Z3M3ZGY5OGc=
+```
+
+2. Using the `api_key` as username and `api_secret` as password for Basic Auth.
+
+## Creating a User
+
+Once you have authenticated, you can create users who will be placing bets on your platform. To create a user, you need to send a POST request to our API with the user's details. The `reference` field is optional and will be generated if not provided. The `preferences` field is also optional.
+
+<Tabs groupId="programming-language">
+  <TabItem value="curl" label="cURL">
+  
+  <!-- prettier-ignore-start -->
+  ```bash
+  # Using token authentication
+  curl -X POST "$baseUrl/api/account/user" \
+    -H "Authorization: Bearer $token" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "reference": "danny_user",  # Optional
+      "name": "User 3",
+      "preferences": {}  # Optional
+    }'
+    
+  # Or using API key authentication
+  curl -X POST "$baseUrl/api/account/user" \
+    -H "Authorization: Basic $base64_encoded" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "reference": "danny_user",  # Optional
+      "name": "User 3",
+      "preferences": {}  # Optional
+    }'
+  ```
+  <!-- prettier-ignore-end -->
+  
+  </TabItem>
+  <TabItem value="javascript" label="JavaScript">
+  
+  <!-- prettier-ignore-start -->
+  ```javascript
+  const createUser = async (auth) => {
+    try {
+      // Determine authentication method
+      let authHeader;
+      if (auth.token) {
+        authHeader = `Bearer ${auth.token}`;
+      } else if (auth.apiKeys) {
+        authHeader = `Basic ${auth.apiKeys.base64_encoded}`;
+      }
+      
+      const response = await fetch(`${baseUrl}/api/account/user`, {
+        method: 'POST',
+        headers: {
+          'Authorization': authHeader,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          reference: 'danny_user', // Optional
+          name: 'User 3',
+          preferences: {} // Optional
+        }),
+      });
+      
+      const data = await response.json();
+      console.log('User created:', data);
+    } catch (error) {
+      console.error('Error creating user:', error);
+    }
+  };
+  
+  // Usage
+  const auth = await getAuthentication();
+  createUser(auth);
+  ```
+  <!-- prettier-ignore-end -->
+  
+  </TabItem>
+  <TabItem value="rust" label="Rust">
+  
+  <!-- prettier-ignore-start -->
+  ```rust
+  use reqwest::Client;
+  use serde::{Deserialize, Serialize};
+
+#[derive(Serialize)]
+struct UserRequest {
+reference: Option<String>,
+name: String,
+preferences: Option<serde_json::Value>,
+}
+
+enum AuthMethod {
+Token(String),
+ApiKeys(ApiKeys),
+}
+
+async fn create_user(client: &Client, base_url: &str, auth: &AuthMethod)
+-> Result<serde_json::Value, Box<dyn std::error::Error>> {
+
+      let mut request_builder = client
+          .post(&format!("{}/api/account/user", base_url))
+          .header("Content-Type", "application/json");
+
+      // Apply authentication header
+      match auth {
+          AuthMethod::Token(token) => {
+              request_builder = request_builder.header("Authorization", format!("Bearer {}", token));
+          },
+          AuthMethod::ApiKeys(api_keys) => {
+              request_builder = request_builder.header("Authorization", format!("Basic {}", api_keys.base64_encoded));
+          }
+      }
+
+      let user_request = UserRequest {
+          reference: Some("danny_user".to_string()), // Optional
+          name: "User 3".to_string(),
+          preferences: Some(serde_json::json!({})), // Optional
+      };
+
+      let response = request_builder
+          .json(&user_request)
+          .send()
+          .await?;
+
+      let user_data = response.json::<serde_json::Value>().await?;
+      println!("User created: {:?}", user_data);
+
+      Ok(user_data)
+
+}
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+let client = Client::new();
+
+      // First get authentication (token or API keys)
+      // ...
+
+      // Create user with token
+      let auth = AuthMethod::Token(token);
+      let user_data = create_user(&client, baseUrl, &auth).await?;
+
+      // Or create user with API keys
+      // let auth = AuthMethod::ApiKeys(api_keys);
+      // let user_data = create_user(&client, baseUrl, &auth).await?;
+
+      Ok(())
+
+}
+
+````
+<!-- prettier-ignore-end -->
+
+</TabItem>
+</Tabs>
+
+Upon successful creation, the API will respond with the user's details:
+
+```json
+{
+    "data": {
+        "id": 1,
+        "reference": "a1_user_FclirLc2MJecJqsi"
+    },
+    "message": "User created successfully"
+}
+````
+
+### Flow of Creating a User
+
+Here is a visual representation of the flow for creating a user:
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant API
+    Client->>API: POST /api/auth/register/account
+    API-->>Client: { "id": 1234, "name": "My Betting Business", ... }
+    Client->>API: POST /api/auth/login/account
+    API-->>Client: { "data": { "token": "token" }, ... }
+    Note over Client,API: Optional: Generate API keys
+    Client->>API: POST /api/auth/account/generate-keys
+    API-->>Client: { "data": { "api_key": "key", "api_secret": "secret", ... }, ... }
+    Client->>API: POST /api/account/user (with auth)
+    API-->>Client: { "name": "User 3", "preferences": {} }
+```
+
+This diagram shows the complete sequence of API calls to create an account, authenticate, and then create a user.
+
+## Fund User Account
+
+To fund a user account, you need to send a POST request to our API with the amount and either the `user_id` or `user_reference`. This request must be authenticated, either by token or API key.
+
+### Fund User Account
+
+To fund a user account, you need to send a POST request to the `/api/transactions/fund-user/` endpoint with the amount and either the `user_id` or `user_reference`.
+
+<Tabs groupId="programming-language">
+  <TabItem value="curl" label="cURL">
+  
+  <!-- prettier-ignore-start -->
+  ```bash
+  # Using token authentication
+  curl -X POST "$baseUrl/api/transactions/fund-user/" \
+    -H "Authorization: Bearer $token" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "amount": 1000,
+      "user_id": 1
+      // "user_reference": "a1_user_dkjH6xmZzHHHgz5M"  # Optional
+    }'
+    
+  # Or using API key authentication
+  curl -X POST "$baseUrl/api/transactions/fund-user/" \
+    -H "Authorization: Basic $base64_encoded" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "amount": 1000,
+      "user_id": 1
+      // "user_reference": "a1_user_dkjH6xmZzHHHgz5M"  # Optional
+    }'
+  ```
+  <!-- prettier-ignore-end -->
+  
+  </TabItem>
+  <TabItem value="javascript" label="JavaScript">
+  
+  <!-- prettier-ignore-start -->
+  ```javascript
+  const fundUserAccount = async (auth) => {
+    try {
+      // Determine authentication method
+      let authHeader;
+      if (auth.token) {
+        authHeader = `Bearer ${auth.token}`;
+      } else if (auth.apiKeys) {
+        authHeader = `Basic ${auth.apiKeys.base64_encoded}`;
+      }
+      
+      const response = await fetch(`${baseUrl}/api/transactions/fund-user/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': authHeader,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount: 1000,
+          user_id: 1
+          // user_reference: 'a1_user_dkjH6xmZzHHHgz5M'  // Optional
+        }),
+      });
+      
+      const data = await response.json();
+      console.log('Account funded:', data);
+    } catch (error) {
+      console.error('Error funding account:', error);
+    }
+  };
+  
+  // Usage
+  const auth = await getAuthentication();
+  fundUserAccount(auth);
+  ```
+  <!-- prettier-ignore-end -->
+  
+  </TabItem>
+  <TabItem value="rust" label="Rust">
+  
+  <!-- prettier-ignore-start -->
+  ```rust
+  use reqwest::Client;
+  use serde::{Deserialize, Serialize};
+
+#[derive(Serialize)]
+struct FundUserRequest {
+amount: u32,
+user_id: Option<u32>,
+user_reference: Option<String>,
+}
+
+enum AuthMethod {
+Token(String),
+ApiKeys(ApiKeys),
+}
+
+async fn fund_user_account(client: &Client, base_url: &str, auth: &AuthMethod)
+-> Result<serde_json::Value, Box<dyn std::error::Error>> {
+
+      let mut request_builder = client
+          .post(&format!("{}/api/transactions/fund-user/", base_url))
+          .header("Content-Type", "application/json");
+
+      // Apply authentication header
+      match auth {
+          AuthMethod::Token(token) => {
+              request_builder = request_builder.header("Authorization", format!("Bearer {}", token));
+          },
+          AuthMethod::ApiKeys(api_keys) => {
+              request_builder = request_builder.header("Authorization", format!("Basic {}", api_keys.base64_encoded));
+          }
+      }
+
+      let fund_user_request = FundUserRequest {
+          amount: 1000,
+          user_id: Some(1),
+          user_reference: None, // Optional
+      };
+
+      let response = request_builder
+          .json(&fund_user_request)
+          .send()
+          .await?;
+
+      let fund_data = response.json::<serde_json::Value>().await?;
+      println!("Account funded: {:?}", fund_data);
+
+      Ok(fund_data)
+
+}
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+let client = Client::new();
+
+      // First get authentication (token or API keys)
+      // ...
+
+      // Fund user account with token
+      let auth = AuthMethod::Token(token);
+      let fund_data = fund_user_account(&client, baseUrl, &auth).await?;
+
+      // Or fund user account with API keys
+      // let auth = AuthMethod::ApiKeys(api_keys);
+      // let fund_data = fund_user_account(&client, baseUrl, &auth).await?;
+
+      Ok(())
+
+}
+
+````
+<!-- prettier-ignore-end -->
+
+</TabItem>
+</Tabs>
+
+Upon successful funding, the API will respond with the transaction details:
+
+```json
+{
+"data": {
+  "user_id": 1,
+  "account_id": 1,
+  "reference": "TX_m9O57HPundloKRBnky96CHCcf-_z2xI5lX77DQx8w8AERwdB",
+  "amount": 1000,
+  "description": "Balance funded",
+  "transaction_type": "credit",
+  "transaction_source": "funding",
+  "created_at": "2025-03-06T02:35:27.028Z"
+},
+"message": "Account funded successfully"
+}
+````
+
+### Check User Balance
+
+To check a user's balance, you can use either the `user_id` or `user_reference`.
+
+- `/api/account/user/:userId`
+- `/api/account/user/:reference/reference`
+
+<Tabs groupId="programming-language">
+  <TabItem value="curl" label="cURL">
+  
+  <!-- prettier-ignore-start -->
+  ```bash
+  # Using user_id
+  curl -X GET "$baseUrl/api/account/user/1" \
+    -H "Authorization: Bearer $token" \
+    -H "Content-Type: application/json"
+    
+  # Or using user_reference
+  curl -X GET "$baseUrl/api/account/user/a1_user_FclirLc2MJecJqsi/reference" \
+    -H "Authorization: Bearer $token" \
+    -H "Content-Type: application/json"
+  ```
+  <!-- prettier-ignore-end -->
+  
+  </TabItem>
+  <TabItem value="javascript" label="JavaScript">
+  
+  <!-- prettier-ignore-start -->
+  ```javascript
+  const checkUserBalance = async (auth, identifier, isReference = false) => {
+    try {
+      // Determine authentication method
+      let authHeader;
+      if (auth.token) {
+        authHeader = `Bearer ${auth.token}`;
+      } else if (auth.apiKeys) {
+        authHeader = `Basic ${auth.apiKeys.base64_encoded}`;
+      }
+      
+      const url = isReference 
+        ? `${baseUrl}/api/account/user/${identifier}/reference`
+        : `${baseUrl}/api/account/user/${identifier}`;
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Authorization': authHeader,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      const data = await response.json();
+      console.log('User balance:', data);
+    } catch (error) {
+      console.error('Error checking user balance:', error);
+    }
+  };
+  
+  // Usage
+  const auth = await getAuthentication();
+  checkUserBalance(auth, 1); // Using user_id
+  // checkUserBalance(auth, 'a1_user_FclirLc2MJecJqsi', true); // Using user_reference
+  ```
+  <!-- prettier-ignore-end -->
+  
+  </TabItem>
+  <TabItem value="rust" label="Rust">
+  
+  <!-- prettier-ignore-start -->
+  ```rust
+  use reqwest::Client;
+  use serde::{Deserialize, Serialize};
+
+enum AuthMethod {
+Token(String),
+ApiKeys(ApiKeys),
+}
+
+async fn check_user_balance(client: &Client, base_url: &str, auth: &AuthMethod, identifier: &str, is_reference: bool)
+-> Result<serde_json::Value, Box<dyn std::error::Error>> {
+
+      let mut request_builder = client
+          .get(&format!("{}/api/account/user/{}", base_url, identifier));
+
+      if is_reference {
+          request_builder = client
+              .get(&format!("{}/api/account/user/{}/reference", base_url, identifier));
+      }
+
+      // Apply authentication header
+      match auth {
+          AuthMethod::Token(token) => {
+              request_builder = request_builder.header("Authorization", format!("Bearer {}", token));
+          },
+          AuthMethod::ApiKeys(api_keys) => {
+              request_builder = request_builder.header("Authorization", format!("Basic {}", api_keys.base64_encoded));
+          }
+      }
+
+      let response = request_builder
+          .header("Content-Type", "application/json")
+          .send()
+          .await?;
+
+      let user_data = response.json::<serde_json::Value>().await?;
+      println!("User balance: {:?}", user_data);
+
+      Ok(user_data)
+
+}
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+let client = Client::new();
+
+      // First get authentication (token or API keys)
+      // ...
+
+      // Check user balance with user_id
+      let auth = AuthMethod::Token(token);
+      let user_data = check_user_balance(&client, baseUrl, &auth, "1", false).await?;
+
+      // Or check user balance with user_reference
+      // let user_data = check_user_balance(&client, baseUrl, &auth, "a1_user_FclirLc2MJecJqsi", true).await?;
+
+      Ok(())
+
+}
+
+````
+<!-- prettier-ignore-end -->
+
+</TabItem>
+</Tabs>
+
+The API will respond with the user's details:
+
+```json
+{
+"data": {
+  "id": 1,
+  "account_id": 1,
+  "reference": "a1_user_FclirLc2MJecJqsi",
+  "name": "User 3",
+  "role": "user",
+  "preferences": null,
+  "balance": 1000,
+  "exposure": 0
+},
+"message": "User fetched successfully"
+}
+````
+
+### Flow of Funding a User Account and Checking Balance
+
+Here is a visual representation of the flow for funding a user account and checking the balance:
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant API
+    Client->>API: POST /api/transactions/fund-user/
+    API-->>Client: { "data": { "user_id": 1, "amount": 1000, ... }, "message": "Account funded successfully" }
+    Client->>API: GET /api/account/user/:userId
+    API-->>Client: { "data": { "id": 1, "balance": 1000, ... }, "message": "User fetched successfully" }
+    Note over Client,API: Or use user_reference
+    Client->>API: GET /api/account/user/:reference/reference
+    API-->>Client: { "data": { "id": 1, "balance": 1000, ... }, "message": "User fetched successfully" }
+```
+
+## Placing a Bet Offer
+
+To place a bet offer, you need to send a POST request to our API with the bet details. This request must be authenticated, either by token or API key.
+
+### Placing a Bet Offer
+
+To place a bet offer, you need to send a POST request to the `/api/bets/make-offer` endpoint with the bet details. You can either use the `user_id` or `user_reference` to make a bet offer.
+
+<Tabs groupId="programming-language">
+  <TabItem value="curl" label="cURL">
+  
+  <!-- prettier-ignore-start -->
+  ```bash
+  # Using token authentication
+  curl -X POST "$baseUrl/api/bets/make-offer" \
+    -H "Authorization: Bearer $token" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "requesting_user_reference": "a1_user_dkjH6xmZzHHHgz5M",
+      "requesting_odds": 3,
+      "requesting_amount": 300,
+      "wager_reference": "wager-4"
+    }'
+    
+  # Or using API key authentication
+  curl -X POST "$baseUrl/api/bets/make-offer" \
+    -H "Authorization: Basic $base64_encoded" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "requesting_user_reference": "a1_user_dkjH6xmZzHHHgz5M",
+      "requesting_odds": 3,
+      "requesting_amount": 300,
+      "wager_reference": "wager-4"
+    }'
+  ```
+  <!-- prettier-ignore-end -->
+  
+  </TabItem>
+  <TabItem value="javascript" label="JavaScript">
+  
+  <!-- prettier-ignore-start -->
+  ```javascript
+  const placeBetOffer = async (auth) => {
+    try {
+      // Determine authentication method
+      let authHeader;
+      if (auth.token) {
+        authHeader = `Bearer ${auth.token}`;
+      } else if (auth.apiKeys) {
+        authHeader = `Basic ${auth.apiKeys.base64_encoded}`;
+      }
+      
+      const response = await fetch(`${baseUrl}/api/bets/make-offer`, {
+        method: 'POST',
+        headers: {
+          'Authorization': authHeader,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          requesting_user_reference: 'a1_user_dkjH6xmZzHHHgz5M',
+          requesting_odds: 3,
+          requesting_amount: 300,
+          wager_reference: 'wager-4'
+        }),
+      });
+      
+      const data = await response.json();
+      console.log('Bet offer placed:', data);
+    } catch (error) {
+      console.error('Error placing bet offer:', error);
+    }
+  };
+  
+  // Usage
+  const auth = await getAuthentication();
+  placeBetOffer(auth);
+  ```
+  <!-- prettier-ignore-end -->
+  
+  </TabItem>
+  <TabItem value="rust" label="Rust">
+  
+  <!-- prettier-ignore-start -->
+  ```rust
+  use reqwest::Client;
+  use serde::{Deserialize, Serialize};
+
+#[derive(Serialize)]
+struct BetOfferRequest {
+requesting_user_reference: String,
+requesting_odds: f32,
+requesting_amount: u32,
+wager_reference: String,
+}
+
+enum AuthMethod {
+Token(String),
+ApiKeys(ApiKeys),
+}
+
+async fn place_bet_offer(client: &Client, base_url: &str, auth: &AuthMethod)
+-> Result<serde_json::Value, Box<dyn std::error::Error>> {
+
+      let mut request_builder = client
+          .post(&format!("{}/api/bets/make-offer", base_url))
+          .header("Content-Type", "application/json");
+
+      // Apply authentication header
+      match auth {
+          AuthMethod::Token(token) => {
+              request_builder = request_builder.header("Authorization", format!("Bearer {}", token));
+          },
+          AuthMethod::ApiKeys(api_keys) => {
+              request_builder = request_builder.header("Authorization", format!("Basic {}", api_keys.base64_encoded));
+          }
+      }
+
+      let bet_offer_request = BetOfferRequest {
+          requesting_user_reference: "a1_user_dkjH6xmZzHHHgz5M".to_string(),
+          requesting_odds: 3.0,
+          requesting_amount: 300,
+          wager_reference: "wager-4".to_string(),
+      };
+
+      let response = request_builder
+          .json(&bet_offer_request)
+          .send()
+          .await?;
+
+      let bet_data = response.json::<serde_json::Value>().await?;
+      println!("Bet offer placed: {:?}", bet_data);
+
+      Ok(bet_data)
+
+}
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+let client = Client::new();
+
+      // First get authentication (token or API keys)
+      // ...
+
+      // Place bet offer with token
+      let auth = AuthMethod::Token(token);
+      let bet_data = place_bet_offer(&client, baseUrl, &auth).await?;
+
+      // Or place bet offer with API keys
+      // let auth = AuthMethod::ApiKeys(api_keys);
+      // let bet_data = place_bet_offer(&client, baseUrl, &auth).await?;
+
+      Ok(())
+
+}
+
+````
+<!-- prettier-ignore-end -->
+
+</TabItem>
+</Tabs>
+
+Upon successful bet offer, the API will respond with the bet details:
+
+```json
+{
+"data": {
+  "bet_id": 1,
+  "wager_reference": "wager-4",
+  "wager_id": 1
+},
+"message": "Bet offer placed successfully"
+}
+````
+
+## Viewing Open Bet Offers
+
+To view open bet offers, you need to send a GET request to our API. This request must be authenticated, either by token or API key.
+
+### Viewing Open Bet Offers
+
+To view open bet offers, you need to send a GET request to the `/api/bets/open-bets` endpoint.
+
+<Tabs groupId="programming-language">
+  <TabItem value="curl" label="cURL">
+  
+  <!-- prettier-ignore-start -->
+  ```bash
+  # Using token authentication
+  curl -X GET "$baseUrl/api/bets/open-bets" \
+    -H "Authorization: Bearer $token" \
+    -H "Content-Type: application/json"
+    
+  # Or using API key authentication
+  curl -X GET "$baseUrl/api/bets/open-bets" \
+    -H "Authorization: Basic $base64_encoded" \
+    -H "Content-Type: application/json"
+  ```
+  <!-- prettier-ignore-end -->
+  
+  </TabItem>
+  <TabItem value="javascript" label="JavaScript">
+  
+  <!-- prettier-ignore-start -->
+  ```javascript
+  const viewOpenBetOffers = async (auth) => {
+    try {
+      // Determine authentication method
+      let authHeader;
+      if (auth.token) {
+        authHeader = `Bearer ${auth.token}`;
+      } else if (auth.apiKeys) {
+        authHeader = `Basic ${auth.apiKeys.base64_encoded}`;
+      }
+      
+      const response = await fetch(`${baseUrl}/api/bets/open-bets`, {
+        method: 'GET',
+        headers: {
+          'Authorization': authHeader,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      const data = await response.json();
+      console.log('Open bet offers:', data);
+    } catch (error) {
+      console.error('Error viewing open bet offers:', error);
+    }
+  };
+  
+  // Usage
+  const auth = await getAuthentication();
+  viewOpenBetOffers(auth);
+  ```
+  <!-- prettier-ignore-end -->
+  
+  </TabItem>
+  <TabItem value="rust" label="Rust">
+  
+  <!-- prettier-ignore-start -->
+  ```rust
+  use reqwest::Client;
+  use serde::{Deserialize, Serialize};
+
+enum AuthMethod {
+Token(String),
+ApiKeys(ApiKeys),
+}
+
+async fn view_open_bet_offers(client: &Client, base_url: &str, auth: &AuthMethod)
+-> Result<serde_json::Value, Box<dyn std::error::Error>> {
+
+      let mut request_builder = client
+          .get(&format!("{}/api/bets/open-bets", base_url));
+
+      // Apply authentication header
+      match auth {
+          AuthMethod::Token(token) => {
+              request_builder = request_builder.header("Authorization", format!("Bearer {}", token));
+          },
+          AuthMethod::ApiKeys(api_keys) => {
+              request_builder = request_builder.header("Authorization", format!("Basic {}", api_keys.base64_encoded));
+          }
+      }
+
+      let response = request_builder
+          .header("Content-Type", "application/json")
+          .send()
+          .await?;
+
+      let open_bets_data = response.json::<serde_json::Value>().await?;
+      println!("Open bet offers: {:?}", open_bets_data);
+
+      Ok(open_bets_data)
+
+}
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+let client = Client::new();
+
+      // First get authentication (token or API keys)
+      // ...
+
+      // View open bet offers with token
+      let auth = AuthMethod::Token(token);
+      let open_bets_data = view_open_bet_offers(&client, baseUrl, &auth).await?;
+
+      // Or view open bet offers with API keys
+      // let auth = AuthMethod::ApiKeys(api_keys);
+      // let open_bets_data = view_open_bet_offers(&client, baseUrl, &auth).await?;
+
+      Ok(())
+
+}
+
+````
+<!-- prettier-ignore-end -->
+
+</TabItem>
+</Tabs>
+
+The API will respond with the open bet offers:
+
+```json
+{
+"data": [
+  {
+    "id": 1,
+    "account_id": 1,
+    "offer_status": "requesting",
+    "wager_id": 1,
+    "wager_reference": "wager-4",
+    "requesting_user_id": 1,
+    "requesting_user_reference": "a1_user_FclirLc2MJecJqsi",
+    "requesting_odds": 3,
+    "requesting_amount": 300,
+    "created_at": "2025-03-06T02:49:52.080Z"
+  }
+],
+"per_page": 20,
+"page": 1,
+"total": 1,
+"from": 1,
+"to": 1,
+"last_page": 1,
+"total_requesting_amount": 300
+}
+````
+
+## Accepting Bet Offers
+
+To accept a bet offer, you need to send a POST request to our API with the bet offer details. This request must be authenticated, either by token or API key.
+
+### Accepting Bet Offers
+
+To accept a bet offer, you need to send a POST request to the `/api/bets/accept-offer` endpoint with the bet offer details. The `requesting_user_id`, `requesting_user_reference`, and `meta` are optional. If they are not provided, the system will determine the bets to be accepted. To define the accepting user, use either the `accepting_user_id` or the `accepting_user_reference`.
+
+<Tabs groupId="programming-language">
+  <TabItem value="curl" label="cURL">
+  
+  <!-- prettier-ignore-start -->
+  ```bash
+  # Using token authentication
+  curl -X POST "$baseUrl/api/bets/accept-offer" \
+    -H "Authorization: Bearer $token" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "requesting_user_id": 1,
+      // "requesting_user_reference": "a1_user_dkjH6xmZzHHHgz5M",  # Optional
+      "accepting_user_id": 2,
+      // "accepting_user_reference": "a1_user_4i0j18x3xN5BkB42",  # Optional
+      "accepting_amount": 300,
+      "maximum_odds": 3,
+      "wager_reference": "wager-4"
+      // "meta": {"data": 12}  # Optional
+    }'
+    
+  # Or using API key authentication
+  curl -X POST "$baseUrl/api/bets/accept-offer" \
+    -H "Authorization: Basic $base64_encoded" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "requesting_user_id": 1,
+      // "requesting_user_reference": "a1_user_dkjH6xmZzHHHgz5M",  # Optional
+      "accepting_user_id": 2,
+      // "accepting_user_reference": "a1_user_4i0j18x3xN5BkB42",  # Optional
+      "accepting_amount": 300,
+      "maximum_odds": 3,
+      "wager_reference": "wager-4"
+      // "meta": {"data": 12}  # Optional
+    }'
+  ```
+  <!-- prettier-ignore-end -->
+  
+  </TabItem>
+  <TabItem value="javascript" label="JavaScript">
+  
+  <!-- prettier-ignore-start -->
+  ```javascript
+  const acceptBetOffer = async (auth) => {
+    try {
+      // Determine authentication method
+      let authHeader;
+      if (auth.token) {
+        authHeader = `Bearer ${auth.token}`;
+      } else if (auth.apiKeys) {
+        authHeader = `Basic ${auth.apiKeys.base64_encoded}`;
+      }
+      
+      const response = await fetch(`${baseUrl}/api/bets/accept-offer`, {
+        method: 'POST',
+        headers: {
+          'Authorization': authHeader,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          requesting_user_id: 1,
+          // requesting_user_reference: 'a1_user_dkjH6xmZzHHHgz5M',  // Optional
+          accepting_user_id: 2,
+          // accepting_user_reference: 'a1_user_4i0j18x3xN5BkB42',  // Optional
+          accepting_amount: 300,
+          maximum_odds: 3,
+          wager_reference: 'wager-4'
+          // meta: { data: 12 }  // Optional
+        }),
+      });
+      
+      const data = await response.json();
+      console.log('Bet offer accepted:', data);
+    } catch (error) {
+      console.error('Error accepting bet offer:', error);
+    }
+  };
+  
+  // Usage
+  const auth = await getAuthentication();
+  acceptBetOffer(auth);
+  ```
+  <!-- prettier-ignore-end -->
+  
+  </TabItem>
+  <TabItem value="rust" label="Rust">
+  
+  <!-- prettier-ignore-start -->
+  ```rust
+  use reqwest::Client;
+  use serde::{Deserialize, Serialize};
+
+#[derive(Serialize)]
+struct AcceptBetOfferRequest {
+requesting_user_id: Option<u32>,
+requesting_user_reference: Option<String>,
+accepting_user_id: u32,
+accepting_user_reference: Option<String>,
+accepting_amount: u32,
+maximum_odds: f32,
+wager_reference: String,
+meta: Option<serde_json::Value>,
+}
+
+enum AuthMethod {
+Token(String),
+ApiKeys(ApiKeys),
+}
+
+async fn accept_bet_offer(client: &Client, base_url: &str, auth: &AuthMethod)
+-> Result<serde_json::Value, Box<dyn std::error::Error>> {
+
+      let mut request_builder = client
+          .post(&format!("{}/api/bets/accept-offer", base_url))
+          .header("Content-Type", "application/json");
+
+      // Apply authentication header
+      match auth {
+          AuthMethod::Token(token) => {
+              request_builder = request_builder.header("Authorization", format!("Bearer {}", token));
+          },
+          AuthMethod::ApiKeys(api_keys) => {
+              request_builder = request_builder.header("Authorization", format!("Basic {}", api_keys.base64_encoded));
+          }
+      }
+
+      let accept_bet_offer_request = AcceptBetOfferRequest {
+          requesting_user_id: Some(1),  // Optional
+          requesting_user_reference: None,  // Optional
+          accepting_user_id: 2,
+          accepting_user_reference: None,  // Optional
+          accepting_amount: 300,
+          maximum_odds: 3.0,
+          wager_reference: "wager-4".to_string(),
+          meta: None,  // Optional
+      };
+
+      let response = request_builder
+          .json(&accept_bet_offer_request)
+          .send()
+          .await?;
+
+      let accept_bet_data = response.json::<serde_json::Value>().await?;
+      println!("Bet offer accepted: {:?}", accept_bet_data);
+
+      Ok(accept_bet_data)
+
+}
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+let client = Client::new();
+
+      // First get authentication (token or API keys)
+      // ...
+
+      // Accept bet offer with token
+      let auth = AuthMethod::Token(token);
+      let accept_bet_data = accept_bet_offer(&client, baseUrl, &auth).await?;
+
+      // Or accept bet offer with API keys
+      // let auth = AuthMethod::ApiKeys(api_keys);
+      // let accept_bet_data = accept_bet_offer(&client, baseUrl, &auth).await?;
+
+      Ok(())
+
+}
+
+````
+<!-- prettier-ignore-end -->
+
+</TabItem>
+</Tabs>
+
+Upon successful acceptance of the bet offer, the API will respond with the bet details:
+
+```json
+{
+"data": [
+  {
+    "bet_id": 1,
+    "requesting_user_reference": "a1_user_FclirLc2MJecJqsi",
+    "requesting_user_id": 1,
+    "accepted_amount": 300,
+    "accepted_odds": 3,
+    "wager_reference": "wager-4",
+    "wager_id": 1
+  }
+],
+"message": "Bet offer accepted successfully"
+}
+````
+
+### Flow of Placing a Bet Offer, Viewing Open Bet Offers, and Accepting Bet Offers
+
+Here is a visual representation of the flow for placing a bet offer, viewing open bet offers, and accepting bet offers:
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant API
+    Client->>API: POST /api/bets/make-offer/
+    API-->>Client: { "data": { "bet_id": 456, "amount": 500, ... }, "message": "Bet offer made successfully" }
+    Client->>API: GET /api/bets/open/
+    API-->>Client: { "data": [{ "bet_id": 456, "amount": 500, ... }, ...], "message": "Open bets fetched successfully" }
+    Client->>API: POST /api/bets/accept-offer/
+    API-->>Client: { "data": { "bet_id": 456, "amount": 500, ... }, "message": "Bet offer accepted successfully" }
+```
+
+## Update Wager Outcome
+
+To update a wager outcome, you need to send a POST request to our API with the wager reference and the outcome. This request must be authenticated, either by token or API key.
+
+### Update Wager Outcome
+
+To update a wager outcome, you need to send a POST request to the `/api/bets/update-wager-outcome` endpoint with the wager reference and the outcome. The
+outcome can be one of the following: `win`, `loss`, `half-win`, `half-loss`, `push`, or `void`.
+
+<Tabs groupId="programming-language">
+  <TabItem value="curl" label="cURL">
+  
+  <!-- prettier-ignore-start -->
+  ```bash
+  # Using token authentication
+  curl -X POST "$baseUrl/api/bets/update-wager-outcome" \
+    -H "Authorization: Bearer $token" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "reference": "wager-4",
+      "outcome": "half-win"
+    }'
+    
+  # Or using API key authentication
+  curl -X POST "$baseUrl/api/bets/update-wager-outcome" \
+    -H "Authorization: Basic $base64_encoded" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "reference": "wager-4",
+      "outcome": "half-win"
+    }'
+  ```
+  <!-- prettier-ignore-end -->
+  
+  </TabItem>
+  <TabItem value="javascript" label="JavaScript">
+  
+  <!-- prettier-ignore-start -->
+  ```javascript
+  const updateWagerOutcome = async (auth) => {
+    try {
+      // Determine authentication method
+      let authHeader;
+      if (auth.token) {
+        authHeader = `Bearer ${auth.token}`;
+      } else if (auth.apiKeys) {
+        authHeader = `Basic ${auth.apiKeys.base64_encoded}`;
+      }
+      
+      const response = await fetch(`${baseUrl}/api/bets/update-wager-outcome`, {
+        method: 'POST',
+        headers: {
+          'Authorization': authHeader,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          reference: 'wager-4',
+          outcome: 'half-win'
+        }),
+      });
+      
+      const data = await response.json();
+      console.log('Wager outcome updated:', data);
+    } catch (error) {
+      console.error('Error updating wager outcome:', error);
+    }
+  };
+  
+  // Usage
+  const auth = await getAuthentication();
+  updateWagerOutcome(auth);
+  ```
+  <!-- prettier-ignore-end -->
+  
+  </TabItem>
+  <TabItem value="rust" label="Rust">
+  
+  <!-- prettier-ignore-start -->
+  ```rust
+  use reqwest::Client;
+  use serde::{Deserialize, Serialize};
+
+#[derive(Serialize)]
+struct UpdateWagerOutcomeRequest {
+reference: String,
+outcome: String,
+}
+
+enum AuthMethod {
+Token(String),
+ApiKeys(ApiKeys),
+}
+
+async fn update_wager_outcome(client: &Client, base_url: &str, auth: &AuthMethod)
+-> Result<serde_json::Value, Box<dyn std::error::Error>> {
+
+      let mut request_builder = client
+          .post(&format!("{}/api/bets/update-wager-outcome", base_url))
+          .header("Content-Type", "application/json");
+
+      // Apply authentication header
+      match auth {
+          AuthMethod::Token(token) => {
+              request_builder = request_builder.header("Authorization", format!("Bearer {}", token));
+          },
+          AuthMethod::ApiKeys(api_keys) => {
+              request_builder = request_builder.header("Authorization", format!("Basic {}", api_keys.base64_encoded));
+          }
+      }
+
+      let update_wager_outcome_request = UpdateWagerOutcomeRequest {
+          reference: "wager-4".to_string(),
+          outcome: "half-win".to_string(),
+      };
+
+      let response = request_builder
+          .json(&update_wager_outcome_request)
+          .send()
+          .await?;
+
+      let update_data = response.json::<serde_json::Value>().await?;
+      println!("Wager outcome updated: {:?}", update_data);
+
+      Ok(update_data)
+
+}
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+let client = Client::new();
+
+      // First get authentication (token or API keys)
+      // ...
+
+      // Update wager outcome with token
+      let auth = AuthMethod::Token(token);
+      let update_data = update_wager_outcome(&client, baseUrl, &auth).await?;
+
+      // Or update wager outcome with API keys
+      // let auth = AuthMethod::ApiKeys(api_keys);
+      // let update_data = update_wager_outcome(&client, baseUrl, &auth).await?;
+
+      Ok(())
+
+}
+
+````
+<!-- prettier-ignore-end -->
+
+</TabItem>
+</Tabs>
+
+Upon successful update, the API will respond with a message:
+
+```json
+{
+"message": "Wager outcome updated successfully"
+}
+````
+
+## Get Bet History
+
+To get bet history, you need to send a GET request to our API. This request must be authenticated, either by token or API key.
+
+### Get Bet History
+
+To get bet history, you need to send a GET request to the `/api/bets/history` endpoint.
+
+<Tabs groupId="programming-language">
+  <TabItem value="curl" label="cURL">
+  
+  <!-- prettier-ignore-start -->
+  ```bash
+  # Using token authentication
+  curl -X GET "$baseUrl/api/bets/history" \
+    -H "Authorization: Bearer $token" \
+    -H "Content-Type: application/json"
+    
+  # Or using API key authentication
+  curl -X GET "$baseUrl/api/bets/history" \
+    -H "Authorization: Basic $base64_encoded" \
+    -H "Content-Type: application/json"
+  ```
+  <!-- prettier-ignore-end -->
+  
+  </TabItem>
+  <TabItem value="javascript" label="JavaScript">
+  
+  <!-- prettier-ignore-start -->
+  ```javascript
+  const getBetHistory = async (auth) => {
+    try {
+      // Determine authentication method
+      let authHeader;
+      if (auth.token) {
+        authHeader = `Bearer ${auth.token}`;
+      } else if (auth.apiKeys) {
+        authHeader = `Basic ${auth.apiKeys.base64_encoded}`;
+      }
+      
+      const response = await fetch(`${baseUrl}/api/bets/history`, {
+        method: 'GET',
+        headers: {
+          'Authorization': authHeader,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      const data = await response.json();
+      console.log('Bet history:', data);
+    } catch (error) {
+      console.error('Error getting bet history:', error);
+    }
+  };
+  
+  // Usage
+  const auth = await getAuthentication();
+  getBetHistory(auth);
+  ```
+  <!-- prettier-ignore-end -->
+  
+  </TabItem>
+  <TabItem value="rust" label="Rust">
+  
+  <!-- prettier-ignore-start -->
+  ```rust
+  use reqwest::Client;
+  use serde::{Deserialize, Serialize};
+
+enum AuthMethod {
+Token(String),
+ApiKeys(ApiKeys),
+}
+
+async fn get_bet_history(client: &Client, base_url: &str, auth: &AuthMethod)
+-> Result<serde_json::Value, Box<dyn std::error::Error>> {
+
+      let mut request_builder = client
+          .get(&format!("{}/api/bets/history", base_url));
+
+      // Apply authentication header
+      match auth {
+          AuthMethod::Token(token) => {
+              request_builder = request_builder.header("Authorization", format!("Bearer {}", token));
+          },
+          AuthMethod::ApiKeys(api_keys) => {
+              request_builder = request_builder.header("Authorization", format!("Basic {}", api_keys.base64_encoded));
+          }
+      }
+
+      let response = request_builder
+          .header("Content-Type", "application/json")
+          .send()
+          .await?;
+
+      let history_data = response.json::<serde_json::Value>().await?;
+      println!("Bet history: {:?}", history_data);
+
+      Ok(history_data)
+
+}
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+let client = Client::new();
+
+      // First get authentication (token or API keys)
+      // ...
+
+      // Get bet history with token
+      let auth = AuthMethod::Token(token);
+      let history_data = get_bet_history(&client, baseUrl, &auth).await?;
+
+      // Or get bet history with API keys
+      // let auth = AuthMethod::ApiKeys(api_keys);
+      // let history_data = get_bet_history(&client, baseUrl, &auth).await?;
+
+      Ok(())
+
+}
+
+````
+<!-- prettier-ignore-end -->
+
+</TabItem>
+</Tabs>
+
+The API will respond with the bet history:
+
+```json
+[
+{
+  "id": 1,
+  "requesting_user_id": 1,
+  "requesting_user_reference": "a1_user_FclirLc2MJecJqsi",
+  "accepting_user_id": 2,
+  "accepting_user_reference": "a1_user_oNOxm0ZuRJsgySMZ",
+  "offer_status": "accepted",
+  "effective_amount": 300,
+  "effective_odds": 3,
+  "created_at": "2025-03-06T02:49:52.080Z",
+  "wager": {
+    "id": 1,
+    "reference": "wager-4",
+    "outcome": "half-win",
+    "account_id": 1,
+    "created_at": "2025-03-06T02:49:52.080Z",
+    "updated_at": "2025-03-06T02:54:48.405Z"
+  },
+  "bet_trails": [
+    {
+      "id": 1,
+      "bet_id": 1,
+      "account_id": 1,
+      "wager_id": 1,
+      "offer_status": "requesting",
+      "description": "Requesting for bet",
+      "outcome": "undecided",
+      "requesting_odds": 3,
+      "requesting_amount": 300,
+      "accepting_odds": null,
+      "accepting_amount": null,
+      "effective_odds": null,
+      "effective_amount": null,
+      "created_at": "2025-03-06T02:49:52.080Z",
+      "transactions": []
+    },
+    {
+      "id": 2,
+      "bet_id": 1,
+      "account_id": 1,
+      "wager_id": 1,
+      "offer_status": "accepted",
+      "description": "Bet offer accepted",
+      "outcome": "undecided",
+      "requesting_odds": 3,
+      "requesting_amount": 300,
+      "accepting_odds": 3,
+      "accepting_amount": 300,
+      "effective_odds": null,
+      "effective_amount": null,
+      "created_at": "2025-03-06T02:53:36.773Z",
+      "transactions": []
+    },
+    {
+      "id": 3,
+      "bet_id": 1,
+      "account_id": 1,
+      "wager_id": 1,
+      "offer_status": "accepted",
+      "description": "Bet offer accepted",
+      "outcome": "half-win",
+      "requesting_odds": 3,
+      "requesting_amount": 300,
+      "accepting_odds": 3,
+      "accepting_amount": 300,
+      "effective_odds": null,
+      "effective_amount": null,
+      "created_at": "2025-03-06T02:54:48.403Z",
+      "transactions": [
+        {
+          "id": 2,
+          "account_id": 1,
+          "bet_trail_id": 3,
+          "user_id": 1,
+          "user_reference": "a1_user_FclirLc2MJecJqsi",
+          "reference": "TX_-6EaRcGbweZFLlvy-FqYsjBd_9SGbw2chQqswJNNi1Vf0v0m",
+          "amount": 300,
+          "description": "Won 300 from wager wager-4",
+          "transaction_type": "credit",
+          "transaction_source": "bet",
+          "created_at": "2025-03-06T02:54:48.403Z"
+        },
+        {
+          "id": 3,
+          "account_id": 1,
+          "bet_trail_id": 3,
+          "user_id": 2,
+          "user_reference": "a1_user_oNOxm0ZuRJsgySMZ",
+          "reference": "TX_fWFFLUU8T1mRDvP60U5YZDtMK-r8yaU1Oh11976vMWoLn8h4",
+          "amount": 300,
+          "description": "Lost 300 on wager wager-4",
+          "transaction_type": "debit",
+          "transaction_source": "bet",
+          "created_at": "2025-03-06T02:54:48.403Z"
+        }
+      ]
+    }
+  ]
+}
+]
+````
+
+### Flow of Updating Wager Outcome and Getting Bet History
+
+Here is a visual representation of the flow for updating a wager outcome and getting bet history:
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant API
+    Client->>API: POST /api/bets/update-wager-outcome
+    API-->>Client: { "message": "Wager outcome updated successfully" }
+    Client->>API: GET /api/bets/history
+    API-->>Client: { "data": [{ "id": 1, "requesting_user_id": 1, ... }], "message": "Bet history fetched successfully" }
+```
