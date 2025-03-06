@@ -1,0 +1,618 @@
+---
+sidebar_position: 2
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+# Authentication
+
+## Creating an Account
+
+To create an account, you need to send a POST request to our API with the account details. This will register a new account for your betting business.
+
+<Tabs groupId="programming-language">
+  <TabItem value="curl" label="cURL">
+
+```bash
+curl -X POST "$baseUrl/api/auth/register/account" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "My Betting Business",
+    "email": "business@example.com",
+    "password": "securepassword"
+  }'
+```
+
+  </TabItem>
+  <TabItem value="javascript" label="JavaScript">
+
+```javascript
+const createAccount = async () => {
+  try {
+    const response = await fetch(`${baseUrl}/api/auth/register/account`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: "My Betting Business",
+        email: "business@example.com",
+        password: "securepassword",
+      }),
+    });
+
+    const data = await response.json();
+    console.log("Account created:", data);
+  } catch (error) {
+    console.error("Error creating account:", error);
+  }
+};
+
+// Usage
+createAccount();
+```
+
+  </TabItem>
+  <TabItem value="python" label="Python">
+
+```python
+import requests
+import json
+
+def create_account():
+    url = f"{baseUrl}/api/auth/register/account"
+
+    headers = {
+        'Content-Type': 'application/json'
+    }
+
+    payload = {
+        "name": "My Betting Business",
+        "email": "business@example.com",
+        "password": "securepassword"
+    }
+
+    response = requests.post(url, headers=headers, data=json.dumps(payload))
+
+    if response.status_code == 200:
+        print('Account created:', response.json())
+    else:
+        print('Error creating account:', response.text)
+
+# Usage
+create_account()
+```
+
+  </TabItem>
+  <TabItem value="rust" label="Rust">
+
+```rust
+use reqwest::Client;
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize)]
+struct AccountRequest {
+  name: String,
+  email: String,
+  password: String,
+}
+
+async fn create_account(client: &Client, base_url: &str)
+-> Result<serde_json::Value, Box<dyn std::error::Error>> {
+
+  let account_request = AccountRequest {
+      name: "My Betting Business".to_string(),
+      email: "business@example.com".to_string(),
+      password: "securepassword".to_string(),
+  };
+
+  let response = client
+      .post(&format!("{}/api/auth/register/account", base_url))
+      .header("Content-Type", "application/json")
+      .json(&account_request)
+      .send()
+      .await?;
+
+  let account_data = response.json::<serde_json::Value>().await?;
+  println!("Account created: {:?}", account_data);
+
+  Ok(account_data)
+}
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+let client = Client::new();
+
+  // Create account
+  let account_data = create_account(&client, baseUrl).await?;
+
+  Ok(())
+}
+```
+
+  </TabItem>
+</Tabs>
+
+Upon successful creation, the API will respond with the account's details:
+
+```json
+{
+  "data": {
+    "id": 1234,
+    "name": "My Betting Business",
+    "email": "business@example.com"
+  },
+  "message": "Account created successfully"
+}
+```
+
+## Logging In
+
+To log in to your account, you need to send a POST request to our API with your email and password. This will authenticate your account and return a token.
+
+<Tabs groupId="programming-language">
+  <TabItem value="curl" label="cURL">
+
+```bash
+curl -X POST "$baseUrl/api/auth/login/account" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "business@example.com",
+    "password": "securepassword"
+  }'
+```
+
+  </TabItem>
+  <TabItem value="javascript" label="JavaScript">
+
+```javascript
+const login = async () => {
+  try {
+    const response = await fetch(`${baseUrl}/api/auth/login/account`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: "business@example.com",
+        password: "securepassword",
+      }),
+    });
+
+    const data = await response.json();
+    console.log("Logged in:", data);
+  } catch (error) {
+    console.error("Error logging in:", error);
+  }
+};
+
+// Usage
+login();
+```
+
+  </TabItem>
+  <TabItem value="python" label="Python">
+
+```python
+import requests
+import json
+
+def login():
+    url = f"{baseUrl}/api/auth/login/account"
+
+    headers = {
+        'Content-Type': 'application/json'
+    }
+
+    payload = {
+        "email": "business@example.com",
+        "password": "securepassword"
+    }
+
+    response = requests.post(url, headers=headers, data=json.dumps(payload))
+
+    if response.status_code == 200:
+        print('Logged in:', response.json())
+    else:
+        print('Error logging in:', response.text)
+
+# Usage
+login()
+```
+
+  </TabItem>
+  <TabItem value="rust" label="Rust">
+
+```rust
+use reqwest::Client;
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize)]
+struct LoginRequest {
+  email: String,
+  password: String,
+}
+
+async fn login(client: &Client, base_url: &str)
+-> Result<serde_json::Value, Box<dyn std::error::Error>> {
+
+  let login_request = LoginRequest {
+      email: "business@example.com".to_string(),
+      password: "securepassword".to_string(),
+  };
+
+  let response = client
+      .post(&format!("{}/api/auth/login/account", base_url))
+      .header("Content-Type", "application/json")
+      .json(&login_request)
+      .send()
+      .await?;
+
+  let login_data = response.json::<serde_json::Value>().await?;
+  println!("Logged in: {:?}", login_data);
+
+  Ok(login_data)
+}
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+let client = Client::new();
+
+  // Log in
+  let login_data = login(&client, baseUrl).await?;
+
+  Ok(())
+}
+```
+
+  </TabItem>
+</Tabs>
+
+Upon successful login, the API will respond with the authentication token:
+
+```json
+{
+  "data": {
+    "token": "your_auth_token"
+  },
+  "message": "Logged in successfully"
+}
+```
+
+## Logging Out
+
+To log out from your account, you need to send a POST request to our API. This will invalidate your authentication token.
+
+<Tabs groupId="programming-language">
+  <TabItem value="curl" label="cURL">
+
+```bash
+curl -X POST "$baseUrl/api/auth/logout/account" \
+  -H "Authorization: Bearer $token" \
+  -H "Content-Type: application/json"
+```
+
+  </TabItem>
+  <TabItem value="javascript" label="JavaScript">
+
+```javascript
+const logout = async (token) => {
+  try {
+    const response = await fetch(`${baseUrl}/api/auth/logout/account`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    const data = await response.json();
+    console.log("Logged out:", data);
+  } catch (error) {
+    console.error("Error logging out:", error);
+  }
+};
+
+// Usage
+const token = "your_auth_token"; // Replace with actual token
+logout(token);
+```
+
+  </TabItem>
+  <TabItem value="python" label="Python">
+
+```python
+import requests
+
+def logout(token):
+    url = f"{baseUrl}/api/auth/logout/account"
+
+    headers = {
+        'Authorization': f"Bearer {token}",
+        'Content-Type': 'application/json'
+    }
+
+    response = requests.post(url, headers=headers)
+
+    if response.status_code == 200:
+        print('Logged out:', response.json())
+    else:
+        print('Error logging out:', response.text)
+
+# Usage
+token = 'your_auth_token' # Replace with actual token
+logout(token)
+```
+
+  </TabItem>
+  <TabItem value="rust" label="Rust">
+
+```rust
+use reqwest::Client;
+use serde_json::Value;
+
+async fn logout(client: &Client, base_url: &str, token: &str)
+-> Result<Value, Box<dyn std::error::Error>> {
+
+  let response = client
+      .post(&format!("{}/api/auth/logout/account", base_url))
+      .header("Authorization", format!("Bearer {}", token))
+      .header("Content-Type", "application/json")
+      .send()
+      .await?;
+
+  let logout_data = response.json::<Value>().await?;
+  println!("Logged out: {:?}", logout_data);
+
+  Ok(logout_data)
+}
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+let client = Client::new();
+
+  // Log out
+  let token = "your_auth_token"; // Replace with actual token
+  let logout_data = logout(&client, baseUrl, token).await?;
+
+  Ok(())
+}
+```
+
+  </TabItem>
+</Tabs>
+
+Upon successful logout, the API will respond with a confirmation message:
+
+```json
+{
+  "message": "Logged out successfully"
+}
+```
+
+## Creating API Keys
+
+To create API keys for your account, you need to send a POST request to our API. This will generate a new API key and secret for your account.
+
+<Tabs groupId="programming-language">
+  <TabItem value="curl" label="cURL">
+
+```bash
+curl -X POST "$baseUrl/api/auth/account/generate-keys" \
+  -H "Authorization: Bearer $token" \
+  -H "Content-Type: application/json"
+```
+
+  </TabItem>
+  <TabItem value="javascript" label="JavaScript">
+
+```javascript
+const generateApiKeys = async (token) => {
+  try {
+    const response = await fetch(`${baseUrl}/api/auth/account/generate-keys`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    const data = await response.json();
+    console.log("API keys generated:", data);
+  } catch (error) {
+    console.error("Error generating API keys:", error);
+  }
+};
+
+// Usage
+const token = "your_auth_token"; // Replace with actual token
+generateApiKeys(token);
+```
+
+  </TabItem>
+  <TabItem value="python" label="Python">
+
+```python
+import requests
+
+def generate_api_keys(token):
+    url = f"{baseUrl}/api/auth/account/generate-keys"
+
+    headers = {
+        'Authorization': f"Bearer {token}",
+        'Content-Type': 'application/json'
+    }
+
+    response = requests.post(url, headers=headers)
+
+    if response.status_code == 200:
+        print('API keys generated:', response.json())
+    else:
+        print('Error generating API keys:', response.text)
+
+# Usage
+token = 'your_auth_token' # Replace with actual token
+generate_api_keys(token)
+```
+
+  </TabItem>
+  <TabItem value="rust" label="Rust">
+
+```rust
+use reqwest::Client;
+use serde_json::Value;
+
+async fn generate_api_keys(client: &Client, base_url: &str, token: &str)
+-> Result<Value, Box<dyn std::error::Error>> {
+
+  let response = client
+      .post(&format!("{}/api/auth/account/generate-keys", base_url))
+      .header("Authorization", format!("Bearer {}", token))
+      .header("Content-Type", "application/json")
+      .send()
+      .await?;
+
+  let api_keys_data = response.json::<Value>().await?;
+  println!("API keys generated: {:?}", api_keys_data);
+
+  Ok(api_keys_data)
+}
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+let client = Client::new();
+
+  // Generate API keys
+  let token = "your_auth_token"; // Replace with actual token
+  let api_keys_data = generate_api_keys(&client, baseUrl, token).await?;
+
+  Ok(())
+}
+```
+
+  </TabItem>
+</Tabs>
+
+Upon successful generation, the API will respond with the API key and secret:
+
+```json
+{
+  "data": {
+    "api_key": "your_api_key",
+    "api_secret": "your_api_secret"
+  },
+  "message": "API keys generated successfully"
+}
+```
+
+## Logging Out
+
+To log out from your account, you need to send a POST request to our API. This will invalidate your authentication token.
+
+<Tabs groupId="programming-language">
+  <TabItem value="curl" label="cURL">
+
+```bash
+curl -X POST "$baseUrl/api/auth/logout" \
+  -H "Authorization: Bearer $token" \
+  -H "Content-Type: application/json"
+```
+
+  </TabItem>
+  <TabItem value="javascript" label="JavaScript">
+
+```javascript
+const logout = async (token) => {
+  try {
+    const response = await fetch(`${baseUrl}/api/auth/logout`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    const data = await response.json();
+    console.log("Logged out:", data);
+  } catch (error) {
+    console.error("Error logging out:", error);
+  }
+};
+
+// Usage
+const token = "your_auth_token"; // Replace with actual token
+logout(token);
+```
+
+  </TabItem>
+  <TabItem value="python" label="Python">
+
+```python
+import requests
+
+def logout(token):
+    url = f"{baseUrl}/api/auth/logout"
+
+    headers = {
+        'Authorization': f"Bearer {token}",
+        'Content-Type': 'application/json'
+    }
+
+    response = requests.post(url, headers=headers)
+
+    if response.status_code == 200:
+        print('Logged out:', response.json())
+    else:
+        print('Error logging out:', response.text)
+
+# Usage
+token = 'your_auth_token' # Replace with actual token
+logout(token)
+```
+
+  </TabItem>
+  <TabItem value="rust" label="Rust">
+
+```rust
+use reqwest::Client;
+use serde_json::Value;
+
+async fn logout(client: &Client, base_url: &str, token: &str)
+-> Result<Value, Box<dyn std::error::Error>> {
+
+  let response = client
+      .post(&format!("{}/api/auth/logout", base_url))
+      .header("Authorization", format!("Bearer {}", token))
+      .header("Content-Type", "application/json")
+      .send()
+      .await?;
+
+  let logout_data = response.json::<Value>().await?;
+  println!("Logged out: {:?}", logout_data);
+
+  Ok(logout_data)
+}
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+let client = Client::new();
+
+  // Log out
+  let token = "your_auth_token"; // Replace with actual token
+  let logout_data = logout(&client, baseUrl, token).await?;
+
+  Ok(())
+}
+```
+
+  </TabItem>
+</Tabs>
+
+Upon successful logout, the API will respond with a confirmation message:
+
+```json
+{
+  "message": "Logged out successfully"
+}
+```
