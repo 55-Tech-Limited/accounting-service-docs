@@ -138,11 +138,6 @@ Upon successful creation, the API will respond with the account's details:
 
 ```json
 {
-  "data": {
-    "id": 1234,
-    "name": "My Betting Business",
-    "email": "business@example.com"
-  },
   "message": "Account created successfully"
 }
 ```
@@ -499,22 +494,25 @@ Upon successful generation, the API will respond with the API key and secret:
 ```json
 {
   "data": {
-    "api_key": "your_api_key",
-    "api_secret": "your_api_secret"
+    "api_key": "jk8sa7dfg98s7df98g7sdfg87",
+    "api_secret": "8sd7fg8sd7fg8sd7f98gs7df98g",
+    "base64_encoded": "ams4c2E3ZGZnOThzN2RmOThnN3NkZmc4Nzo4c2Q3Zmc4c2Q3Zmc4c2Q3Zjk4Z3M3ZGY5OGc="
   },
-  "message": "API keys generated successfully"
+  "message": "Api keys generated successfully"
 }
 ```
 
-## Logging Out
+## Authentication Methods
 
-To log out from your account, you need to send a POST request to our API. This will invalidate your authentication token.
+### Authentication with Tokens
+
+To demonstrate authentication using tokens, we will use the example of retrieving the authenticated user's details. This involves sending a GET request to our API, which allows you to verify the authentication status and access the user's information.
 
 <Tabs groupId="programming-language">
   <TabItem value="curl" label="cURL">
 
 ```bash
-curl -X POST "$baseUrl/api/auth/logout" \
+curl -X GET "$baseUrl/api/auth/account/me" \
   -H "Authorization: Bearer $token" \
   -H "Content-Type: application/json"
 ```
@@ -523,10 +521,10 @@ curl -X POST "$baseUrl/api/auth/logout" \
   <TabItem value="javascript" label="JavaScript">
 
 ```javascript
-const logout = async (token) => {
+const getUserDetails = async (token) => {
   try {
-    const response = await fetch(`${baseUrl}/api/auth/logout`, {
-      method: "POST",
+    const response = await fetch(`${baseUrl}/api/auth/account/me`, {
+      method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
@@ -534,15 +532,15 @@ const logout = async (token) => {
     });
 
     const data = await response.json();
-    console.log("Logged out:", data);
+    console.log("User details:", data);
   } catch (error) {
-    console.error("Error logging out:", error);
+    console.error("Error fetching user details:", error);
   }
 };
 
 // Usage
 const token = "your_auth_token"; // Replace with actual token
-logout(token);
+getUserDetails(token);
 ```
 
   </TabItem>
@@ -551,24 +549,24 @@ logout(token);
 ```python
 import requests
 
-def logout(token):
-    url = f"{baseUrl}/api/auth/logout"
+def get_user_details(token):
+    url = f"{baseUrl}/api/auth/account/me"
 
     headers = {
         'Authorization': f"Bearer {token}",
         'Content-Type': 'application/json'
     }
 
-    response = requests.post(url, headers=headers)
+    response = requests.get(url, headers=headers)
 
     if response.status_code == 200:
-        print('Logged out:', response.json())
+        print('User details:', response.json())
     else:
-        print('Error logging out:', response.text)
+        print('Error fetching user details:', response.text)
 
 # Usage
 token = 'your_auth_token' # Replace with actual token
-logout(token)
+get_user_details(token)
 ```
 
   </TabItem>
@@ -578,29 +576,29 @@ logout(token)
 use reqwest::Client;
 use serde_json::Value;
 
-async fn logout(client: &Client, base_url: &str, token: &str)
+async fn get_user_details(client: &Client, base_url: &str, token: &str)
 -> Result<Value, Box<dyn std::error::Error>> {
 
   let response = client
-      .post(&format!("{}/api/auth/logout", base_url))
+      .get(&format!("{}/api/auth/account/me", base_url))
       .header("Authorization", format!("Bearer {}", token))
       .header("Content-Type", "application/json")
       .send()
       .await?;
 
-  let logout_data = response.json::<Value>().await?;
-  println!("Logged out: {:?}", logout_data);
+  let user_data = response.json::<Value>().await?;
+  println!("User details: {:?}", user_data);
 
-  Ok(logout_data)
+  Ok(user_data)
 }
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-let client = Client::new();
+  let client = Client::new();
 
-  // Log out
+  // Get user details
   let token = "your_auth_token"; // Replace with actual token
-  let logout_data = logout(&client, baseUrl, token).await?;
+  let user_data = get_user_details(&client, baseUrl, token).await?;
 
   Ok(())
 }
@@ -609,10 +607,183 @@ let client = Client::new();
   </TabItem>
 </Tabs>
 
-Upon successful logout, the API will respond with a confirmation message:
+Upon successful authentication, the API will respond with the user's account details:
 
 ```json
 {
-  "message": "Logged out successfully"
+  "data": {
+    "id": 1,
+    "name": "First Account",
+    "email": "first@email.com",
+    "api_key_generated_at": "2025-03-06T02:04:10.580Z",
+    "created_at": "2025-03-06T00:44:11.292Z",
+    "updated_at": "2025-03-06T02:04:10.581Z"
+  },
+  "message": "authentication data"
+}
+```
+
+### Authentication with API Keys
+
+To demonstrate authentication using API keys, you can use the API keys in one of two ways:
+
+1. Using the `base64_encoded` value directly:
+
+```
+Authorization: Basic ams4c2E3ZGZnOThzN2RmOThnN3NkZmc4Nzo4c2Q3Zmc4c2Q3Zmc4c2Q3Zjk4Z3M3ZGY5OGc=
+```
+
+2. Using the `api_key` as username and `api_secret` as password for Basic Auth.
+
+<Tabs groupId="programming-language">
+  <TabItem value="curl" label="cURL">
+
+```bash
+# Using base64_encoded value
+curl -X GET "$baseUrl/api/auth/account/me" \
+  -H "Authorization: Basic ams4c2E3ZGZnOThzN2RmOThnN3NkZmc4Nzo4c2Q3Zmc4c2Q3Zmc4c2Q3Zjk4Z3M3ZGY5OGc=" \
+  -H "Content-Type: application/json"
+
+# Using api_key and api_secret for Basic Auth
+curl -X GET "$baseUrl/api/auth/account/me" \
+  -u "jk8sa7dfg98s7df98g7sdfg87:8sd7fg8sd7fg8sd7f98gs7df98g" \
+  -H "Content-Type: application/json"
+```
+
+  </TabItem>
+  <TabItem value="javascript" label="JavaScript">
+
+```javascript
+const getUserDetailsWithApiKey = async (apiKey, apiSecret) => {
+  try {
+    // Using base64_encoded value
+    const response1 = await fetch(`${baseUrl}/api/auth/account/me`, {
+      method: "GET",
+      headers: {
+        Authorization:
+          "Basic ams4c2E3ZGZnOThzN2RmOThnN3NkZmc4Nzo4c2Q3Zmc4c2Q3Zmc4c2Q3Zjk4Z3M3ZGY5OGc=",
+        "Content-Type": "application/json",
+      },
+    });
+
+    const data1 = await response1.json();
+    console.log("User details with base64_encoded:", data1);
+
+    // Using api_key and api_secret for Basic Auth
+    const response2 = await fetch(`${baseUrl}/api/auth/account/me`, {
+      method: "GET",
+      headers: {
+        Authorization: `Basic ${btoa(`${apiKey}:${apiSecret}`)}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    const data2 = await response2.json();
+    console.log("User details with api_key and api_secret:", data2);
+  } catch (error) {
+    console.error("Error fetching user details:", error);
+  }
+};
+
+// Usage
+const apiKey = "jk8sa7dfg98s7df98g7sdfg87"; // Replace with actual API key
+const apiSecret = "8sd7fg8sd7fg8sd7f98gs7df98g"; // Replace with actual API secret
+getUserDetailsWithApiKey(apiKey, apiSecret);
+```
+
+  </TabItem>
+  <TabItem value="python" label="Python">
+
+```python
+import requests
+from requests.auth import HTTPBasicAuth
+
+def get_user_details_with_api_key():
+    url = f"{baseUrl}/api/auth/account/me"
+
+    # Using base64_encoded value
+    headers1 = {
+        'Authorization': 'Basic ams4c2E3ZGZnOThzN2RmOThnN3NkZmc4Nzo4c2Q3Zmc4c2Q3Zmc4c2Q3Zjk4Z3M3ZGY5OGc=',
+        'Content-Type': 'application/json'
+    }
+    response1 = requests.get(url, headers=headers1)
+    if response1.status_code == 200:
+        print('User details with base64_encoded:', response1.json())
+    else:
+        print('Error fetching user details with base64_encoded:', response1.text)
+
+    # Using api_key and api_secret for Basic Auth
+    response2 = requests.get(url, auth=HTTPBasicAuth('jk8sa7dfg98s7df98g7sdfg87', '8sd7fg8sd7fg8sd7f98gs7df98g'))
+    if response2.status_code == 200:
+        print('User details with api_key and api_secret:', response2.json())
+    else:
+        print('Error fetching user details with api_key and api_secret:', response2.text)
+
+# Usage
+get_user_details_with_api_key()
+```
+
+  </TabItem>
+  <TabItem value="rust" label="Rust">
+
+```rust
+use reqwest::Client;
+use serde_json::Value;
+
+async fn get_user_details_with_api_key(client: &Client, base_url: &str)
+-> Result<(), Box<dyn std::error::Error>> {
+
+  // Using base64_encoded value
+  let response1 = client
+      .get(&format!("{}/api/auth/account/me", base_url))
+      .header("Authorization", "Basic ams4c2E3ZGZnOThzN2RmOThnN3NkZmc4Nzo4c2Q3Zmc4c2Q3Zmc4c2Q3Zjk4Z3M3ZGY5OGc=")
+      .header("Content-Type", "application/json")
+      .send()
+      .await?;
+
+  let user_data1 = response1.json::<Value>().await?;
+  println!("User details with base64_encoded: {:?}", user_data1);
+
+  // Using api_key and api_secret for Basic Auth
+  let response2 = client
+      .get(&format!("{}/api/auth/account/me", base_url))
+      .basic_auth("jk8sa7dfg98s7df98g7sdfg87", Some("8sd7fg8sd7fg8sd7f98gs7df98g"))
+      .header("Content-Type", "application/json")
+      .send()
+      .await?;
+
+  let user_data2 = response2.json::<Value>().await?;
+  println!("User details with api_key and api_secret: {:?}", user_data2);
+
+  Ok(())
+}
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+  let client = Client::new();
+
+  // Get user details
+  get_user_details_with_api_key(&client, baseUrl).await?;
+
+  Ok(())
+}
+```
+
+  </TabItem>
+</Tabs>
+
+Upon successful authentication, the API will respond with the user's account details:
+
+```json
+{
+  "data": {
+    "id": 1,
+    "name": "First Account",
+    "email": "first@email.com",
+    "api_key_generated_at": "2025-03-06T02:04:10.580Z",
+    "created_at": "2025-03-06T00:44:11.292Z",
+    "updated_at": "2025-03-06T02:04:10.581Z"
+  },
+  "message": "authentication data"
 }
 ```
