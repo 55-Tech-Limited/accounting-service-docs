@@ -16,8 +16,8 @@ jobs:
     runs-on: ubuntu-22.04
     permissions:
       contents: write
-    concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}
+    # concurrency:
+    #   group: ${{ github.workflow }}-${{ github.ref }}
     # defaults:
     #   run:
     #     working-directory: website
@@ -50,8 +50,10 @@ jobs:
       #     restore-keys: |
       #       ${{ runner.os }}-website-
 
-      - run: npm ci
-      - run: npm run build
+      - name: Install Dependencies
+        run: npm ci
+      - name: Build docs
+        run: npm run build
 
       - name: Deploy to github pages
         uses: peaceiris/actions-gh-pages@v4
