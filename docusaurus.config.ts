@@ -3,6 +3,9 @@ import type { Config } from "@docusaurus/types";
 import type * as Preset from "@docusaurus/preset-classic";
 
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
+//
+const organizationName = "55-Tech-Limited";
+const projectName = "accounting-service-docs";
 
 const config: Config = {
   title: "Wager Track - Accounting Service",
@@ -10,15 +13,16 @@ const config: Config = {
   favicon: "img/favicon.ico",
 
   // Set the production url of your site here
-  url: "https://wagertrack.netlify.app",
+  url: `https://${organizationName}.github.io`,
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: "/",
+  baseUrl: `/${projectName}/`,
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: "55Tech", // Usually your GitHub org/user name.
-  projectName: "Wager Track", // Usually your repo name.
+  organizationName, // Usually your GitHub org/user name.
+  projectName, // Usually your repo name.
+  deploymentBranch: "deployment",
 
   onBrokenLinks: "warn",
   // onBrokenLinks: "throw",
@@ -60,16 +64,14 @@ const config: Config = {
           sidebarPath: "./sidebars.ts",
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
-          editUrl:
-            "https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/",
+          editUrl: `https://github.com/${organizationName}/${projectName}/tree/main/`,
         },
         blog: {
           showReadingTime: true,
           feedOptions: { type: ["rss", "atom"], xslt: true },
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
-          editUrl:
-            "https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/",
+          editUrl: `https://github.com/${organizationName}/${projectName}/tree/main/`,
           // Useful options to enforce blogging best practices
           onInlineTags: "warn",
           onInlineAuthors: "warn",
@@ -105,7 +107,10 @@ const config: Config = {
     footer: {
       style: "dark",
       links: [
-        { title: "Docs", items: [{ label: "Documentation", to: "/docs/intro" }] },
+        {
+          title: "Docs",
+          items: [{ label: "Documentation", to: "/docs/intro" }],
+        },
         {
           title: "Community",
           items: [
@@ -113,7 +118,10 @@ const config: Config = {
               label: "Stack Overflow",
               href: "https://stackoverflow.com/questions/tagged/docusaurus",
             },
-            { label: "Discord", href: "https://discordapp.com/invite/docusaurus" },
+            {
+              label: "Discord",
+              href: "https://discordapp.com/invite/docusaurus",
+            },
             { label: "X", href: "https://x.com/docusaurus" },
           ],
         },
