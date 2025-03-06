@@ -11,9 +11,12 @@ on:
     #   - "website/**"
   pull_request:
 
+permissions:
+  contents: write
+
 jobs:
   deploy:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     permissions:
       contents: write
     # concurrency:
