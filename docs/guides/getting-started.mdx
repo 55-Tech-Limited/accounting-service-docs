@@ -64,6 +64,35 @@ To create an account, you need to send a POST request to our API with your betti
   <!-- prettier-ignore-end -->
   
   </TabItem>
+  <TabItem value="python" label="Python">
+  
+  <!-- prettier-ignore-start -->
+  ```python
+
+  import requests
+
+  def create_account():
+      try:
+          response = requests.post(
+              f"{baseUrl}/api/auth/register/account",
+              headers={'Content-Type': 'application/json'},
+              json={
+                  'name': 'My Betting Business',
+                  'email': 'owner@mybetting.com',
+                  'password': 'secure_password_here'
+              }
+          )
+          data = response.json()
+          print('Account created:', data)
+      except Exception as error:
+          print('Error creating account:', error)
+
+  create_account()
+
+  ```
+  <!-- prettier-ignore-end -->
+  
+  </TabItem>
   <TabItem value="rust" label="Rust">
   
   <!-- prettier-ignore-start -->
@@ -163,6 +192,36 @@ You can log in with your account credentials to obtain a token:
       console.error('Error logging in:', error);
     }
   };
+  ```
+  <!-- prettier-ignore-end -->
+  
+  </TabItem>
+  <TabItem value="python" label="Python">
+  
+  <!-- prettier-ignore-start -->
+  ```python
+import requests
+
+def login_account():
+    try:
+        response = requests.post(
+            f"{baseUrl}/api/auth/login/account",
+            headers={'Content-Type': 'application/json'},
+            json={
+                'email': 'owner@mybetting.com',
+                'password': 'secure_password_here'
+            }
+        )
+        data = response.json()
+        print('Login successful:', data)
+        
+        # Store the token for future requests
+        token = data['data']['token']
+        return token
+    except Exception as error:
+        print('Error logging in:', error)
+
+login_account()
   ```
   <!-- prettier-ignore-end -->
   
@@ -297,6 +356,44 @@ Alternatively, you can generate API keys for more secure, long-term authenticati
     // Now you can use either token or apiKeys for authentication
     return { token, apiKeys };
   };
+  ```
+  <!-- prettier-ignore-end -->
+  
+  </TabItem>
+  <TabItem value="python" label="Python">
+  
+  <!-- prettier-ignore-start -->
+  ```python
+import requests
+
+def generate_api_keys(token):
+    try:
+        response = requests.post(
+            f"{baseUrl}/api/auth/account/generate-keys",
+            headers={
+                'Authorization': f'Bearer {token}',
+                'Content-Type': 'application/json'
+            }
+        )
+        data = response.json()
+        print('API keys generated:', data)
+        
+        # Store the API keys for future requests
+        api_keys = {
+            'api_key': data['data']['api_key'],
+            'api_secret': data['data']['api_secret'],
+            'base64_encoded': data['data']['base64_encoded']
+        }
+        return api_keys
+    except Exception as error:
+        print('Error generating API keys:', error)
+
+def get_authentication():
+    token = login_account()
+    api_keys = generate_api_keys(token)
+    
+    # Now you can use either token or api_keys for authentication
+    return {'token': token, 'api_keys': api_keys}
   ```
   <!-- prettier-ignore-end -->
   
@@ -451,6 +548,45 @@ Once you have authenticated, you can create users who will be placing bets on yo
   // Usage
   const auth = await getAuthentication();
   createUser(auth);
+  ```
+  <!-- prettier-ignore-end -->
+  
+  </TabItem>
+  <TabItem value="python" label="Python">
+  
+  <!-- prettier-ignore-start -->
+  ```python
+import requests
+
+def create_user(auth):
+    try:
+        # Determine authentication method
+        if auth.get('token'):
+            auth_header = f"Bearer {auth['token']}"
+        elif auth.get('apiKeys'):
+            auth_header = f"Basic {auth['apiKeys']['base64_encoded']}"
+        
+        response = requests.post(
+            f"{baseUrl}/api/account/user",
+            headers={
+                'Authorization': auth_header,
+                'Content-Type': 'application/json'
+            },
+            json={
+                'reference': 'danny_user',  # Optional
+                'name': 'User 3',
+                'preferences': {}  # Optional
+            }
+        )
+        
+        data = response.json()
+        print('User created:', data)
+    except Exception as error:
+        print('Error creating user:', error)
+
+# Usage
+auth = get_authentication()
+create_user(auth)
   ```
   <!-- prettier-ignore-end -->
   
@@ -644,6 +780,45 @@ To fund a user account, you need to send a POST request to the `/api/transaction
   <!-- prettier-ignore-end -->
   
   </TabItem>
+  <TabItem value="python" label="Python">
+  
+  <!-- prettier-ignore-start -->
+```python
+import requests
+
+def fund_user_account(auth):
+    try:
+        # Determine authentication method
+        if auth.get('token'):
+            auth_header = f"Bearer {auth['token']}"
+        elif auth.get('apiKeys'):
+            auth_header = f"Basic {auth['apiKeys']['base64_encoded']}"
+        
+        response = requests.post(
+            f"{baseUrl}/api/transactions/fund-user/",
+            headers={
+                'Authorization': auth_header,
+                'Content-Type': 'application/json'
+            },
+            json={
+                'amount': 1000,
+                'user_id': 1
+                # 'user_reference': 'a1_user_dkjH6xmZzHHHgz5M'  # Optional
+            }
+        )
+        
+        data = response.json()
+        print('Account funded:', data)
+    except Exception as error:
+        print('Error funding account:', error)
+
+# Usage
+auth = get_authentication()
+fund_user_account(auth)
+```
+  <!-- prettier-ignore-end -->
+  
+  </TabItem>
   <TabItem value="rust" label="Rust">
   
   <!-- prettier-ignore-start -->
@@ -742,6 +917,7 @@ Upon successful funding, the API will respond with the transaction details:
 ````
 
 ### Check User Balance
+<!-- TODO: Continue adding pythong from here -->
 
 To check a user's balance, you can use either the `user_id` or `user_reference`.
 
