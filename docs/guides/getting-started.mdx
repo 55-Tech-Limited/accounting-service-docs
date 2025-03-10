@@ -21,118 +21,110 @@ To create an account, you need to send a POST request to our API with your betti
 <Tabs groupId="programming-language">
   <TabItem value="curl" label="cURL">
   
-  <!-- prettier-ignore-start -->
-  ```bash
-  curl -X POST "$baseUrl/api/auth/register/account" \
-    -H "Content-Type: application/json" \
-    -d '{
-      "name": "My Betting Business",
-      "email": "owner@mybetting.com",
-      "password": "secure_password_here"
-    }'
-  ```
-  <!-- prettier-ignore-end -->
+    ```bash
+    curl -X POST "$baseUrl/api/auth/register/account" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "name": "My Betting Business",
+        "email": "owner@mybetting.com",
+        "password": "secure_password_here"
+      }'
+    ```
   
   </TabItem>
+
   <TabItem value="javascript" label="JavaScript">
   
-  <!-- prettier-ignore-start -->
-  ```javascript
-  const createAccount = async () => {
-    try {
-      const response = await fetch(`${baseUrl}/api/auth/register/account`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: 'My Betting Business',
-          email: 'owner@mybetting.com',
-          password: 'secure_password_here'
-        }),
-      });
-      
-      const data = await response.json();
-      console.log('Account created:', data);
-    } catch (error) {
-      console.error('Error creating account:', error);
-    }
-  };
-  
-  createAccount();
-  ```
-  <!-- prettier-ignore-end -->
+    ```javascript
+    const createAccount = async () => {
+      try {
+        const response = await fetch(`${baseUrl}/api/auth/register/account`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: 'My Betting Business',
+            email: 'owner@mybetting.com',
+            password: 'secure_password_here'
+          }),
+        });
+        
+        const data = await response.json();
+        console.log('Account created:', data);
+      } catch (error) {
+        console.error('Error creating account:', error);
+      }
+    };
+    
+    createAccount();
+    ```
   
   </TabItem>
+
   <TabItem value="python" label="Python">
   
-  <!-- prettier-ignore-start -->
-  ```python
+    ```python
+    import requests
 
-import requests
+    def create_account():
+        try:
+            response = requests.post(
+                f"{baseUrl}/api/auth/register/account",
+                headers={'Content-Type': 'application/json'},
+                json={
+                    'name': 'My Betting Business',
+                    'email': 'owner@mybetting.com',
+                    'password': 'secure_password_here'
+                }
+            )
+            data = response.json()
+            print('Account created:', data)
+        except Exception as error:
+            print('Error creating account:', error)
 
-def create_account():
-try:
-response = requests.post(
-f"{baseUrl}/api/auth/register/account",
-headers={'Content-Type': 'application/json'},
-json={
-'name': 'My Betting Business',
-'email': 'owner@mybetting.com',
-'password': 'secure_password_here'
-}
-)
-data = response.json()
-print('Account created:', data)
-except Exception as error:
-print('Error creating account:', error)
+    create_account()
+    ```
 
-create_account()
+  </TabItem>
 
-````
-<!-- prettier-ignore-end -->
+  <TabItem value="rust" label="Rust">
 
-</TabItem>
-<TabItem value="rust" label="Rust">
+    ```rust
+    use reqwest::Client;
+    use serde::{Deserialize, Serialize};
 
-<!-- prettier-ignore-start -->
-```rust
-use reqwest::Client;
-use serde::{Deserialize, Serialize};
+    #[derive(Serialize)]
+    struct AccountRequest {
+      name: String,
+      email: String,
+      password: String,
+    }
 
-#[derive(Serialize)]
-struct AccountRequest {
-name: String,
-email: String,
-password: String,
-}
+    #[tokio::main]
+    async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let client = Client::new();
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-let client = Client::new();
+        let account_request = AccountRequest {
+            name: "My Betting Business".to_string(),
+            email: "owner@mybetting.com".to_string(),
+            password: "secure_password_here".to_string(),
+        };
 
-    let account_request = AccountRequest {
-        name: "My Betting Business".to_string(),
-        email: "owner@mybetting.com".to_string(),
-        password: "secure_password_here".to_string(),
-    };
+        let response = client
+            .post(&format!("{}/api/auth/register/account", baseUrl))
+            .json(&account_request)
+            .send()
+            .await?;
 
-    let response = client
-        .post(&format!("{}/api/auth/register/account", baseUrl))
-        .json(&account_request)
-        .send()
-        .await?;
+        println!("Response: {:?}", response.json::<serde_json::Value>().await?);
+        Ok(())
 
-    println!("Response: {:?}", response.json::<serde_json::Value>().await?);
-    Ok(())
+    }
 
-}
+    ```
 
-````
-
-<!-- prettier-ignore-end -->
-
-</TabItem>
+  </TabItem>
 </Tabs>
 
 Upon successful creation, the API will respond with your account details:
@@ -154,134 +146,122 @@ You can log in with your account credentials to obtain a token:
 <Tabs groupId="programming-language">
   <TabItem value="curl" label="cURL">
   
-  <!-- prettier-ignore-start -->
-  ```bash
-  curl -X POST "$baseUrl/api/auth/login/account" \
-    -H "Content-Type: application/json" \
-    -d '{
-      "email": "owner@mybetting.com",
-      "password": "secure_password_here"
-    }'
-  ```
-  <!-- prettier-ignore-end -->
+    ```bash
+    curl -X POST "$baseUrl/api/auth/login/account" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "email": "owner@mybetting.com",
+        "password": "secure_password_here"
+      }'
+    ```
   
   </TabItem>
   <TabItem value="javascript" label="JavaScript">
   
-  <!-- prettier-ignore-start -->
-  ```javascript
-  const loginAccount = async () => {
-    try {
-      const response = await fetch(`${baseUrl}/api/auth/login/account`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: 'owner@mybetting.com',
-          password: 'secure_password_here'
-        }),
-      });
-      
-      const data = await response.json();
-      console.log('Login successful:', data);
-      
-      // Store the token for future requests
-      const token = data.data.token;
-      return token;
-    } catch (error) {
-      console.error('Error logging in:', error);
-    }
-  };
-  ```
-  <!-- prettier-ignore-end -->
+    ```javascript
+    const loginAccount = async () => {
+      try {
+        const response = await fetch(`${baseUrl}/api/auth/login/account`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: 'owner@mybetting.com',
+            password: 'secure_password_here'
+          }),
+        });
+        
+        const data = await response.json();
+        console.log('Login successful:', data);
+        
+        // Store the token for future requests
+        const token = data.data.token;
+        return token;
+      } catch (error) {
+        console.error('Error logging in:', error);
+      }
+    };
+    ```
   
   </TabItem>
   <TabItem value="python" label="Python">
   
-  <!-- prettier-ignore-start -->
-  ```python
-import requests
+    ```python
+    import requests
 
-def login_account():
-try:
-response = requests.post(
-f"{baseUrl}/api/auth/login/account",
-headers={'Content-Type': 'application/json'},
-json={
-'email': 'owner@mybetting.com',
-'password': 'secure_password_here'
-}
-)
-data = response.json()
-print('Login successful:', data)
+    def login_account():
+        try:
+            response = requests.post(
+                f"{baseUrl}/api/auth/login/account",
+                headers={'Content-Type': 'application/json'},
+                json={
+                    'email': 'owner@mybetting.com',
+                    'password': 'secure_password_here'
+                }
+            )
+            data = response.json()
+            print('Login successful:', data)
 
-        # Store the token for future requests
-        token = data['data']['token']
-        return token
-    except Exception as error:
-        print('Error logging in:', error)
+            # Store the token for future requests
+            token = data['data']['token']
+            return token
+        except Exception as error:
+            print('Error logging in:', error)
 
-login_account()
+    login_account()
+    ```
 
-````
-<!-- prettier-ignore-end -->
+  </TabItem>
+  <TabItem value="rust" label="Rust">
 
-</TabItem>
-<TabItem value="rust" label="Rust">
+    ```rust
+    use reqwest::Client;
+    use serde::{Deserialize, Serialize};
 
-<!-- prettier-ignore-start -->
-```rust
-use reqwest::Client;
-use serde::{Deserialize, Serialize};
+    #[derive(Serialize)]
+    struct LoginRequest {
+        email: String,
+        password: String,
+    }
 
-#[derive(Serialize)]
-struct LoginRequest {
-email: String,
-password: String,
-}
+    #[derive(Deserialize)]
+    struct LoginResponse {
+        data: LoginData,
+        message: String,
+    }
 
-#[derive(Deserialize)]
-struct LoginResponse {
-data: LoginData,
-message: String,
-}
+    #[derive(Deserialize)]
+    struct LoginData {
+        token: String,
+    }
 
-#[derive(Deserialize)]
-struct LoginData {
-token: String,
-}
+    #[tokio::main]
+    async fn main() -> Result<(), Box<dyn std::error::Error>> {
+        let client = Client::new();
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-let client = Client::new();
+        let login_request = LoginRequest {
+            email: "owner@mybetting.com".to_string(),
+            password: "secure_password_here".to_string(),
+        };
 
-    let login_request = LoginRequest {
-        email: "owner@mybetting.com".to_string(),
-        password: "secure_password_here".to_string(),
-    };
+        let response = client
+            .post(&format!("{}/api/auth/login/account", baseUrl))
+            .json(&login_request)
+            .send()
+            .await?;
 
-    let response = client
-        .post(&format!("{}/api/auth/login/account", baseUrl))
-        .json(&login_request)
-        .send()
-        .await?;
+        let login_response: LoginResponse = response.json().await?;
+        println!("Login successful: {}", login_response.message);
+        println!("Token: {}", login_response.data.token);
 
-    let login_response: LoginResponse = response.json().await?;
-    println!("Login successful: {}", login_response.message);
-    println!("Token: {}", login_response.data.token);
+        // Store the token for future requests
+        let token = login_response.data.token;
+        Ok(())
+    }
+    ```
 
-    // Store the token for future requests
-    let token = login_response.data.token;
-    Ok(())
-
-}
-
-````
-
-<!-- prettier-ignore-end -->
-
-</TabItem>
+  </TabItem>
 </Tabs>
 
 The API will respond with a token:
@@ -307,158 +287,143 @@ Alternatively, you can generate API keys for more secure, long-term authenticati
 
 <Tabs groupId="programming-language">
   <TabItem value="curl" label="cURL">
-  
-  <!-- prettier-ignore-start -->
-  ```bash
-  # First, log in to get a token
-  token=$(curl -X POST "$baseUrl/api/auth/login/account" \
-    -H "Content-Type: application/json" \
-    -d '{
-      "email": "owner@mybetting.com",
-      "password": "secure_password_here"
-    }' | jq -r '.data.token')
-  
-  # Then use the token to generate API keys
-  curl -X POST "$baseUrl/api/auth/account/generate-keys" \
-    -H "Authorization: Bearer $token" \
-    -H "Content-Type: application/json"
-  ```
-  <!-- prettier-ignore-end -->
-  
+
+    ```bash
+    # First, log in to get a token
+    token=$(curl -X POST "$baseUrl/api/auth/login/account" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "email": "owner@mybetting.com",
+        "password": "secure_password_here"
+      }' | jq -r '.data.token')
+
+    # Then use the token to generate API keys
+    curl -X POST "$baseUrl/api/auth/account/generate-keys" \
+      -H "Authorization: Bearer $token" \
+      -H "Content-Type: application/json"
+    ```
+
   </TabItem>
   <TabItem value="javascript" label="JavaScript">
   
-  <!-- prettier-ignore-start -->
-  ```javascript
-  const generateApiKeys = async (token) => {
-    try {
-      const response = await fetch(`${baseUrl}/api/auth/account/generate-keys`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        }
-      });
-      
-      const data = await response.json();
-      console.log('API keys generated:', data);
-      
-      // Store the API keys for future requests
-      const { api_key, api_secret, base64_encoded } = data.data;
-      return { api_key, api_secret, base64_encoded };
-    } catch (error) {
-      console.error('Error generating API keys:', error);
-    }
-  };
-  
-  // Usage
-  const getAuthentication = async () => {
-    const token = await loginAccount();
-    const apiKeys = await generateApiKeys(token);
+    ```javascript
+    const generateApiKeys = async (token) => {
+      try {
+        const response = await fetch(`${baseUrl}/api/auth/account/generate-keys`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          }
+        });
+        
+        const data = await response.json();
+        console.log('API keys generated:', data);
+        
+        // Store the API keys for future requests
+        const { api_key, api_secret, base64_encoded } = data.data;
+        return { api_key, api_secret, base64_encoded };
+      } catch (error) {
+        console.error('Error generating API keys:', error);
+      }
+    };
     
-    // Now you can use either token or apiKeys for authentication
-    return { token, apiKeys };
-  };
-  ```
-  <!-- prettier-ignore-end -->
-  
+    // Usage
+    const getAuthentication = async () => {
+      const token = await loginAccount();
+      const apiKeys = await generateApiKeys(token);
+      
+      // Now you can use either token or apiKeys for authentication
+      return { token, apiKeys };
+    };
+    ```
+
   </TabItem>
   <TabItem value="python" label="Python">
   
-  <!-- prettier-ignore-start -->
-  ```python
-import requests
+    ```python
+    import requests
 
-def generate_api_keys(token):
-try:
-response = requests.post(
-f"{baseUrl}/api/auth/account/generate-keys",
-headers={
-'Authorization': f'Bearer {token}',
-'Content-Type': 'application/json'
-}
-)
-data = response.json()
-print('API keys generated:', data)
+    def generate_api_keys(token):
+        try:
+            response = requests.post(
+                f"{baseUrl}/api/auth/account/generate-keys",
+                headers={
+                    'Authorization': f'Bearer {token}',
+                    'Content-Type': 'application/json'
+                }
+            )
+            data = response.json()
+            print('API keys generated:', data)
 
-        # Store the API keys for future requests
-        api_keys = {
-            'api_key': data['data']['api_key'],
-            'api_secret': data['data']['api_secret'],
-            'base64_encoded': data['data']['base64_encoded']
-        }
-        return api_keys
-    except Exception as error:
-        print('Error generating API keys:', error)
+            # Store the API keys for future requests
+            api_keys = {
+                'api_key': data['data']['api_key'],
+                'api_secret': data['data']['api_secret'],
+                'base64_encoded': data['data']['base64_encoded']
+            }
+            return api_keys
+        except Exception as error:
+            print('Error generating API keys:', error)
 
-def get_authentication():
-token = login_account()
-api_keys = generate_api_keys(token)
+    def get_authentication():
+        token = login_account()
+        api_keys = generate_api_keys(token)
 
-    # Now you can use either token or api_keys for authentication
-    return {'token': token, 'api_keys': api_keys}
+        # Now you can use either token or api_keys for authentication
+        return {'token': token, 'api_keys': api_keys}
+    ```
 
-````
-<!-- prettier-ignore-end -->
+  </TabItem>
+  <TabItem value="rust" label="Rust">
 
-</TabItem>
-<TabItem value="rust" label="Rust">
+    ```rust
+    use reqwest::Client;
+    use serde::{Deserialize, Serialize};
 
-<!-- prettier-ignore-start -->
-```rust
-use reqwest::Client;
-use serde::{Deserialize, Serialize};
+    #[derive(Deserialize)]
+    struct ApiKeysResponse {
+        data: ApiKeys,
+        message: String,
+    }
 
-#[derive(Deserialize)]
-struct ApiKeysResponse {
-data: ApiKeys,
-message: String,
-}
+    #[derive(Deserialize)]
+    struct ApiKeys {
+        api_key: String,
+        api_secret: String,
+        base64_encoded: String,
+    }
 
-#[derive(Deserialize)]
-struct ApiKeys {
-api_key: String,
-api_secret: String,
-base64_encoded: String,
-}
+    async fn generate_api_keys(client: &Client, base_url: &str, token: &str) -> Result<ApiKeys, Box<dyn std::error::Error>> {
+        let response = client
+            .post(&format!("{}/api/auth/account/generate-keys", base_url))
+            .header("Authorization", format!("Bearer {}", token))
+            .header("Content-Type", "application/json")
+            .send()
+            .await?;
 
-async fn generate_api_keys(client: &Client, base_url: &str, token: &str)
--> Result<ApiKeys, Box<dyn std::error::Error>> {
+        let api_keys_response: ApiKeysResponse = response.json().await?;
+        println!("API keys generated: {}", api_keys_response.message);
 
-    let response = client
-        .post(&format!("{}/api/auth/account/generate-keys", base_url))
-        .header("Authorization", format!("Bearer {}", token))
-        .header("Content-Type", "application/json")
-        .send()
-        .await?;
+        Ok(api_keys_response.data)
+    }
 
-    let api_keys_response: ApiKeysResponse = response.json().await?;
-    println!("API keys generated: {}", api_keys_response.message);
+    #[tokio::main]
+    async fn main() -> Result<(), Box<dyn std::error::Error>> {
+        // First login to get a token (reusing previous login code)
+        // ...
 
-    Ok(api_keys_response.data)
+        // Then generate API keys
+        let api_keys = generate_api_keys(&client, baseUrl, &token).await?;
+        println!("API Key: {}", api_keys.api_key);
+        println!("API Secret: {}", api_keys.api_secret);
+        println!("Base64 Encoded: {}", api_keys.base64_encoded);
 
-}
+        Ok(())
+    }
+    ```
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-// First login to get a token (reusing previous login code)
-// ...
-
-    // Then generate API keys
-    let api_keys = generate_api_keys(&client, baseUrl, &token).await?;
-    println!("API Key: {}", api_keys.api_key);
-    println!("API Secret: {}", api_keys.api_secret);
-    println!("Base64 Encoded: {}", api_keys.base64_encoded);
-
-    Ok(())
-
-}
-
-````
-
-<!-- prettier-ignore-end -->
-
-</TabItem>
+  </TabItem>
 </Tabs>
 
 The API will respond with your API keys:
@@ -487,6 +452,8 @@ Authorization: Basic ams4c2E3ZGZnOThzN2RmOThnN3NkZmc4Nzo4c2Q3Zmc4c2Q3Zmc4c2Q3Zjk
 ## Creating a User
 
 Once you have authenticated, you can create users who will be placing bets on your platform. To create a user, you need to send a POST request to our API with the user's details. The `reference` field is optional and will be generated if not provided. The `preferences` field is also optional.
+
+<!-- TODO: Format code from here -->
 
 <Tabs groupId="programming-language">
   <TabItem value="curl" label="cURL">
