@@ -390,16 +390,18 @@ To log out from your account, you need to send a POST request to our API. This w
 <Tabs groupId="programming-language">
   <TabItem value="curl" label="cURL">
     ```bash
-    curl -X POST "$baseUrl/api/auth/logout/account" \
+    curl -X POST "$baseUrl/api/auth/logout/account?logout_all=true" \
       -H "Authorization: Bearer $token" \
       -H "Content-Type: application/json"
     ```
+
   </TabItem>
   <TabItem value="javascript" label="JavaScript">
     ```javascript
-    const logout = async (token) => {
+    const logout = async (token, logoutAll = false) => {
       try {
-        const response = await fetch(`${baseUrl}/api/auth/logout/account`, {
+        const url = `${baseUrl}/api/auth/logout/account?logout_all=${logoutAll}`;
+        const response = await fetch(url, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -416,7 +418,7 @@ To log out from your account, you need to send a POST request to our API. This w
 
     // Usage
     const token = "your_auth_token"; // Replace with actual token
-    logout(token);
+    logout(token, true); // Set to true to log out from all sessions
     ```
 
   </TabItem>
@@ -425,8 +427,8 @@ To log out from your account, you need to send a POST request to our API. This w
     ```python
     import requests
 
-    def logout(token):
-        url = f"{baseUrl}/api/auth/logout/account"
+    def logout(token, logout_all=False):
+        url = f"{baseUrl}/api/auth/logout/account?logout_all={logout_all}"
 
         headers = {
             'Authorization': f"Bearer {token}",
@@ -442,7 +444,7 @@ To log out from your account, you need to send a POST request to our API. This w
 
     # Usage
     token = 'your_auth_token' # Replace with actual token
-    logout(token)
+    logout(token, True) # Set to True to log out from all sessions
     ```
 
   </TabItem>
@@ -451,31 +453,37 @@ To log out from your account, you need to send a POST request to our API. This w
     use reqwest::Client;
     use serde_json::Value;
 
-    async fn logout(client: &Client, base_url: &str, token: &str)
-    -> Result<Value, Box<dyn std::error::Error>> {
+    async fn logout(client: &Client, base_url: &str, token: &str, logout_all: bool) -> Result<Value, Box<dyn std::error::Error>> {
+        let url = format!("{}/api/auth/logout/account?logout_all={}", base_url, logout_all);
 
-      let response = client
-          .post(&format!("{}/api/auth/logout/account", base_url))
-          .header("Authorization", format!("Bearer {}", token))
-          .header("Content-Type", "application/json")
-          .send()
-          .await?;
+        let response = client
+            .post(&url)
+            .header("Authorization", format!("Bearer {}", token))
+            .header("Content-Type", "application/json")
+            .send()
+            .await?;
 
-      let logout_data = response.json::<Value>().await?;
-      println!("Logged out: {:?}", logout_data);
-
-      Ok(logout_data)
+        if response.status().is_success() {
+            let data = response.json::<Value>().await?;
+            println!("Logged out: {:?}", data);
+            Ok(data)
+        } else {
+            let error_text = response.text().await?;
+            println!("Error logging out: {}", error_text);
+            Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, error_text)))
+        }
     }
 
     #[tokio::main]
     async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let client = Client::new();
+        let client = Client::new();
+        let base_url = "your_base_url"; // Replace with actual base URL
+        let token = "your_auth_token"; // Replace with actual token
 
-      // Log out
-      let token = "your_auth_token"; // Replace with actual token
-      let logout_data = logout(&client, baseUrl, token).await?;
+        // Log out
+        logout(&client, base_url, token, true).await?;
 
-      Ok(())
+        Ok(())
     }
     ```
 
