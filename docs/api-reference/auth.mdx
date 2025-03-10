@@ -1,0 +1,365 @@
+---
+sidebar_position: 1
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+# Authentication APIs
+
+## Creating an Account
+
+To create an account, you need to send a POST request to our API with the account details. This will register a new account for your betting business.
+
+### Request
+
+| Property     | Value                                |
+| :----------- | :----------------------------------- |
+| method       | `POST`                               |
+| url          | `$baseUrl/api/auth/register/account` |
+| Content-Type | `application/json`                   |
+
+#### Body
+
+| Property | Type   | Required | Default | Description                  |
+| -------- | ------ | -------- | ------- | ---------------------------- |
+| name     | string | Yes      | -       | Name of the betting business |
+| email    | string | Yes      | -       | Business email address       |
+| password | string | Yes      | -       | Account password             |
+
+<Tabs groupId="programming-language">
+  <TabItem value="curl" label="cURL">
+    ```bash
+    curl -X POST "$baseUrl/api/auth/register/account" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "name": "My Betting Business",
+        "email": "business@example.com",
+        "password": "securepassword"
+      }'
+    ```
+  </TabItem>
+  <TabItem value="javascript" label="JavaScript">
+
+    ```javascript
+    const createAccount = async () => {
+      try {
+        const response = await fetch(`${baseUrl}/api/auth/register/account`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: "My Betting Business",
+            email: "business@example.com",
+            password: "securepassword",
+          }),
+        });
+
+        const data = await response.json();
+        console.log("Account created:", data);
+      } catch (error) {
+        console.error("Error creating account:", error);
+      }
+    };
+
+    // Usage
+    createAccount();
+    ```
+
+  </TabItem>
+  <TabItem value="python" label="Python">
+
+    ```python
+    import requests
+    import json
+
+    def create_account():
+        url = f"{baseUrl}/api/auth/register/account"
+
+        headers = {
+            'Content-Type': 'application/json'
+        }
+
+        payload = {
+            "name": "My Betting Business",
+            "email": "business@example.com",
+            "password": "securepassword"
+        }
+
+        response = requests.post(url, headers=headers, data=json.dumps(payload))
+
+        if response.status_code == 200:
+            print('Account created:', response.json())
+        else:
+            print('Error creating account:', response.text)
+
+    # Usage
+    create_account()
+    ```
+
+  </TabItem>
+  <TabItem value="rust" label="Rust">
+
+    ```rust
+    use reqwest::Client;
+    use serde::{Deserialize, Serialize};
+
+    #[derive(Serialize)]
+    struct AccountRequest {
+      name: String,
+      email: String,
+      password: String,
+    }
+
+    async fn create_account(client: &Client, base_url: &str)
+    -> Result<serde_json::Value, Box<dyn std::error::Error>> {
+
+      let account_request = AccountRequest {
+          name: "My Betting Business".to_string(),
+          email: "business@example.com".to_string(),
+          password: "securepassword".to_string(),
+      };
+
+      let response = client
+          .post(&format!("{}/api/auth/register/account", base_url))
+          .header("Content-Type", "application/json")
+          .json(&account_request)
+          .send()
+          .await?;
+
+      let account_data = response.json::<serde_json::Value>().await?;
+      println!("Account created: {:?}", account_data);
+
+      Ok(account_data)
+    }
+
+    #[tokio::main]
+    async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let client = Client::new();
+
+      // Create account
+      let account_data = create_account(&client, baseUrl).await?;
+
+      Ok(())
+    }
+    ```
+
+  </TabItem>
+</Tabs>
+
+### Response
+
+<Tabs>
+  <TabItem  value="Success">
+    Http Code: `201`
+    ```json
+    {
+        "message": "Account created successfully"
+    }
+    ```
+  </TabItem>
+  <TabItem  value="Error">
+    **Record already exists** <br/>
+    Http Code: `400`
+    ```json
+    {
+        "status": 400,
+        "error": "Account with email \"first2@email.com\" already exists"
+    }
+    ```
+
+    **Error with body** <br/>
+    Http Code: `400`
+    ```json
+    {
+        "message": [
+            "name should not be empty",
+            "email should not be empty",
+            "email must be an email",
+            "password must be longer than or equal to 8 characters",
+            "password should not be empty"
+        ],
+        "error": "Bad Request",
+        "statusCode": 400
+    }
+    ```
+
+  </TabItem>
+</Tabs>
+
+## Logging In
+
+To log in to your account, you need to send a POST request to our API with your email and password. This will authenticate your account and return a token.
+
+### Request
+
+| Property     | Value                             |
+| :----------- | :-------------------------------- |
+| method       | `POST`                            |
+| url          | `$baseUrl/api/auth/login/account` |
+| Content-Type | `application/json`                |
+
+#### Body
+
+| Property | Type   | Required | Default | Description            |
+| -------- | ------ | -------- | ------- | ---------------------- |
+| email    | string | Yes      | -       | Business email address |
+| password | string | Yes      | -       | Account password       |
+
+<Tabs groupId="programming-language">
+  <TabItem value="curl" label="cURL">
+    ```bash
+    curl -X POST "$baseUrl/api/auth/login/account" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "email": "business@example.com",
+        "password": "securepassword"
+      }'
+    ```
+  </TabItem>
+  <TabItem value="javascript" label="JavaScript">
+
+    ```javascript
+    const login = async () => {
+      try {
+        const response = await fetch(`${baseUrl}/api/auth/login/account`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: "business@example.com",
+            password: "securepassword",
+          }),
+        });
+
+        const data = await response.json();
+        console.log("Logged in:", data);
+      } catch (error) {
+        console.error("Error logging in:", error);
+      }
+    };
+
+    // Usage
+    login();
+    ```
+
+  </TabItem>
+  <TabItem value="python" label="Python">
+
+    ```python
+    import requests
+    import json
+
+    def login():
+        url = f"{baseUrl}/api/auth/login/account"
+
+        headers = {
+            'Content-Type': 'application/json'
+        }
+
+        payload = {
+            "email": "business@example.com",
+            "password": "securepassword"
+        }
+
+        response = requests.post(url, headers=headers, data=json.dumps(payload))
+
+        if response.status_code == 200:
+            print('Logged in:', response.json())
+        else:
+            print('Error logging in:', response.text)
+
+    # Usage
+    login()
+    ```
+
+  </TabItem>
+  <TabItem value="rust" label="Rust">
+
+    ```rust
+    use reqwest::Client;
+    use serde::{Deserialize, Serialize};
+
+    #[derive(Serialize)]
+    struct LoginRequest {
+      email: String,
+      password: String,
+    }
+
+    async fn login(client: &Client, base_url: &str)
+    -> Result<serde_json::Value, Box<dyn std::error::Error>> {
+
+      let login_request = LoginRequest {
+          email: "business@example.com".to_string(),
+          password: "securepassword".to_string(),
+      };
+
+      let response = client
+          .post(&format!("{}/api/auth/login/account", base_url))
+          .header("Content-Type", "application/json")
+          .json(&login_request)
+          .send()
+          .await?;
+
+      let login_data = response.json::<serde_json::Value>().await?;
+      println!("Logged in: {:?}", login_data);
+
+      Ok(login_data)
+    }
+
+    #[tokio::main]
+    async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let client = Client::new();
+
+      // Log in
+      let login_data = login(&client, baseUrl).await?;
+
+      Ok(())
+    }
+    ```
+
+  </TabItem>
+</Tabs>
+
+### Response
+
+<Tabs>
+  <TabItem  value="Success">
+    Http Code: `201`
+    ```json
+    {
+        "data": {
+            "token": "9ZlR1a1qHlhUMjLENNHLFmds-iOUpu1U"
+        },
+        "message": "Logged into account successfully"
+    }
+    ```
+  </TabItem>
+  <TabItem  value="Error">
+    **Email or password incorrect** <br/>
+    Http Code: `400`
+    ```json
+    {
+        "status": 400,
+        "error": "Email or password incorrect"
+    }
+    ```
+
+    **Error with body** <br/>
+    Http Code: `400`
+    ```json
+    {
+        "message": [
+            "email should not be empty",
+            "email must be an email",
+            "password should not be empty"
+        ],
+        "error": "Bad Request",
+        "statusCode": 400
+    }
+    ```
+
+  </TabItem>
+</Tabs>
