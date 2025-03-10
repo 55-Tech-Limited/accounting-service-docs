@@ -659,3 +659,154 @@ For this request, the request must be authorized using the Authorization header.
     ```
   </TabItem>
 </Tabs>
+
+## Account me
+
+To generate API keys for your account, you need to send a POST request to our API. This will generate a new API key and secret for your account.
+
+### Request
+
+For this request, the request must be authorized using the Authorization header. The `token` is the `data.token` from the login response.
+
+| Property     | Value                          |
+| :----------- | :----------------------------- |
+| method       | `GET`                          |
+| url          | `$baseUrl/api/auth/account/me` |
+| Content-Type | `application/json`             |
+
+#### Authorization
+
+:::info
+
+This request must have the authorization header. Refer to [Authorization method](/docs/guides/authentication#authentication-methods) guide for more details
+
+:::
+
+<Tabs groupId="programming-language">
+  <TabItem value="curl" label="cURL">
+
+    ```bash
+    curl -X GET "$baseUrl/api/auth/account/me" \
+      -H "Content-Type: application/json"
+    ```
+
+  </TabItem>
+  <TabItem value="javascript" label="JavaScript">
+
+    ```javascript
+    const getAccountDetails = async () => {
+      try {
+        const response = await fetch(`${baseUrl}/api/auth/account/me`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        const data = await response.json();
+        console.log("Account details:", data);
+      } catch (error) {
+        console.error("Error fetching account details:", error);
+      }
+    };
+
+    // Usage
+    getAccountDetails();
+    ```
+
+  </TabItem>
+  <TabItem value="python" label="Python">
+
+    ```python
+    import requests
+
+    def get_account_details():
+        url = f"{baseUrl}/api/auth/account/me"
+
+        headers = {
+            'Content-Type': 'application/json'
+        }
+
+        response = requests.get(url, headers=headers)
+
+        if response.status_code == 200:
+            print('Account details:', response.json())
+        else:
+            print('Error fetching account details:', response.text)
+
+    # Usage
+    get_account_details()
+    ```
+
+  </TabItem>
+  <TabItem value="rust" label="Rust">
+
+    ```rust
+    use reqwest::Client;
+    use serde_json::Value;
+
+    async fn get_account_details(client: &Client, base_url: &str) -> Result<Value, Box<dyn std::error::Error>> {
+        let url = format!("{}/api/auth/account/me", base_url);
+
+        let response = client
+            .get(&url)
+            .header("Content-Type", "application/json")
+            .send()
+            .await?;
+
+        if response.status().is_success() {
+            let data = response.json::<Value>().await?;
+            println!("Account details: {:?}", data);
+            Ok(data)
+        } else {
+            let error_text = response.text().await?;
+            println!("Error fetching account details: {}", error_text);
+            Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, error_text)))
+        }
+    }
+
+    #[tokio::main]
+    async fn main() -> Result<(), Box<dyn std::error::Error>> {
+        let client = Client::new();
+        let base_url = "your_base_url"; // Replace with actual base URL
+
+        // Get account details
+        get_account_details(&client, base_url).await?;
+
+        Ok(())
+    }
+    ```
+
+  </TabItem>
+</Tabs>
+
+### Response
+
+<Tabs>
+  <TabItem  value="Success">
+    Http Code: `200`
+    ```json
+    {
+        "data": {
+            "id": 2,
+            "name": "First Account",
+            "email": "first2@email.com",
+            "api_key_generated_at": "2025-03-10T17:41:28.049Z",
+            "created_at": "2025-03-06T22:19:59.800Z",
+            "updated_at": "2025-03-10T17:41:28.050Z"
+        },
+        "message": "authentication data"
+    }
+    ```
+  </TabItem>
+  <TabItem  value="Error">
+    **Unauthorized** <br/>
+    Http Code: `401`
+    ```json
+    {
+        "message": "Unauthorized",
+        "statusCode": 401
+    }
+    ```
+  </TabItem>
+</Tabs>
