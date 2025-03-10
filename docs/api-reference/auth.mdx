@@ -364,6 +364,147 @@ To log in to your account, you need to send a POST request to our API with your 
   </TabItem>
 </Tabs>
 
+## Logging Out
+
+To log out from your account, you need to send a POST request to our API. This will invalidate your authentication token.
+
+### Request
+
+| Property | Value                              |
+| :------- | :--------------------------------- |
+| method   | `POST`                             |
+| url      | `$baseUrl/api/auth/logout/account` |
+
+#### Headers
+
+| Property      | Required | Value             |
+| :------------ | :------- | :---------------- |
+| Authorization | Yes      | `Bearer ${token}` |
+
+#### Params
+
+| Property   | Required | Default | Value                                                                       |
+| :--------- | :------- | :------ | :-------------------------------------------------------------------------- |
+| logout_all | No       | `false` | If the value is `true` all tokens associated with the account is logged out |
+
+<Tabs groupId="programming-language">
+  <TabItem value="curl" label="cURL">
+    ```bash
+    curl -X POST "$baseUrl/api/auth/logout/account" \
+      -H "Authorization: Bearer $token" \
+      -H "Content-Type: application/json"
+    ```
+  </TabItem>
+  <TabItem value="javascript" label="JavaScript">
+    ```javascript
+    const logout = async (token) => {
+      try {
+        const response = await fetch(`${baseUrl}/api/auth/logout/account`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        const data = await response.json();
+        console.log("Logged out:", data);
+      } catch (error) {
+        console.error("Error logging out:", error);
+      }
+    };
+
+    // Usage
+    const token = "your_auth_token"; // Replace with actual token
+    logout(token);
+    ```
+
+  </TabItem>
+
+  <TabItem value="python" label="Python">
+    ```python
+    import requests
+
+    def logout(token):
+        url = f"{baseUrl}/api/auth/logout/account"
+
+        headers = {
+            'Authorization': f"Bearer {token}",
+            'Content-Type': 'application/json'
+        }
+
+        response = requests.post(url, headers=headers)
+
+        if response.status_code == 200:
+            print('Logged out:', response.json())
+        else:
+            print('Error logging out:', response.text)
+
+    # Usage
+    token = 'your_auth_token' # Replace with actual token
+    logout(token)
+    ```
+
+  </TabItem>
+  <TabItem value="rust" label="Rust">
+    ```rust
+    use reqwest::Client;
+    use serde_json::Value;
+
+    async fn logout(client: &Client, base_url: &str, token: &str)
+    -> Result<Value, Box<dyn std::error::Error>> {
+
+      let response = client
+          .post(&format!("{}/api/auth/logout/account", base_url))
+          .header("Authorization", format!("Bearer {}", token))
+          .header("Content-Type", "application/json")
+          .send()
+          .await?;
+
+      let logout_data = response.json::<Value>().await?;
+      println!("Logged out: {:?}", logout_data);
+
+      Ok(logout_data)
+    }
+
+    #[tokio::main]
+    async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let client = Client::new();
+
+      // Log out
+      let token = "your_auth_token"; // Replace with actual token
+      let logout_data = logout(&client, baseUrl, token).await?;
+
+      Ok(())
+    }
+    ```
+
+  </TabItem>
+</Tabs>
+
+### Response
+
+<Tabs>
+  <TabItem  value="Success">
+    Http Code: `201`
+    ```json
+    {
+      "message": "Logged out successfully"
+    }
+    ```
+  </TabItem>
+  <TabItem  value="Error">
+    **Unauthorized** <br/>
+    Http Code: `401`
+    ```json
+    {
+        "message": "Unauthorized",
+        "statusCode": 401
+    }
+    ```
+  </TabItem>
+</Tabs>
+
 ## Generate API Keys
 
 To generate API keys for your account, you need to send a POST request to our API. This will generate a new API key and secret for your account.
