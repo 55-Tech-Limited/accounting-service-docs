@@ -363,3 +363,150 @@ To log in to your account, you need to send a POST request to our API with your 
 
   </TabItem>
 </Tabs>
+
+## Generate API Keys
+
+To generate API keys for your account, you need to send a POST request to our API. This will generate a new API key and secret for your account.
+
+### Request
+
+For this request, the request must be authorized using the Authorization header. The `token` is the `data.token` from the login response.
+
+| Property     | Value                                     |
+| :----------- | :---------------------------------------- |
+| method       | `POST`                                    |
+| url          | `$baseUrl/api/auth/account/generate-keys` |
+| Content-Type | `application/json`                        |
+
+#### Headers
+
+| Property      | Required | Value             |
+| :------------ | :------- | :---------------- |
+| Authorization | Yes      | `Bearer ${token}` |
+
+<Tabs groupId="programming-language">
+  <TabItem value="curl" label="cURL">
+
+    ```bash
+    curl -X POST "$baseUrl/api/auth/account/generate-keys" \
+      -H "Authorization: Bearer $token" \
+      -H "Content-Type: application/json"
+    ```
+
+  </TabItem>
+  <TabItem value="javascript" label="JavaScript">
+
+    ```javascript
+    const generateApiKeys = async (token) => {
+      try {
+        const response = await fetch(`${baseUrl}/api/auth/account/generate-keys`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        const data = await response.json();
+        console.log("API keys generated:", data);
+      } catch (error) {
+        console.error("Error generating API keys:", error);
+      }
+    };
+
+    // Usage
+    const token = "your_auth_token"; // Replace with actual token
+    generateApiKeys(token);
+    ```
+
+  </TabItem>
+  <TabItem value="python" label="Python">
+
+    ```python
+    import requests
+
+    def generate_api_keys(token):
+        url = f"{baseUrl}/api/auth/account/generate-keys"
+
+        headers = {
+            'Authorization': f"Bearer {token}",
+            'Content-Type': 'application/json'
+        }
+
+        response = requests.post(url, headers=headers)
+
+        if response.status_code == 200:
+            print('API keys generated:', response.json())
+        else:
+            print('Error generating API keys:', response.text)
+
+    # Usage
+    token = 'your_auth_token' # Replace with actual token
+    generate_api_keys(token)
+    ```
+
+  </TabItem>
+  <TabItem value="rust" label="Rust">
+
+    ```rust
+    use reqwest::Client;
+    use serde_json::Value;
+
+    async fn generate_api_keys(client: &Client, base_url: &str, token: &str)
+    -> Result<Value, Box<dyn std::error::Error>> {
+
+      let response = client
+          .post(&format!("{}/api/auth/account/generate-keys", base_url))
+          .header("Authorization", format!("Bearer {}", token))
+          .header("Content-Type", "application/json")
+          .send()
+          .await?;
+
+      let api_keys_data = response.json::<Value>().await?;
+      println!("API keys generated: {:?}", api_keys_data);
+
+      Ok(api_keys_data)
+    }
+
+    #[tokio::main]
+    async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let client = Client::new();
+
+      // Generate API keys
+      let token = "your_auth_token"; // Replace with actual token
+      let api_keys_data = generate_api_keys(&client, baseUrl, token).await?;
+
+      Ok(())
+    }
+    ```
+
+  </TabItem>
+</Tabs>
+
+### Response
+
+<Tabs>
+  <TabItem  value="Success">
+    Http Code: `201`
+    ```json
+    {
+        "data": {
+            "api_key": "api_key_qHrkIuwaSNdydw8o9LgGR_ZiKocwe3CT",
+            "api_secret": "api_secret_5lJYJU3kJjF0EG3zqgz4nG6UIHyXxkD4Uji5IA_ro46exKslAkazEOuXYJGT3Idd",
+            "base64_encoded": "YXBpX2tleV9xSHJrSXV3YVNOZHlkdzhvOUxnR1JfWmlLb2N3ZTNDVDphcGlfc2VjcmV0XzVsSllKVTNrSmpGMEVHM3pxZ3o0bkc2VUlIeVh4a0Q0VWppNUlBX3JvNDZleEtzbEFrYXpFT3VYWUpHVDNJZGQ="
+        },
+        "message": "Api keys generated successfully"
+    }
+    ```
+  </TabItem>
+  <TabItem  value="Error">
+    **Unauthorized** <br/>
+    Http Code: `401`
+    ```json
+    {
+        "message": "Unauthorized",
+        "statusCode": 401
+    }
+    ```
+  </TabItem>
+</Tabs>
