@@ -456,3 +456,219 @@ Either the `requesting_user_id` or `requesting_user_reference` can be provided t
 
   </TabItem>
 </Tabs>
+
+## Get Open Bets
+
+:::info
+
+This request must have the authorization header. Refer to [Authorization method](/docs/guides/authentication#authentication-methods) guide for more details
+
+:::
+
+### Request
+
+| Property     | Value                    |
+| :----------- | :----------------------- |
+| method       | `GET`                    |
+| url          | `$baseUrl/api/open-bets` |
+| Content-Type | `application/json`       |
+
+#### Query Params
+
+| Property                   | Type                                                     | Required | Default      | Description                                |
+| -------------------------- | -------------------------------------------------------- | -------- | ------------ | ------------------------------------------ |
+| page                       | number                                                   | No       | 1            | Current page                               |
+| per_page                   | number                                                   | No       | 20           | Number of items per page                   |
+| wager_references           | string                                                   | No       | -            | Comma separated wager references           |
+| requesting_user_ids        | number(comma separated)                                  | No       | -            | Comma separated requesting user ids        |
+| requesting_user_references | string(comma separated)                                  | No       | -            | Comma separated requesting user references |
+| created_after              | number(timestamp) \| DateString                          | No       | -            | Filter result from this date               |
+| created_before             | number(timestamp) \| DateString                          | No       | -            | Filter result to this date                 |
+| minimum_odds               | number                                                   | No       | -            | Minimum odds                               |
+| maximum_odds               | number                                                   | No       | -            | Maximum odds                               |
+| minimum_amount             | number                                                   | No       | -            | Minimum amount                             |
+| maximum_amount             | number                                                   | No       | -            | Maximum amount                             |
+| sort_by                    | "requesting_odds" \| "requesting_amount" \| "created_at" | No       | "created_at" | Sort by                                    |
+| sort_direction             | "asc" \| "desc"                                          | No       | "asc"        | Sort direction                             |
+
+:::info
+
+`user_ids` and `user_references` can be used in combination. The results would be merged
+
+:::
+
+<Tabs groupId="programming-language">
+  <TabItem value="curl" label="cURL">
+
+    ```bash
+    curl -X GET "$baseUrl/api/open-bets" \
+      -H "Content-Type: application/json" \
+      -G \
+      --data-urlencode "page=1" \
+      --data-urlencode "per_page=20" \
+    ```
+
+  </TabItem>
+  <TabItem value="javascript" label="JavaScript">
+
+    ```javascript
+    function getOpenBets() {
+      const url = new URL(`${baseUrl}/api/open-bets`);
+      const params = {
+        page: 1,
+        per_page: 20,
+        sort_by: "created_at",
+        sort_direction: "asc"
+      };
+
+      Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
+
+      fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => response.json())
+      .then(data => console.log('Success:', data))
+      .catch(error => console.error('Error:', error));
+    }
+
+    // Example usage
+    getOpenBets();
+    ```
+
+  </TabItem>
+  <TabItem value="python" label="Python">
+
+    ```python
+    import requests
+
+    def get_open_bets():
+        base_url = "your_base_url_here"
+        url = f"{base_url}/api/open-bets"
+        params = {
+            "page": 1,
+            "per_page": 20,
+            "sort_by": "created_at",
+            "sort_direction": "asc"
+        }
+
+        response = requests.get(url, headers={"Content-Type": "application/json"}, params=params)
+        if response.status_code == 200:
+            print('Success:', response.json())
+        else:
+            print('Error:', response.text)
+
+    # Example usage
+
+    get_open_bets()
+    ```
+
+  </TabItem>
+  <TabItem value="rust" label="Rust">
+
+    ```rust
+    use reqwest::Client;
+    use tokio;
+
+    #[tokio::main]
+    async fn get_open_bets() {
+        let base_url = "your_base_url_here";
+        let url = format!("{}/api/open-bets", base_url);
+        let client = Client::new();
+        let params = [
+            ("page", "1"),
+            ("per_page", "20"),
+            ("sort_by", "created_at"),
+            ("sort_direction", "asc")
+        ];
+
+        let response = client.get(&url)
+            .header("Content-Type", "application/json")
+            .query(&params)
+            .send()
+            .await;
+
+        match response {
+            Ok(resp) => {
+                if resp.status().is_success() {
+                    let json: serde_json::Value = resp.json().await.unwrap();
+                    println!("Success: {:?}", json);
+                } else {
+                    let text = resp.text().await.unwrap();
+                    println!("Error: {}", text);
+                }
+            },
+            Err(err) => {
+                println!("Error: {}", err);
+            }
+        }
+    }
+
+    // Example usage
+    get_open_bets();
+    ```
+
+  </TabItem>
+</Tabs>
+
+### Response
+
+<Tabs>
+  <TabItem  value="Success">
+
+    Http Code: `200`
+    ```json
+    {
+        "data": [
+            {
+                "id": 3,
+                "account_id": 4,
+                "offer_status": "requesting",
+                "wager_id": 2,
+                "wager_reference": "wager-4",
+                "requesting_user_id": 4,
+                "requesting_user_reference": "a4_user_2YRDqo69dO4DGdin",
+                "requesting_odds": 3,
+                "requesting_amount": 300,
+                "created_at": "2025-03-11T16:11:08.156Z"
+            }
+        ],
+        "per_page": 20,
+        "page": 1,
+        "total": 1,
+        "from": 1,
+        "to": 1,
+        "last_page": 1,
+        "total_requesting_amount": 300
+    }
+    ```
+
+  </TabItem>
+  <TabItem  value="Error">
+
+    **Unauthorized** <br/>
+    Http Code: `401`
+    ```json
+    {
+        "message": "Unauthorized"
+    }
+    ```
+
+
+    **Error with query params** <br/>
+    Http Code: `400`
+    ```json
+    {
+        "message": [
+            "sort_by must be one of the following values: requesting_odds, requesting_amount, created_at",
+            "sort_direction must be one of the following values: asc, desc"
+        ],
+        "error": "Bad Request",
+        "statusCode": 400
+    }
+    ```
+
+  </TabItem>
+</Tabs>
