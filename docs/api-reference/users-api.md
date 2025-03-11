@@ -1,5 +1,6 @@
 ---
 sidebar_position: 2
+description: "This guide provides information on how to create and manage users on your platform using the BetProtocol API."
 ---
 
 import Tabs from "@theme/Tabs";
