@@ -1,5 +1,6 @@
 ---
 sidebar_position: 4
+description: "Efficiently manage and interact with your betting system using the Bet Ledger API."
 ---
 
 import Tabs from "@theme/Tabs";
@@ -457,7 +458,7 @@ Either the `requesting_user_id` or `requesting_user_reference` can be provided t
   </TabItem>
 </Tabs>
 
-## Get Open Bets
+## Open Bets
 
 :::info
 
@@ -667,6 +668,299 @@ This request must have the authorization header. Refer to [Authorization method]
         ],
         "error": "Bad Request",
         "statusCode": 400
+    }
+    ```
+
+  </TabItem>
+</Tabs>
+
+## Bet History
+
+:::info
+
+This request must have the authorization header. Refer to [Authorization method](/docs/guides/authentication#authentication-methods) guide for more details
+
+:::
+
+### Request
+
+| Property     | Value                       |
+| :----------- | :-------------------------- |
+| method       | `GET`                       |
+| url          | `$baseUrl/api/bets/history` |
+| Content-Type | `application/json`          |
+
+#### Query Params
+
+| Property         | Type                                                                            | Required | Default      | Description                      |
+| ---------------- | ------------------------------------------------------------------------------- | -------- | ------------ | -------------------------------- |
+| page             | number                                                                          | No       | 1            | Current page                     |
+| per_page         | number                                                                          | No       | 20           | Number of items per page         |
+| wager_references | string                                                                          | No       | -            | Comma separated wager references |
+| user_ids         | number(comma separated)                                                         | No       | -            | Comma separated user ids         |
+| user_references  | string(comma separated)                                                         | No       | -            | Comma separated user references  |
+| bet_outcomes     | "undecided" \| "win" \| "loss" \| "push" \| "half-win" \| "half-loss" \| "void" | No       | -            | Comma separated bet outcomes     |
+| created_after    | number(timestamp) \| DateString                                                 | No       | -            | Filter result from this date     |
+| created_before   | number(timestamp) \| DateString                                                 | No       | -            | Filter result to this date       |
+| sort_by          | "effective_odds" \| "effective_amount" \| "created_at"                          | No       | "created_at" | Sort by                          |
+| sort_direction   | "asc" \| "desc"                                                                 | No       | "asc"        | Sort direction                   |
+
+:::info
+
+`user_ids` and `user_references` can be used in combination. The results would be merged
+
+:::
+
+<Tabs groupId="programming-language">
+  <TabItem value="curl" label="cURL">
+
+    ```bash
+    curl -X GET "$baseUrl/api/bets/history" \
+      -H "Content-Type: application/json" \
+      -G \
+      --data-urlencode "page=1" \
+      --data-urlencode "per_page=20" \
+      --data-urlencode "sort_by=created_at" \
+      --data-urlencode "sort_direction=asc"
+    ```
+
+  </TabItem>
+  <TabItem value="javascript" label="JavaScript">
+
+    ```javascript
+    function getBetHistory() {
+      const url = new URL(`${baseUrl}/api/bets/history`);
+      const params = {
+        page: 1,
+        per_page: 20,
+        sort_by: "created_at",
+        sort_direction: "asc"
+      };
+
+      Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
+
+      fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => response.json())
+      .then(data => console.log('Success:', data))
+      .catch(error => console.error('Error:', error));
+    }
+
+    // Example usage
+    getBetHistory();
+    ```
+
+  </TabItem>
+  <TabItem value="python" label="Python">
+
+    ```python
+    import requests
+
+    def get_bet_history():
+        base_url = "your_base_url_here"
+        url = f"{base_url}/api/bets/history"
+        params = {
+            "page": 1,
+            "per_page": 20,
+            "sort_by": "created_at",
+            "sort_direction": "asc"
+        }
+
+        response = requests.get(url, headers={"Content-Type": "application/json"}, params=params)
+        if response.status_code == 200:
+            print('Success:', response.json())
+        else:
+            print('Error:', response.text)
+
+    # Example usage
+    get_bet_history()
+    ```
+
+  </TabItem>
+  <TabItem value="rust" label="Rust">
+
+    ```rust
+    use reqwest::Client;
+    use tokio;
+
+    #[tokio::main]
+    async fn get_bet_history() {
+        let base_url = "your_base_url_here";
+        let url = format!("{}/api/bets/history", base_url);
+        let client = Client::new();
+        let params = [
+            ("page", "1"),
+            ("per_page", "20"),
+            ("sort_by", "created_at"),
+            ("sort_direction", "asc")
+        ];
+
+        let response = client.get(&url)
+            .header("Content-Type", "application/json")
+            .query(&params)
+            .send()
+            .await;
+
+        match response {
+            Ok(resp) => {
+                if resp.status().is_success() {
+                    let json: serde_json::Value = resp.json().await.unwrap();
+                    println!("Success: {:?}", json);
+                } else {
+                    let text = resp.text().await.unwrap();
+                    println!("Error: {}", text);
+                }
+            },
+            Err(err) => {
+                println!("Error: {}", err);
+            }
+        }
+    }
+
+    // Example usage
+    get_bet_history();
+    ```
+
+  </TabItem>
+</Tabs>
+
+### Response
+
+<Tabs>
+  <TabItem  value="Success">
+
+    Http Code: `200`
+    ```json
+    {
+        "data": [
+            {
+                "id": 2,
+                "requesting_user_id": 4,
+                "requesting_user_reference": "a4_user_2YRDqo69dO4DGdin",
+                "accepting_user_id": 4,
+                "accepting_user_reference": "a4_user_2YRDqo69dO4DGdin",
+                "offer_status": "accepted",
+                "effective_amount": 300,
+                "effective_odds": 3,
+                "created_at": "2025-03-11T15:50:33.601Z",
+                "wager": {
+                    "id": 2,
+                    "reference": "wager-4",
+                    "outcome": "undecided",
+                    "account_id": 4,
+                    "created_at": "2025-03-11T15:50:33.601Z",
+                    "updated_at": "2025-03-11T15:50:33.601Z"
+                },
+                "bet_trails": [
+                    {
+                        "id": 4,
+                        "bet_id": 2,
+                        "account_id": 4,
+                        "wager_id": 2,
+                        "offer_status": "requesting",
+                        "description": "Requesting for bet",
+                        "outcome": "undecided",
+                        "requesting_odds": 3,
+                        "requesting_amount": 300,
+                        "accepting_odds": null,
+                        "accepting_amount": null,
+                        "effective_odds": null,
+                        "effective_amount": null,
+                        "created_at": "2025-03-11T15:50:33.601Z",
+                        "transactions": []
+                    },
+                    {
+                        "id": 6,
+                        "bet_id": 2,
+                        "account_id": 4,
+                        "wager_id": 2,
+                        "offer_status": "accepted",
+                        "description": "Bet offer accepted",
+                        "outcome": "undecided",
+                        "requesting_odds": 3,
+                        "requesting_amount": 300,
+                        "accepting_odds": 3,
+                        "accepting_amount": 300,
+                        "effective_odds": null,
+                        "effective_amount": null,
+                        "created_at": "2025-03-11T16:20:43.304Z",
+                        "transactions": []
+                    }
+                ]
+            },
+            {
+                "id": 3,
+                "requesting_user_id": 4,
+                "requesting_user_reference": "a4_user_2YRDqo69dO4DGdin",
+                "accepting_user_id": null,
+                "accepting_user_reference": null,
+                "offer_status": "requesting",
+                "effective_amount": null,
+                "effective_odds": null,
+                "created_at": "2025-03-11T16:11:08.156Z",
+                "wager": {
+                      "id": 2,
+                      "reference": "wager-4",
+                      "outcome": "undecided",
+                      "account_id": 4,
+                      "created_at": "2025-03-11T15:50:33.601Z",
+                      "updated_at": "2025-03-11T15:50:33.601Z"
+                },
+                "bet_trails": [
+                    {
+                        "id": 5,
+                        "bet_id": 3,
+                        "account_id": 4,
+                        "wager_id": 2,
+                        "offer_status": "requesting",
+                        "description": "Requesting for bet",
+                        "outcome": "undecided",
+                        "requesting_odds": 3,
+                        "requesting_amount": 300,
+                        "accepting_odds": null,
+                        "accepting_amount": null,
+                        "effective_odds": null,
+                        "effective_amount": null,
+                        "created_at": "2025-03-11T16:11:08.156Z",
+                        "transactions": []
+                    }
+                ]
+            }
+        ],
+        "per_page": 20,
+        "page": 1,
+        "total": 2,
+        "from": 1,
+        "to": 2,
+        "last_page": 1
+    }
+    ```
+
+  </TabItem>
+  <TabItem  value="Error">
+
+    **Unauthorized** <br/>
+    Http Code: `401`
+    ```json
+    {
+        "message": "Unauthorized"
+    }
+    ```
+
+
+    **Error with query params** <br/>
+    Http Code: `400`
+    ```json
+    {
+        "message": [
+            "sort_by must be one of the following values: effective_odds, effective_amount, created_at",
+            "($value) not a valid bet outcome (undecided, win, loss, push, half-win, half-loss)"
+        ],
+        "error": "Bad Request"
     }
     ```
 
