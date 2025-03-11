@@ -394,7 +394,7 @@ This request must have the authorization header. Refer to [Authorization method]
 <Tabs>
   <TabItem  value="Success">
 
-    Http Code: `201`
+    Http Code: `200`
     ```json
     {
         "data": [
@@ -457,6 +457,346 @@ This request must have the authorization header. Refer to [Authorization method]
             "(adsf) not a valid transaction type (funding, bet, withdrawal)"
         ],
         "error": "Bad Request",
+    }
+    ```
+
+  </TabItem>
+</Tabs>
+
+## Get transaction by id
+
+:::info
+
+This request must have the authorization header. Refer to [Authorization method](/docs/guides/authentication#authentication-methods) guide for more details
+
+:::
+
+### Request
+
+| Property     | Value                           |
+| :----------- | :------------------------------ |
+| method       | `GET`                           |
+| url          | `$baseUrl/api/transactions/:id` |
+| Content-Type | `application/json`              |
+
+<Tabs groupId="programming-language">
+  <TabItem value="curl" label="cURL">
+
+    ```bash
+    curl -X GET "$baseUrl/api/transactions/:id" \
+      -H "Content-Type: application/json"
+    ```
+
+  </TabItem>
+  <TabItem value="javascript" label="JavaScript">
+
+    ```javascript
+    async function fetchTransactionById(transactionId) {
+      const url = `${baseUrl}/api/transactions/${transactionId}`;
+
+      try {
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log(data);
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    }
+
+    // Example usage
+    fetchTransactionById('your_transaction_id_here');
+    ```
+
+  </TabItem>
+  <TabItem value="python" label="Python">
+
+    ```python
+    import requests
+
+    def fetch_transaction_by_id(transaction_id):
+        url = f"{base_url}/api/transactions/{transaction_id}"
+        headers = {
+            'Content-Type': 'application/json'
+        }
+
+        try:
+            response = requests.get(url, headers=headers)
+
+            if response.status_code != 200:
+                raise Exception(f"Error: {response.status_code} {response.text}")
+
+            data = response.json()
+            print(data)
+        except Exception as error:
+            print(f"Error: {error}")
+
+    # Example usage
+    fetch_transaction_by_id('your_transaction_id_here')
+    ```
+
+  </TabItem>
+  <TabItem value="rust" label="Rust">
+
+    ```rust
+    use reqwest::Client;
+    use serde_json::Value;
+    use tokio;
+
+    async fn fetch_transaction_by_id(transaction_id: &str) {
+        let base_url = "your_base_url_here";
+        let url = format!("{}/api/transactions/{}", base_url, transaction_id);
+        let client = Client::new();
+
+        let response = client.get(&url)
+            .header("Content-Type", "application/json")
+            .send()
+            .await;
+
+        match response {
+            Ok(resp) => {
+                if resp.status().is_success() {
+                    match resp.json::<Value>().await {
+                        Ok(json) => println!("{:?}", json),
+                        Err(err) => eprintln!("Failed to parse JSON: {}", err),
+                    }
+                } else {
+                    eprintln!("Error: {}, {}", resp.status(), resp.text().await.unwrap_or_default());
+                }
+            }
+            Err(err) => eprintln!("Request failed: {}", err),
+        }
+    }
+
+    #[tokio::main]
+    async fn main() {
+        fetch_transaction_by_id("your_transaction_id_here").await;
+    }
+    ```
+
+  </TabItem>
+</Tabs>
+
+### Response
+
+<Tabs>
+  <TabItem  value="Success">
+
+    Http Code: `200`
+    ```json
+    {
+        "data": {
+            "id": 5,
+            "account_id": 4,
+            "user_id": 6,
+            "user_reference": "janedoe123",
+            "reference": "TX_DjpdJjlfEqPQAFazlI3c1OvLoZdjfXSw1ut92z6IbHDG3gLP",
+            "amount": 1000,
+            "bet_trail_id": null,
+            "description": "Balance funded",
+            "transaction_type": "credit",
+            "transaction_source": "funding",
+            "created_at": "2025-03-11T14:38:38.502Z"
+        },
+        "message": "Transaction retrieved successfully"
+    }
+    ```
+
+  </TabItem>
+  <TabItem  value="Error">
+
+    **Unauthorized** <br/>
+    Http Code: `401`
+    ```json
+    {
+        "message": "Unauthorized"
+    }
+    ```
+
+    **Not found** <br/>
+    Http Code: `404`
+    ```json
+    {
+        "message": "Transaction not found"
+    }
+    ```
+
+  </TabItem>
+</Tabs>
+
+## Get transaction by id
+
+:::info
+
+This request must have the authorization header. Refer to [Authorization method](/docs/guides/authentication#authentication-methods) guide for more details
+
+:::
+
+### Request
+
+| Property     | Value                                            |
+| :----------- | :----------------------------------------------- |
+| method       | `GET`                                            |
+| url          | `$baseUrl/api/transactions/:reference/reference` |
+| Content-Type | `application/json`                               |
+
+<Tabs groupId="programming-language">
+  <TabItem value="curl" label="cURL">
+
+    ```bash
+    curl -X GET "$baseUrl/api/transactions/:reference/reference" \
+      -H "Content-Type: application/json"
+    ```
+
+  </TabItem>
+  <TabItem value="javascript" label="JavaScript">
+
+    ```javascript
+    async function fetchTransactionByReference(transactionReference) {
+      const url = `${baseUrl}/api/transactions/${transactionReference}/reference`;
+
+      try {
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log(data);
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    }
+
+    // Example usage
+    fetchTransactionByReference('your_transaction_reference_here');
+    ```
+
+  </TabItem>
+  <TabItem value="python" label="Python">
+
+    ```python
+    import requests
+
+    def fetch_transaction_by_reference(transaction_reference):
+        url = f"{base_url}/api/transactions/{transaction_reference}/reference"
+        headers = {
+            'Content-Type': 'application/json'
+        }
+
+        try:
+            response = requests.get(url, headers=headers)
+
+            if response.status_code != 200:
+                raise Exception(f"Error: {response.status_code} {response.text}")
+
+            data = response.json()
+            print(data)
+        except Exception as error:
+            print(f"Error: {error}")
+
+    # Example usage
+    fetch_transaction_by_reference('your_transaction_reference_here')
+    ```
+
+  </TabItem>
+  <TabItem value="rust" label="Rust">
+
+    ```rust
+    use reqwest::Client;
+    use serde_json::Value;
+    use tokio;
+
+    async fn fetch_transaction_by_reference(transaction_reference: &str) {
+        let base_url = "your_base_url_here";
+        let url = format!("{}/api/transactions/{}/reference", base_url, transaction_id);
+        let client = Client::new();
+
+        let response = client.get(&url)
+            .header("Content-Type", "application/json")
+            .send()
+            .await;
+
+        match response {
+            Ok(resp) => {
+                if resp.status().is_success() {
+                    match resp.json::<Value>().await {
+                        Ok(json) => println!("{:?}", json),
+                        Err(err) => eprintln!("Failed to parse JSON: {}", err),
+                    }
+                } else {
+                    eprintln!("Error: {}, {}", resp.status(), resp.text().await.unwrap_or_default());
+                }
+            }
+            Err(err) => eprintln!("Request failed: {}", err),
+        }
+    }
+
+    #[tokio::main]
+    async fn main() {
+        fetch_transaction_by_reference("your_transaction_reference_here").await;
+    }
+    ```
+
+  </TabItem>
+</Tabs>
+
+### Response
+
+<Tabs>
+  <TabItem  value="Success">
+
+    Http Code: `200`
+    ```json
+    {
+        "data": {
+            "id": 5,
+            "account_id": 4,
+            "user_id": 6,
+            "user_reference": "janedoe123",
+            "reference": "TX_DjpdJjlfEqPQAFazlI3c1OvLoZdjfXSw1ut92z6IbHDG3gLP",
+            "amount": 1000,
+            "bet_trail_id": null,
+            "description": "Balance funded",
+            "transaction_type": "credit",
+            "transaction_source": "funding",
+            "created_at": "2025-03-11T14:38:38.502Z"
+        },
+        "message": "Transaction retrieved successfully"
+    }
+    ```
+
+  </TabItem>
+  <TabItem  value="Error">
+
+    **Unauthorized** <br/>
+    Http Code: `401`
+    ```json
+    {
+        "message": "Unauthorized"
+    }
+    ```
+
+    **Not found** <br/>
+    Http Code: `404`
+    ```json
+    {
+        "message": "Transaction not found"
     }
     ```
 
