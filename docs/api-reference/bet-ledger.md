@@ -966,3 +966,188 @@ This request must have the authorization header. Refer to [Authorization method]
 
   </TabItem>
 </Tabs>
+
+## Update wager outcome
+
+:::info
+
+This request must have the authorization header. Refer to [Authorization method](/docs/guides/authentication#authentication-methods) guide for more details
+
+:::
+
+### Request
+
+| Property     | Value                                    |
+| :----------- | :--------------------------------------- |
+| method       | `POST`                                   |
+| url          | `$baseUrl/api/bets/update-wager-outcome` |
+| Content-Type | `application/json`                       |
+
+#### Body
+
+| Property  | Type                                                                            | Required | Default | Description     |
+| --------- | ------------------------------------------------------------------------------- | -------- | ------- | --------------- |
+| reference | string                                                                          | Yes      | -       | Wager reference |
+| outcome   | "undecided" \| "win" \| "loss" \| "push" \| "half-win" \| "half-loss" \| "void" | Yes      | -       | Bet outcomes    |
+
+<Tabs groupId="programming-language">
+  <TabItem value="curl" label="cURL">
+
+    ```bash
+    curl -X POST "$baseUrl/api/bets/update-wager-outcome" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "reference": "example_wager_reference",
+        "outcome": "win"
+      }'
+    ```
+
+  </TabItem>
+  <TabItem value="javascript" label="JavaScript">
+
+    ```javascript
+    function updateWagerOutcome() {
+      const url = `${baseUrl}/api/bets/update-wager-outcome`;
+      const data = {
+        reference: "example_wager_reference",
+        outcome: "win"
+      };
+
+      fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      })
+      .then(response => response.json())
+      .then(data => console.log('Success:', data))
+      .catch(error => console.error('Error:', error));
+    }
+
+    // Example usage
+    updateWagerOutcome();
+    ```
+
+  </TabItem>
+  <TabItem value="python" label="Python">
+
+    ```python
+    import requests
+    import json
+
+    def update_wager_outcome():
+        base_url = "your_base_url_here"
+        url = f"{base_url}/api/bets/update-wager-outcome"
+        data = {
+            "reference": "example_wager_reference",
+            "outcome": "win"
+        }
+        headers = {
+            "Content-Type": "application/json"
+        }
+
+        response = requests.post(url, headers=headers, data=json.dumps(data))
+        if response.status_code == 200:
+            print('Success:', response.json())
+        else:
+            print('Error:', response.text)
+
+    # Example usage
+    update_wager_outcome()
+    ```
+
+  </TabItem>
+  <TabItem value="rust" label="Rust">
+
+    ```rust
+    use reqwest::Client;
+    use serde_json::json;
+    use tokio;
+
+    #[tokio::main]
+    async fn update_wager_outcome() {
+        let base_url = "your_base_url_here";
+        let url = format!("{}/api/bets/update-wager-outcome", base_url);
+        let client = Client::new();
+        let data = json!({
+            "reference": "example_wager_reference",
+            "outcome": "win"
+        });
+
+        let response = client.post(&url)
+            .header("Content-Type", "application/json")
+            .json(&data)
+            .send()
+            .await;
+
+        match response {
+            Ok(resp) => {
+                if resp.status().is_success() {
+                    let json: serde_json::Value = resp.json().await.unwrap();
+                    println!("Success: {:?}", json);
+                } else {
+                    let text = resp.text().await.unwrap();
+                    println!("Error: {}", text);
+                }
+            },
+            Err(err) => {
+                println!("Error: {}", err);
+            }
+        }
+    }
+
+    // Example usage
+    update_wager_outcome();
+    ```
+
+  </TabItem>
+</Tabs>
+
+### Response
+
+<Tabs>
+  <TabItem  value="Success">
+
+    Http Code: `201`
+    ```json
+    {
+        "message": "Wager outcome updated successfully"
+    }
+    ```
+
+  </TabItem>
+  <TabItem  value="Error">
+
+    **Unauthorized** <br/>
+    Http Code: `401`
+    ```json
+    {
+        "message": "Unauthorized"
+    }
+    ```
+
+    **Wager not found** <br/>
+    Http Code: `404`
+    ```json
+    {
+        "error": "Wager with reference does not exist"
+    }
+    ```
+
+    **Error with body** <br/>
+    Http Code: `400`
+    ```json
+    {
+        "message": [
+            "reference should not be empty",
+            "outcome should not be empty",
+            "($value) not a valid bet outcome (undecided, win, loss, push, half-win, half-loss)"
+        ],
+        "error": "Bad Request",
+        "statusCode": 400
+    }
+    ```
+
+  </TabItem>
+</Tabs>
