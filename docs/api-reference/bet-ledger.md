@@ -211,8 +211,246 @@ Either the `requesting_user_id` or `requesting_user_reference` must be provided
             "requesting_amount must be a number conforming to the specified constraints",
             "wager_reference must be longer than or equal to 1 characters"
         ],
+        "error": "Bad Request"
+    }
+    ```
+
+  </TabItem>
+</Tabs>
+
+## Accept Bet Offer
+
+:::info
+
+This request must have the authorization header. Refer to [Authorization method](/docs/guides/authentication#authentication-methods) guide for more details
+
+:::
+
+### Request
+
+| Property     | Value                            |
+| :----------- | :------------------------------- |
+| method       | `POST`                           |
+| url          | `$baseUrl/api/bets/accept-offer` |
+| Content-Type | `application/json`               |
+
+#### Body
+
+| Property                  | Type         | Required | Default | Description               |
+| ------------------------- | ------------ | -------- | ------- | ------------------------- |
+| wager_reference           | string       | Yes      | -       | Wager reference           |
+| maximum_odds              | number (>=1) | Yes      | -       | Requesting odds           |
+| accepting_amount          | number (>0)  | Yes      | -       | Requesting amount         |
+| accepting_user_id         | number       | No       | -       | Accepting user id         |
+| accepting_user_reference  | number       | No       | -       | Accepting user reference  |
+| requesting_user_id        | number       | No       | -       | Requesting user id        |
+| requesting_user_reference | number       | No       | -       | Requesting user reference |
+| meta                      | json         | No       | -       | User specified meta data  |
+
+:::info
+
+Either the `accepting_user_id` or `accepting_user_reference` must be provided to specify requesting user.
+
+:::
+
+:::info
+
+Either the `requesting_user_id` or `requesting_user_reference` can be provided to specify requesting user. If both are omitted, the system would accept bets matching any user.
+
+:::
+
+<Tabs groupId="programming-language">
+  <TabItem value="curl" label="cURL">
+
+    ```bash
+    curl -X POST "$baseUrl/api/bets/accept-offer" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "wager_reference": "example_wager_reference",
+        "maximum_odds": 2,
+        "accepting_amount": 100,
+        "accepting_user_id": 12345,
+        "meta": {}
+      }'
+    ```
+
+  </TabItem>
+  <TabItem value="javascript" label="JavaScript">
+
+    ```javascript
+    function acceptBetOffer() {
+      const url = `${baseUrl}/api/bets/accept-offer`;
+      const data = {
+        wager_reference: "example_wager_reference",
+        maximum_odds: 2,
+        accepting_amount: 100,
+        accepting_user_id: 12345,
+        meta: {}
+      };
+
+      fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      })
+      .then(response => response.json())
+      .then(data => console.log('Success:', data))
+      .catch(error => console.error('Error:', error));
+    }
+
+    // Example usage
+    acceptBetOffer();
+    ```
+
+  </TabItem>
+  <TabItem value="python" label="Python">
+
+    ```python
+    import requests
+    import json
+
+    def accept_bet_offer():
+        url = f"{baseUrl}/api/bets/accept-offer"
+        data = {
+            "wager_reference": "example_wager_reference",
+            "maximum_odds": 2,
+            "accepting_amount": 100,
+            "accepting_user_id": 12345,
+            "meta": {}
+        }
+        headers = {
+            "Content-Type": "application/json"
+        }
+
+        response = requests.post(url, headers=headers, data=json.dumps(data))
+        if response.status_code == 200:
+            print('Success:', response.json())
+        else:
+            print('Error:', response.text)
+
+    # Example usage
+    accept_bet_offer()
+    ```
+
+  </TabItem>
+  <TabItem value="rust" label="Rust">
+
+    ```rust
+    use reqwest::Client;
+    use serde_json::json;
+    use tokio;
+
+    #[tokio::main]
+    async fn accept_bet_offer() {
+        let base_url = "your_base_url_here";
+        let url = format!("{}/api/bets/accept-offer", base_url);
+        let client = Client::new();
+        let data = json!({
+            "wager_reference": "example_wager_reference",
+            "maximum_odds": 2,
+            "accepting_amount": 100,
+            "accepting_user_id": 12345,
+            "meta": {}
+        });
+
+        let response = client.post(&url)
+            .header("Content-Type", "application/json")
+            .json(&data)
+            .send()
+            .await;
+
+        match response {
+            Ok(resp) => {
+                if resp.status().is_success() {
+                    let json: serde_json::Value = resp.json().await.unwrap();
+                    println!("Success: {:?}", json);
+                } else {
+                    let text = resp.text().await.unwrap();
+                    println!("Error: {}", text);
+                }
+            },
+            Err(err) => {
+                println!("Error: {}", err);
+            }
+        }
+    }
+
+    // Example usage
+    accept_bet_offer();
+    ```
+
+  </TabItem>
+</Tabs>
+
+### Response
+
+<Tabs>
+  <TabItem  value="Success">
+
+    Http Code: `201`
+    ```json
+    {
+        "data": [
+            {
+                "bet_id": 2,
+                "requesting_user_reference": "a4_user_2YRDqo69dO4DGdin",
+                "requesting_user_id": 4,
+                "accepted_amount": 300,
+                "accepted_odds": 3,
+                "wager_reference": "wager-4",
+                "wager_id": 2
+            }
+        ],
+        "message": "Bet offer accepted successfully"
+    }
+    ```
+
+  </TabItem>
+  <TabItem  value="Error">
+
+    **Unauthorized** <br/>
+    Http Code: `401`
+    ```json
+    {
+        "message": "Unauthorized"
+    }
+    ```
+
+    **User not found** <br/>
+    Http Code: `404`
+    ```json
+    {
+        "error": "Requesting user not found"
+    }
+    ```
+
+    **Too much accepted amount** <br/>
+    Http Code: `400`
+    ```json
+    {
+        "error": "Accepting amount greater than the maximum amount of \"300\""
+    }
+    ```
+
+
+    **Error with body** <br/>
+    Http Code: `400`
+    ```json
+    {
+        "message": [
+            "accepting_user_id must not be less than 1",
+            "accepting_user_id must be a number conforming to the specified constraints",
+            "accepting_user_reference should not be empty",
+            "accepting_user_reference must be a string",
+            "accepting_amount must not be less than 1",
+            "accepting_amount must be a number conforming to the specified constraints",
+            "maximum_odds must not be less than 1",
+            "maximum_odds must be a number conforming to the specified constraints",
+            "wager_reference must be longer than or equal to 1 characters"
+        ],
         "error": "Bad Request",
-        "statusCode": 400
     }
     ```
 
