@@ -1,5 +1,6 @@
 ---
 sidebar_position: 3
+description: Learn how to fund user account, get transactions, get transaction by id and get transaction by reference
 ---
 
 import Tabs from "@theme/Tabs";
