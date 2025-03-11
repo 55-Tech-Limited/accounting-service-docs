@@ -75,7 +75,7 @@ const config: Config = {
   themeConfig: {
     colorMode: { defaultMode: "light" },
     // Replace with your project's social card
-    image: "img/docusaurus-social-card.jpg",
+    image: "img/social-card.jpeg",
     navbar: {
       title: "Wager Track",
       logo: { alt: "Wager Track Logo", src: "img/logo.png" },
