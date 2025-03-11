@@ -24,7 +24,7 @@ const config: Config = {
   projectName, // Usually your repo name.
   deploymentBranch: "gh-pages",
 
-  onBrokenLinks: "warn",
+  onBrokenLinks: "throw",
   // onBrokenLinks: "throw",
   onBrokenMarkdownLinks: "warn",
 
@@ -66,17 +66,7 @@ const config: Config = {
           // Remove this to remove the "edit this page" links.
           editUrl: `https://github.com/${organizationName}/${projectName}/tree/main/`,
         },
-        blog: {
-          showReadingTime: true,
-          feedOptions: { type: ["rss", "atom"], xslt: true },
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
-          editUrl: `https://github.com/${organizationName}/${projectName}/tree/main/`,
-          // Useful options to enforce blogging best practices
-          onInlineTags: "warn",
-          onInlineAuthors: "warn",
-          onUntruncatedBlogPosts: "warn",
-        },
+        blog: false,
         theme: { customCss: "./src/css/custom.css" },
       } satisfies Preset.Options,
     ],
@@ -96,9 +86,8 @@ const config: Config = {
           position: "left",
           label: "Documentation",
         },
-        { to: "/blog", label: "Blog", position: "left" },
         {
-          href: "https://github.com/55-Tech-Limited/accounting-service",
+          href: "https://github.com/55-Tech-Limited/accounting-service-docs",
           label: "GitHub",
           position: "right",
         },
@@ -109,31 +98,24 @@ const config: Config = {
       links: [
         {
           title: "Docs",
-          items: [{ label: "Documentation", to: "/docs/intro" }],
+          items: [{ label: "Documentation", to: "/docs" }],
         },
-        {
-          title: "Community",
-          items: [
-            {
-              label: "Stack Overflow",
-              href: "https://stackoverflow.com/questions/tagged/docusaurus",
-            },
-            {
-              label: "Discord",
-              href: "https://discordapp.com/invite/docusaurus",
-            },
-            { label: "X", href: "https://x.com/docusaurus" },
-          ],
-        },
-        {
-          title: "More",
-          items: [
-            { label: "Blog", to: "/blog" },
-            { label: "GitHub", href: "https://github.com/facebook/docusaurus" },
-          ],
-        },
+        // {
+        //   title: "Community",
+        //   items: [
+        //     {
+        //       label: "Stack Overflow",
+        //       href: "https://stackoverflow.com/questions/tagged/docusaurus",
+        //     },
+        //     {
+        //       label: "Discord",
+        //       href: "https://discordapp.com/invite/docusaurus",
+        //     },
+        //     { label: "X", href: "https://x.com/docusaurus" },
+        //   ],
+        // },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
+      copyright: `Copyright © ${new Date().getFullYear()} Wager Track, 55 Tech Inc.`,
     },
     prism: { theme: prismThemes.github, darkTheme: prismThemes.dracula },
   } satisfies Preset.ThemeConfig,
