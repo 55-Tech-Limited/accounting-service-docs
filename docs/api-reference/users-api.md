@@ -210,3 +210,151 @@ If you have a special way of tracking your users and want to use your own refere
 
   </TabItem>
 </Tabs>
+
+## Get User By Id
+
+:::info
+
+This request must have the authorization header. Refer to [Authorization method](/docs/guides/authentication#authentication-methods) guide for more details
+
+:::
+
+### Request
+
+| Property     | Value                               |
+| :----------- | :---------------------------------- |
+| method       | `GET`                               |
+| url          | `$baseUrl/api/account/user/:userId` |
+| Content-Type | `application/json`                  |
+
+<Tabs groupId="programming-language">
+  <TabItem value="curl" label="cURL">
+
+    ```bash
+    curl -X GET "$baseUrl/api/account/user/:userId"
+    ```
+
+  </TabItem>
+  <TabItem value="javascript" label="JavaScript">
+
+    ```javascript
+    const getUserDetails = async (userId) => {
+      try {
+        const response = await fetch(`${baseUrl}/api/account/user/${userId}`, {
+          method: 'GET'
+        });
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Success:', data);
+        } else {
+          console.error('Error:', await response.text());
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    };
+
+    // Example usage:
+    const userId = '12345';  // Replace with the actual user ID
+
+    getUserDetails(userId);
+    ```
+
+  </TabItem>
+  <TabItem value="python" label="Python">
+
+    ```python
+    import requests
+
+    def get_user_details(user_id):
+        url = f"{baseUrl}/api/account/user/{user_id}"
+        response = requests.get(url)
+
+        if response.status_code == 200:
+            print('Success:', response.json())
+        else:
+            print('Error:', response.text)
+
+    # Example usage:
+    user_id = '12345'  # Replace with the actual user ID
+
+    get_user_details(user_id)
+    ```
+
+  </TabItem>
+  <TabItem value="rust" label="Rust">
+
+    ```rust
+    use reqwest::Client;
+    use std::error::Error;
+
+    async fn get_user_details(user_id: &str) -> Result<(), Box<dyn Error>> {
+        let base_url = "https://your-api-domain.com"; // Replace with your actual base URL
+        let url = format!("{}/api/account/user/{}", base_url, user_id);
+        let client = Client::new();
+        let response = client.get(&url).send().await?;
+
+        if response.status().is_success() {
+            let data: serde_json::Value = response.json().await?;
+            println!("Success: {:?}", data);
+        } else {
+            println!("Error: {:?}", response.text().await?);
+        }
+
+        Ok(())
+    }
+
+    #[tokio::main]
+    async fn main() -> Result<(), Box<dyn Error>> {
+        let user_id = "12345"; // Replace with the actual user ID
+        get_user_details(user_id).await?;
+        Ok(())
+    }
+    ```
+
+  </TabItem>
+</Tabs>
+
+### Response
+
+<Tabs>
+  <TabItem  value="Success">
+
+    Http Code: `201`
+    ```json
+    {
+        "data": {
+            "id": 6,
+            "account_id": 4,
+            "reference": "janedoe123",
+            "name": "Jane Doe",
+            "role": "user",
+            "preferences": null,
+            "balance": 0,
+            "exposure": 0
+        },
+        "message": "User fetched successfully"
+    }
+    ```
+
+  </TabItem>
+  <TabItem  value="Error">
+
+    **Unauthorized** <br/>
+    Http Code: `401`
+    ```json
+    {
+        "message": "Unauthorized"
+    }
+    ```
+
+    **User not found** <br/>
+    Http Code: `404`
+    ```json
+    {
+        "error": "User not found"
+    }
+    ```
+
+  </TabItem>
+</Tabs>
