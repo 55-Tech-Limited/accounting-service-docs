@@ -634,7 +634,7 @@ This request must have the authorization header. Refer to [Authorization method]
   </TabItem>
 </Tabs>
 
-## Get transaction by id
+## Get transaction by reference
 
 :::info
 
