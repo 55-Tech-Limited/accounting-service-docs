@@ -1135,6 +1135,14 @@ This request must have the authorization header. Refer to [Authorization method]
     }
     ```
 
+    **Wager already decided** <br/>
+    Http Code: `400`
+    ```json
+    {
+        "error": "Wager has already been decided"
+    }
+    ```
+
     **Error with body** <br/>
     Http Code: `400`
     ```json
@@ -1142,7 +1150,7 @@ This request must have the authorization header. Refer to [Authorization method]
         "message": [
             "reference should not be empty",
             "outcome should not be empty",
-            "($value) not a valid bet outcome (undecided, win, loss, push, half-win, half-loss)"
+            "($value) not a valid bet outcome (undecided, win, loss, push, half-win, half-loss, void)"
         ],
         "error": "Bad Request",
         "statusCode": 400
