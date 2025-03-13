@@ -197,6 +197,14 @@ Either the `requesting_user_id` or `requesting_user_reference` must be provided
     }
     ```
 
+    **Wager already decided** <br/>
+    Http Code: `400`
+    ```json
+    {
+        "error": "Wager has already been decided"
+    }
+    ```
+
     **Error with body** <br/>
     Http Code: `400`
     ```json
