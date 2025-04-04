@@ -18,7 +18,7 @@ Once you have authenticated, you can create users who will be placing bets on yo
 
 ```bash
 # Using token authentication
-curl -X POST "$baseUrl/api/account/user" \
+curl -X POST "$baseUrl/account/user" \
   -H "Authorization: Bearer $token" \
   -H "Content-Type: application/json" \
   -d '{
@@ -28,7 +28,7 @@ curl -X POST "$baseUrl/api/account/user" \
   }'
 
 # Or using API key authentication
-curl -X POST "$baseUrl/api/account/user" \
+curl -X POST "$baseUrl/account/user" \
   -H "Authorization: Basic $base64_encoded" \
   -H "Content-Type: application/json" \
   -d '{
@@ -52,7 +52,7 @@ const createUser = async (auth) => {
       authHeader = `Basic ${auth.apiKeys.base64_encoded}`;
     }
 
-    const response = await fetch(`${baseUrl}/api/account/user`, {
+    const response = await fetch(`${baseUrl}/account/user`, {
       method: "POST",
       headers: {
         Authorization: authHeader,
@@ -85,7 +85,7 @@ import requests
 import json
 
 def create_user(auth):
-    url = f"{baseUrl}/api/account/user"
+    url = f"{baseUrl}/account/user"
 
     headers = {
         'Content-Type': 'application/json'
@@ -138,7 +138,7 @@ async fn create_user(client: &Client, base_url: &str, auth: &AuthMethod)
 -> Result<serde_json::Value, Box<dyn std::error::Error>> {
 
   let mut request_builder = client
-      .post(&format!("{}/api/account/user", base_url))
+      .post(&format!("{}/account/user", base_url))
       .header("Content-Type", "application/json");
 
   // Apply authentication header
@@ -210,14 +210,14 @@ Here is a visual representation of the flow for creating a user:
 sequenceDiagram
     participant Client
     participant API
-    Client->>API: POST /api/auth/register/account
+    Client->>API: POST /auth/register/account
     API-->>Client: { "id": 1234, "name": "My Betting Business", ... }
-    Client->>API: POST /api/auth/login/account
+    Client->>API: POST /auth/login/account
     API-->>Client: { "data": { "token": "token" }, ... }
     Note over Client,API: Optional: Generate API keys
-    Client->>API: POST /api/auth/account/generate-keys
+    Client->>API: POST /auth/account/generate-keys
     API-->>Client: { "data": { "api_key": "key", "api_secret": "secret", ... }, ... }
-    Client->>API: POST /api/account/user (with auth)
+    Client->>API: POST /account/user (with auth)
     API-->>Client: { "name": "User 3", "preferences": {} }
 ```
 
@@ -234,12 +234,12 @@ You can retrieve the details of a specific user by sending a GET request to our 
 
 ```bash
 # Using token authentication
-curl -X GET "$baseUrl/api/account/user/$userId" \
+curl -X GET "$baseUrl/account/user/$userId" \
   -H "Authorization: Bearer $token" \
   -H "Content-Type: application/json"
 
 # Or using API key authentication
-curl -X GET "$baseUrl/api/account/user/$userId" \
+curl -X GET "$baseUrl/account/user/$userId" \
   -H "Authorization: Basic $base64_encoded" \
   -H "Content-Type: application/json"
 ```
@@ -258,7 +258,7 @@ const getUserDetailsById = async (auth, userId) => {
       authHeader = `Basic ${auth.apiKeys.base64_encoded}`;
     }
 
-    const response = await fetch(`${baseUrl}/api/account/user/${userId}`, {
+    const response = await fetch(`${baseUrl}/account/user/${userId}`, {
       method: "GET",
       headers: {
         Authorization: authHeader,
@@ -286,7 +286,7 @@ getUserDetailsById(auth, userId);
 import requests
 
 def get_user_details_by_id(auth, user_id):
-    url = f"{baseUrl}/api/account/user/{user_id}"
+    url = f"{baseUrl}/account/user/{user_id}"
 
     headers = {
         'Content-Type': 'application/json'
@@ -327,7 +327,7 @@ async fn get_user_details_by_id(client: &Client, base_url: &str, auth: &AuthMeth
 -> Result<Value, Box<dyn std::error::Error>> {
 
   let mut request_builder = client
-      .get(&format!("{}/api/account/user/{}", base_url, user_id))
+      .get(&format!("{}/account/user/{}", base_url, user_id))
       .header("Content-Type", "application/json");
 
   // Apply authentication header
@@ -376,12 +376,12 @@ let client = Client::new();
 
 ```bash
 # Using token authentication
-curl -X GET "$baseUrl/api/account/user/reference/$reference" \
+curl -X GET "$baseUrl/account/user/reference/$reference" \
   -H "Authorization: Bearer $token" \
   -H "Content-Type: application/json"
 
 # Or using API key authentication
-curl -X GET "$baseUrl/api/account/user/reference/$reference" \
+curl -X GET "$baseUrl/account/user/reference/$reference" \
   -H "Authorization: Basic $base64_encoded" \
   -H "Content-Type: application/json"
 ```
@@ -401,7 +401,7 @@ const getUserDetailsByReference = async (auth, reference) => {
     }
 
     const response = await fetch(
-      `${baseUrl}/api/account/user/reference/${reference}`,
+      `${baseUrl}/account/user/reference/${reference}`,
       {
         method: "GET",
         headers: {
@@ -431,7 +431,7 @@ getUserDetailsByReference(auth, reference);
 import requests
 
 def get_user_details_by_reference(auth, reference):
-    url = f"{baseUrl}/api/account/user/reference/{reference}"
+    url = f"{baseUrl}/account/user/reference/{reference}"
 
     headers = {
         'Content-Type': 'application/json'
@@ -472,7 +472,7 @@ async fn get_user_details_by_reference(client: &Client, base_url: &str, auth: &A
 -> Result<Value, Box<dyn std::error::Error>> {
 
   let mut request_builder = client
-      .get(&format!("{}/api/account/user/reference/{}", base_url, reference))
+      .get(&format!("{}/account/user/reference/{}", base_url, reference))
       .header("Content-Type", "application/json");
 
   // Apply authentication header

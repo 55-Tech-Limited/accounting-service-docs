@@ -17,7 +17,7 @@ To create an account, you need to send a POST request to our API with the accoun
 | Property     | Value                                |
 | :----------- | :----------------------------------- |
 | method       | `POST`                               |
-| url          | `$baseUrl/api/auth/register/account` |
+| url          | `$baseUrl/auth/register/account`     |
 | Content-Type | `application/json`                   |
 
 #### Body
@@ -31,7 +31,7 @@ To create an account, you need to send a POST request to our API with the accoun
 <Tabs groupId="programming-language">
   <TabItem value="curl" label="cURL">
     ```bash
-    curl -X POST "$baseUrl/api/auth/register/account" \
+    curl -X POST "$baseUrl/auth/register/account" \
       -H "Content-Type: application/json" \
       -d '{
         "name": "My Betting Business",
@@ -45,7 +45,7 @@ To create an account, you need to send a POST request to our API with the accoun
     ```javascript
     const createAccount = async () => {
       try {
-        const response = await fetch(`${baseUrl}/api/auth/register/account`, {
+        const response = await fetch(`${baseUrl}/auth/register/account`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -76,7 +76,7 @@ To create an account, you need to send a POST request to our API with the accoun
     import json
 
     def create_account():
-        url = f"{baseUrl}/api/auth/register/account"
+        url = f"{baseUrl}/auth/register/account"
 
         headers = {
             'Content-Type': 'application/json'
@@ -123,7 +123,7 @@ To create an account, you need to send a POST request to our API with the accoun
       };
 
       let response = client
-          .post(&format!("{}/api/auth/register/account", base_url))
+          .post(&format!("{}/auth/register/account", base_url))
           .header("Content-Type", "application/json")
           .json(&account_request)
           .send()
@@ -140,7 +140,7 @@ To create an account, you need to send a POST request to our API with the accoun
     let client = Client::new();
 
       // Create account
-      let account_data = create_account(&client, baseUrl).await?;
+      let account_data = create_account(&client, base_url).await?;
 
       Ok(())
     }
@@ -198,7 +198,7 @@ To log in to your account, you need to send a POST request to our API with your 
 | Property     | Value                             |
 | :----------- | :-------------------------------- |
 | method       | `POST`                            |
-| url          | `$baseUrl/api/auth/login/account` |
+| url          | `$baseUrl/auth/login/account`     |
 | Content-Type | `application/json`                |
 
 #### Body
@@ -211,7 +211,7 @@ To log in to your account, you need to send a POST request to our API with your 
 <Tabs groupId="programming-language">
   <TabItem value="curl" label="cURL">
     ```bash
-    curl -X POST "$baseUrl/api/auth/login/account" \
+    curl -X POST "$baseUrl/auth/login/account" \
       -H "Content-Type: application/json" \
       -d '{
         "email": "business@example.com",
@@ -224,7 +224,7 @@ To log in to your account, you need to send a POST request to our API with your 
     ```javascript
     const login = async () => {
       try {
-        const response = await fetch(`${baseUrl}/api/auth/login/account`, {
+        const response = await fetch(`${baseUrl}/auth/login/account`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -254,7 +254,7 @@ To log in to your account, you need to send a POST request to our API with your 
     import json
 
     def login():
-        url = f"{baseUrl}/api/auth/login/account"
+        url = f"{baseUrl}/auth/login/account"
 
         headers = {
             'Content-Type': 'application/json'
@@ -298,7 +298,7 @@ To log in to your account, you need to send a POST request to our API with your 
       };
 
       let response = client
-          .post(&format!("{}/api/auth/login/account", base_url))
+          .post(&format!("{}/auth/login/account", base_url))
           .header("Content-Type", "application/json")
           .json(&login_request)
           .send()
@@ -315,7 +315,7 @@ To log in to your account, you need to send a POST request to our API with your 
     let client = Client::new();
 
       // Log in
-      let login_data = login(&client, baseUrl).await?;
+      let login_data = login(&client, base_url).await?;
 
       Ok(())
     }
@@ -374,7 +374,7 @@ To log out from your account, you need to send a POST request to our API. This w
 | Property | Value                              |
 | :------- | :--------------------------------- |
 | method   | `POST`                             |
-| url      | `$baseUrl/api/auth/logout/account` |
+| url      | `$baseUrl/auth/logout/account`     |
 
 #### Headers
 
@@ -391,7 +391,7 @@ To log out from your account, you need to send a POST request to our API. This w
 <Tabs groupId="programming-language">
   <TabItem value="curl" label="cURL">
     ```bash
-    curl -X POST "$baseUrl/api/auth/logout/account?logout_all=true" \
+    curl -X POST "$baseUrl/auth/logout/account?logout_all=true" \
       -H "Authorization: Bearer $token" \
       -H "Content-Type: application/json"
     ```
@@ -401,7 +401,7 @@ To log out from your account, you need to send a POST request to our API. This w
     ```javascript
     const logout = async (token, logoutAll = false) => {
       try {
-        const url = `${baseUrl}/api/auth/logout/account?logout_all=${logoutAll}`;
+        const url = `${baseUrl}/auth/logout/account?logout_all=${logoutAll}`;
         const response = await fetch(url, {
           method: "POST",
           headers: {
@@ -429,7 +429,7 @@ To log out from your account, you need to send a POST request to our API. This w
     import requests
 
     def logout(token, logout_all=False):
-        url = f"{baseUrl}/api/auth/logout/account?logout_all={logout_all}"
+        url = f"{baseUrl}/auth/logout/account?logout_all={logout_all}"
 
         headers = {
             'Authorization': f"Bearer {token}",
@@ -455,7 +455,7 @@ To log out from your account, you need to send a POST request to our API. This w
     use serde_json::Value;
 
     async fn logout(client: &Client, base_url: &str, token: &str, logout_all: bool) -> Result<Value, Box<dyn std::error::Error>> {
-        let url = format!("{}/api/auth/logout/account?logout_all={}", base_url, logout_all);
+        let url = format!("{}/auth/logout/account?logout_all={}", base_url, logout_all);
 
         let response = client
             .post(&url)
@@ -525,7 +525,7 @@ For this request, the request must be authorized using the Authorization header.
 | Property     | Value                                     |
 | :----------- | :---------------------------------------- |
 | method       | `POST`                                    |
-| url          | `$baseUrl/api/auth/account/generate-keys` |
+| url          | `$baseUrl/auth/account/generate-keys`     |
 | Content-Type | `application/json`                        |
 
 #### Headers
@@ -538,7 +538,7 @@ For this request, the request must be authorized using the Authorization header.
   <TabItem value="curl" label="cURL">
 
     ```bash
-    curl -X POST "$baseUrl/api/auth/account/generate-keys" \
+    curl -X POST "$baseUrl/auth/account/generate-keys" \
       -H "Authorization: Bearer $token" \
       -H "Content-Type: application/json"
     ```
@@ -549,7 +549,7 @@ For this request, the request must be authorized using the Authorization header.
     ```javascript
     const generateApiKeys = async (token) => {
       try {
-        const response = await fetch(`${baseUrl}/api/auth/account/generate-keys`, {
+        const response = await fetch(`${baseUrl}/auth/account/generate-keys`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -576,7 +576,7 @@ For this request, the request must be authorized using the Authorization header.
     import requests
 
     def generate_api_keys(token):
-        url = f"{baseUrl}/api/auth/account/generate-keys"
+        url = f"{baseUrl}/auth/account/generate-keys"
 
         headers = {
             'Authorization': f"Bearer {token}",
@@ -606,7 +606,7 @@ For this request, the request must be authorized using the Authorization header.
     -> Result<Value, Box<dyn std::error::Error>> {
 
       let response = client
-          .post(&format!("{}/api/auth/account/generate-keys", base_url))
+          .post(&format!("{}/auth/account/generate-keys", base_url))
           .header("Authorization", format!("Bearer {}", token))
           .header("Content-Type", "application/json")
           .send()
@@ -624,7 +624,7 @@ For this request, the request must be authorized using the Authorization header.
 
       // Generate API keys
       let token = "your_auth_token"; // Replace with actual token
-      let api_keys_data = generate_api_keys(&client, baseUrl, token).await?;
+      let api_keys_data = generate_api_keys(&client, base_url, token).await?;
 
       Ok(())
     }
@@ -672,7 +672,7 @@ For this request, the request must be authorized using the Authorization header.
 | Property     | Value                          |
 | :----------- | :----------------------------- |
 | method       | `GET`                          |
-| url          | `$baseUrl/api/auth/account/me` |
+| url          | `$baseUrl/auth/account/me`     |
 | Content-Type | `application/json`             |
 
 #### Authorization
@@ -687,7 +687,7 @@ This request must have the authorization header. Refer to [Authorization method]
   <TabItem value="curl" label="cURL">
 
     ```bash
-    curl -X GET "$baseUrl/api/auth/account/me" \
+    curl -X GET "$baseUrl/auth/account/me" \
       -H "Content-Type: application/json"
     ```
 
@@ -697,7 +697,7 @@ This request must have the authorization header. Refer to [Authorization method]
     ```javascript
     const getAccountDetails = async () => {
       try {
-        const response = await fetch(`${baseUrl}/api/auth/account/me`, {
+        const response = await fetch(`${baseUrl}/auth/account/me`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -722,7 +722,7 @@ This request must have the authorization header. Refer to [Authorization method]
     import requests
 
     def get_account_details():
-        url = f"{baseUrl}/api/auth/account/me"
+        url = f"{baseUrl}/auth/account/me"
 
         headers = {
             'Content-Type': 'application/json'
@@ -747,7 +747,7 @@ This request must have the authorization header. Refer to [Authorization method]
     use serde_json::Value;
 
     async fn get_account_details(client: &Client, base_url: &str) -> Result<Value, Box<dyn std::error::Error>> {
-        let url = format!("{}/api/auth/account/me", base_url);
+        let url = format!("{}/auth/account/me", base_url);
 
         let response = client
             .get(&url)

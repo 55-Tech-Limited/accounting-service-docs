@@ -21,7 +21,7 @@ This request must have the authorization header. Refer to [Authorization method]
 | Property     | Value                                 |
 | :----------- | :------------------------------------ |
 | method       | `POST`                                |
-| url          | `$baseUrl/api/transactions/fund-user` |
+| url          | `$baseUrl/transactions/fund-user`     |
 | Content-Type | `application/json`                    |
 
 #### Body
@@ -42,7 +42,7 @@ Either the `user_id` or `user_reference` must be provided
   <TabItem value="curl" label="cURL">
 
     ```bash
-    curl -X POST "$baseUrl/api/transactions/fund-user" \
+    curl -X POST "$baseUrl/transactions/fund-user" \
       -H "Content-Type: application/json" \
       -d '{
         "amount": 100.00,
@@ -55,7 +55,7 @@ Either the `user_id` or `user_reference` must be provided
 
     ```javascript
     function fundUser(amount, userId) {
-      fetch(`${baseUrl}/api/transactions/fund-user`, {
+      fetch(`${baseUrl}/transactions/fund-user`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -82,7 +82,7 @@ Either the `user_id` or `user_reference` must be provided
     import json
 
     def fund_user(amount, user_id):
-        url = f"{base_url}/api/transactions/fund-user"
+        url = f"{base_url}/transactions/fund-user"
         headers = {
             'Content-Type': 'application/json'
         }
@@ -112,7 +112,7 @@ Either the `user_id` or `user_reference` must be provided
 
     async fn fund_user(amount: f64, user_id: i32) {
         let base_url = "your_base_url_here";
-        let url = format!("{}/api/transactions/fund-user", base_url);
+        let url = format!("{}/transactions/fund-user", base_url);
         let client = Client::new();
         let payload = json!({
             "amount": amount,
@@ -222,7 +222,7 @@ This request must have the authorization header. Refer to [Authorization method]
 | Property     | Value                       |
 | :----------- | :-------------------------- |
 | method       | `GET`                       |
-| url          | `$baseUrl/api/transactions` |
+| url          | `$baseUrl/transactions`     |
 | Content-Type | `application/json`          |
 
 #### Query Params
@@ -248,7 +248,7 @@ This request must have the authorization header. Refer to [Authorization method]
   <TabItem value="curl" label="cURL">
 
     ```bash
-    curl -G "$baseUrl/api/transactions" \
+    curl -G "$baseUrl/transactions" \
       -H "Content-Type: application/json" \
       --data-urlencode "page=1" \
       --data-urlencode "per_page=20" \
@@ -265,7 +265,7 @@ This request must have the authorization header. Refer to [Authorization method]
 
     ```javascript
     async function fetchTransactions(params) {
-      const url = new URL(`${baseUrl}/api/transactions`);
+      const url = new URL(`${baseUrl}/transactions`);
       Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
 
       try {
@@ -307,7 +307,7 @@ This request must have the authorization header. Refer to [Authorization method]
     import requests
 
     def fetch_transactions(params):
-        url = f"{base_url}/api/transactions"
+        url = f"{base_url}/transactions"
         headers = {
             'Content-Type': 'application/json'
         }
@@ -348,7 +348,7 @@ This request must have the authorization header. Refer to [Authorization method]
     async fn fetch_transactions(params: HashMap<&str, &str>) {
         let base_url = "your_base_url_here";
         let client = Client::new();
-        let url = format!("{}/api/transactions", base_url);
+        let url = format!("{}/transactions", base_url);
 
         let response = client.get(&url)
             .header("Content-Type", "application/json")
@@ -477,14 +477,14 @@ This request must have the authorization header. Refer to [Authorization method]
 | Property     | Value                           |
 | :----------- | :------------------------------ |
 | method       | `GET`                           |
-| url          | `$baseUrl/api/transactions/:id` |
+| url          | `$baseUrl/transactions/:id`     |
 | Content-Type | `application/json`              |
 
 <Tabs groupId="programming-language">
   <TabItem value="curl" label="cURL">
 
     ```bash
-    curl -X GET "$baseUrl/api/transactions/:id" \
+    curl -X GET "$baseUrl/transactions/:id" \
       -H "Content-Type: application/json"
     ```
 
@@ -493,7 +493,7 @@ This request must have the authorization header. Refer to [Authorization method]
 
     ```javascript
     async function fetchTransactionById(transactionId) {
-      const url = `${baseUrl}/api/transactions/${transactionId}`;
+      const url = `${baseUrl}/transactions/${transactionId}`;
 
       try {
         const response = await fetch(url, {
@@ -525,7 +525,7 @@ This request must have the authorization header. Refer to [Authorization method]
     import requests
 
     def fetch_transaction_by_id(transaction_id):
-        url = f"{base_url}/api/transactions/{transaction_id}"
+        url = f"{base_url}/transactions/{transaction_id}"
         headers = {
             'Content-Type': 'application/json'
         }
@@ -555,7 +555,7 @@ This request must have the authorization header. Refer to [Authorization method]
 
     async fn fetch_transaction_by_id(transaction_id: &str) {
         let base_url = "your_base_url_here";
-        let url = format!("{}/api/transactions/{}", base_url, transaction_id);
+        let url = format!("{}/transactions/{}", base_url, transaction_id);
         let client = Client::new();
 
         let response = client.get(&url)
@@ -647,14 +647,14 @@ This request must have the authorization header. Refer to [Authorization method]
 | Property     | Value                                            |
 | :----------- | :----------------------------------------------- |
 | method       | `GET`                                            |
-| url          | `$baseUrl/api/transactions/:reference/reference` |
+| url          | `$baseUrl/transactions/:reference/reference`     |
 | Content-Type | `application/json`                               |
 
 <Tabs groupId="programming-language">
   <TabItem value="curl" label="cURL">
 
     ```bash
-    curl -X GET "$baseUrl/api/transactions/:reference/reference" \
+    curl -X GET "$baseUrl/transactions/:reference/reference" \
       -H "Content-Type: application/json"
     ```
 
@@ -663,7 +663,7 @@ This request must have the authorization header. Refer to [Authorization method]
 
     ```javascript
     async function fetchTransactionByReference(transactionReference) {
-      const url = `${baseUrl}/api/transactions/${transactionReference}/reference`;
+      const url = `${baseUrl}/transactions/${transactionReference}/reference`;
 
       try {
         const response = await fetch(url, {
@@ -695,7 +695,7 @@ This request must have the authorization header. Refer to [Authorization method]
     import requests
 
     def fetch_transaction_by_reference(transaction_reference):
-        url = f"{base_url}/api/transactions/{transaction_reference}/reference"
+        url = f"{base_url}/transactions/{transaction_reference}/reference"
         headers = {
             'Content-Type': 'application/json'
         }
@@ -725,7 +725,7 @@ This request must have the authorization header. Refer to [Authorization method]
 
     async fn fetch_transaction_by_reference(transaction_reference: &str) {
         let base_url = "your_base_url_here";
-        let url = format!("{}/api/transactions/{}/reference", base_url, transaction_id);
+        let url = format!("{}/transactions/{}/reference", base_url, transaction_reference);
         let client = Client::new();
 
         let response = client.get(&url)

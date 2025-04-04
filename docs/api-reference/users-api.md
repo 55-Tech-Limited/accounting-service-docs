@@ -23,7 +23,7 @@ This request must have the authorization header. Refer to [Authorization method]
 | Property     | Value                       |
 | :----------- | :-------------------------- |
 | method       | `POST`                      |
-| url          | `$baseUrl/api/account/user` |
+| url          | `$baseUrl/account/user`     |
 | Content-Type | `application/json`          |
 
 #### Body
@@ -50,7 +50,7 @@ If you have a special way of tracking your users and want to use your own refere
   <TabItem value="curl" label="cURL">
 
     ```bash
-    curl -X POST "$baseUrl/api/account/user" \
+    curl -X POST "$baseUrl/account/user" \
       -H "Content-Type: application/json" \
       -d '{
         "name": "John Doe",
@@ -65,7 +65,7 @@ If you have a special way of tracking your users and want to use your own refere
     ```javascript
     const createUser = async (userData) => {
       try {
-        const response = await fetch(`${baseUrl}/api/account/user`, {
+        const response = await fetch(`${baseUrl}/account/user`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -97,7 +97,7 @@ If you have a special way of tracking your users and want to use your own refere
     import json
 
     def create_user(base_url, user_data):
-        url = f"{base_url}/api/account/user"
+        url = f"{base_url}/account/user"
         headers = {
             'Content-Type': 'application/json'
         }
@@ -129,7 +129,7 @@ If you have a special way of tracking your users and want to use your own refere
 
     async fn create_user(base_url: &str, user_data: serde_json::Value) -> Result<(), Box<dyn Error>> {
         let client = Client::new();
-        let response = client.post(&format!("{}/api/account/user", base_url))
+        let response = client.post(&format!("{}/account/user", base_url))
             .json(&user_data)
             .send()
             .await?;
@@ -225,14 +225,14 @@ This request must have the authorization header. Refer to [Authorization method]
 | Property     | Value                               |
 | :----------- | :---------------------------------- |
 | method       | `GET`                               |
-| url          | `$baseUrl/api/account/user/:userId` |
+| url          | `$baseUrl/account/user/:userId`     |
 | Content-Type | `application/json`                  |
 
 <Tabs groupId="programming-language">
   <TabItem value="curl" label="cURL">
 
     ```bash
-    curl -X GET "$baseUrl/api/account/user/:userId"
+    curl -X GET "$baseUrl/account/user/:userId"
     ```
 
   </TabItem>
@@ -241,7 +241,7 @@ This request must have the authorization header. Refer to [Authorization method]
     ```javascript
     const getUserDetails = async (userId) => {
       try {
-        const response = await fetch(`${baseUrl}/api/account/user/${userId}`, {
+        const response = await fetch(`${baseUrl}/account/user/${userId}`, {
           method: 'GET'
         });
         if (response.ok) {
@@ -268,7 +268,7 @@ This request must have the authorization header. Refer to [Authorization method]
     import requests
 
     def get_user_details(user_id):
-        url = f"{baseUrl}/api/account/user/{user_id}"
+        url = f"{baseUrl}/account/user/{user_id}"
         response = requests.get(url)
 
         if response.status_code == 200:
@@ -291,7 +291,7 @@ This request must have the authorization header. Refer to [Authorization method]
 
     async fn get_user_details(user_id: &str) -> Result<(), Box<dyn Error>> {
         let base_url = "https://your-api-domain.com"; // Replace with your actual base URL
-        let url = format!("{}/api/account/user/{}", base_url, user_id);
+        let url = format!("{}/account/user/{}", base_url, user_id);
         let client = Client::new();
         let response = client.get(&url).send().await?;
 
@@ -373,14 +373,14 @@ This request must have the authorization header. Refer to [Authorization method]
 | Property     | Value                                            |
 | :----------- | :----------------------------------------------- |
 | method       | `GET`                                            |
-| url          | `$baseUrl/api/account/user/:reference/reference` |
+| url          | `$baseUrl/account/user/:reference/reference`     |
 | Content-Type | `application/json`                               |
 
 <Tabs groupId="programming-language">
   <TabItem value="curl" label="cURL">
 
     ```bash
-    curl -X GET "$baseUrl/api/account/user/:reference/reference"
+    curl -X GET "$baseUrl/account/user/:reference/reference"
     ```
 
   </TabItem>
@@ -389,7 +389,7 @@ This request must have the authorization header. Refer to [Authorization method]
     ```javascript
     const getUserDetails = async (reference) => {
       try {
-        const response = await fetch(`${baseUrl}/api/account/user/${reference}/reference`, {
+        const response = await fetch(`${baseUrl}/account/user/${reference}/reference`, {
           method: 'GET'
         });
         if (response.ok) {
@@ -416,7 +416,7 @@ This request must have the authorization header. Refer to [Authorization method]
     import requests
 
     def get_user_details(reference):
-        url = f"{baseUrl}/api/account/user/{reference}/reference"
+        url = f"{baseUrl}/account/user/{reference}/reference"
         response = requests.get(url)
 
         if response.status_code == 200:
@@ -438,7 +438,7 @@ This request must have the authorization header. Refer to [Authorization method]
     use std::error::Error;
 
     async fn get_user_details(reference: &str) -> Result<(), Box<dyn Error>> {
-        let url = format!("{}/api/account/user/{}/reference", base_url, reference);
+        let url = format!("{}/account/user/{}/reference", base_url, reference);
         let client = Client::new();
         let response = client.get(&url).send().await?;
 

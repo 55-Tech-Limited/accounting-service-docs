@@ -22,7 +22,7 @@ To create an account, you need to send a POST request to our API with your betti
   <TabItem value="curl" label="cURL">
   
     ```bash
-    curl -X POST "$baseUrl/api/auth/register/account" \
+    curl -X POST "$baseUrl/auth/register/account" \
       -H "Content-Type: application/json" \
       -d '{
         "name": "My Betting Business",
@@ -38,7 +38,7 @@ To create an account, you need to send a POST request to our API with your betti
     ```javascript
     const createAccount = async () => {
       try {
-        const response = await fetch(`${baseUrl}/api/auth/register/account`, {
+        const response = await fetch(`${baseUrl}/auth/register/account`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -70,7 +70,7 @@ To create an account, you need to send a POST request to our API with your betti
     def create_account():
         try:
             response = requests.post(
-                f"{baseUrl}/api/auth/register/account",
+                f"{baseUrl}/auth/register/account",
                 headers={'Content-Type': 'application/json'},
                 json={
                     'name': 'My Betting Business',
@@ -112,7 +112,7 @@ To create an account, you need to send a POST request to our API with your betti
         };
 
         let response = client
-            .post(&format!("{}/api/auth/register/account", baseUrl))
+            .post(&format!("{}/auth/register/account", baseUrl))
             .json(&account_request)
             .send()
             .await?;
@@ -147,7 +147,7 @@ You can log in with your account credentials to obtain a token:
   <TabItem value="curl" label="cURL">
   
     ```bash
-    curl -X POST "$baseUrl/api/auth/login/account" \
+    curl -X POST "$baseUrl/auth/login/account" \
       -H "Content-Type: application/json" \
       -d '{
         "email": "owner@mybetting.com",
@@ -161,7 +161,7 @@ You can log in with your account credentials to obtain a token:
     ```javascript
     const loginAccount = async () => {
       try {
-        const response = await fetch(`${baseUrl}/api/auth/login/account`, {
+        const response = await fetch(`${baseUrl}/auth/login/account`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -193,7 +193,7 @@ You can log in with your account credentials to obtain a token:
     def login_account():
         try:
             response = requests.post(
-                f"{baseUrl}/api/auth/login/account",
+                f"{baseUrl}/auth/login/account",
                 headers={'Content-Type': 'application/json'},
                 json={
                     'email': 'owner@mybetting.com',
@@ -246,7 +246,7 @@ You can log in with your account credentials to obtain a token:
         };
 
         let response = client
-            .post(&format!("{}/api/auth/login/account", baseUrl))
+            .post(&format!("{}/auth/login/account", baseUrl))
             .json(&login_request)
             .send()
             .await?;
@@ -290,7 +290,7 @@ Alternatively, you can generate API keys for more secure, long-term authenticati
 
     ```bash
     # First, log in to get a token
-    token=$(curl -X POST "$baseUrl/api/auth/login/account" \
+    token=$(curl -X POST "$baseUrl/auth/login/account" \
       -H "Content-Type: application/json" \
       -d '{
         "email": "owner@mybetting.com",
@@ -298,7 +298,7 @@ Alternatively, you can generate API keys for more secure, long-term authenticati
       }' | jq -r '.data.token')
 
     # Then use the token to generate API keys
-    curl -X POST "$baseUrl/api/auth/account/generate-keys" \
+    curl -X POST "$baseUrl/auth/account/generate-keys" \
       -H "Authorization: Bearer $token" \
       -H "Content-Type: application/json"
     ```
@@ -309,7 +309,7 @@ Alternatively, you can generate API keys for more secure, long-term authenticati
     ```javascript
     const generateApiKeys = async (token) => {
       try {
-        const response = await fetch(`${baseUrl}/api/auth/account/generate-keys`, {
+        const response = await fetch(`${baseUrl}/auth/account/generate-keys`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -347,7 +347,7 @@ Alternatively, you can generate API keys for more secure, long-term authenticati
     def generate_api_keys(token):
         try:
             response = requests.post(
-                f"{baseUrl}/api/auth/account/generate-keys",
+                f"{baseUrl}/auth/account/generate-keys",
                 headers={
                     'Authorization': f'Bearer {token}',
                     'Content-Type': 'application/json'
@@ -396,7 +396,7 @@ Alternatively, you can generate API keys for more secure, long-term authenticati
 
     async fn generate_api_keys(client: &Client, base_url: &str, token: &str) -> Result<ApiKeys, Box<dyn std::error::Error>> {
         let response = client
-            .post(&format!("{}/api/auth/account/generate-keys", base_url))
+            .post(&format!("{}/auth/account/generate-keys", base_url))
             .header("Authorization", format!("Bearer {}", token))
             .header("Content-Type", "application/json")
             .send()
@@ -461,7 +461,7 @@ Once you have authenticated, you can create users who will be placing bets on yo
   <!-- prettier-ignore-start -->
   ```bash
   # Using token authentication
-  curl -X POST "$baseUrl/api/account/user" \
+  curl -X POST "$baseUrl/account/user" \
     -H "Authorization: Bearer $token" \
     -H "Content-Type: application/json" \
     -d '{
@@ -471,7 +471,7 @@ Once you have authenticated, you can create users who will be placing bets on yo
     }'
     
   # Or using API key authentication
-  curl -X POST "$baseUrl/api/account/user" \
+  curl -X POST "$baseUrl/account/user" \
     -H "Authorization: Basic $base64_encoded" \
     -H "Content-Type: application/json" \
     -d '{
@@ -497,7 +497,7 @@ Once you have authenticated, you can create users who will be placing bets on yo
         authHeader = `Basic ${auth.apiKeys.base64_encoded}`;
       }
       
-      const response = await fetch(`${baseUrl}/api/account/user`, {
+      const response = await fetch(`${baseUrl}/account/user`, {
         method: 'POST',
         headers: {
           'Authorization': authHeader,
@@ -538,7 +538,7 @@ elif auth.get('apiKeys'):
 auth_header = f"Basic {auth['apiKeys']['base64_encoded']}"
 
         response = requests.post(
-            f"{baseUrl}/api/account/user",
+            f"{baseUrl}/account/user",
             headers={
                 'Authorization': auth_header,
                 'Content-Type': 'application/json'
@@ -587,7 +587,7 @@ async fn create_user(client: &Client, base_url: &str, auth: &AuthMethod)
 -> Result<serde_json::Value, Box<dyn std::error::Error>> {
 
     let mut request_builder = client
-        .post(&format!("{}/api/account/user", base_url))
+        .post(&format!("{}/account/user", base_url))
         .header("Content-Type", "application/json");
 
     // Apply authentication header
@@ -664,14 +664,14 @@ Here is a visual representation of the flow for creating a user:
 sequenceDiagram
     participant Client
     participant API
-    Client->>API: POST /api/auth/register/account
+    Client->>API: POST /auth/register/account
     API-->>Client: { "id": 1234, "name": "My Betting Business", ... }
-    Client->>API: POST /api/auth/login/account
+    Client->>API: POST /auth/login/account
     API-->>Client: { "data": { "token": "token" }, ... }
     Note over Client,API: Optional: Generate API keys
-    Client->>API: POST /api/auth/account/generate-keys
+    Client->>API: POST /auth/account/generate-keys
     API-->>Client: { "data": { "api_key": "key", "api_secret": "secret", ... }, ... }
-    Client->>API: POST /api/account/user (with auth)
+    Client->>API: POST /account/user (with auth)
     API-->>Client: { "name": "User 3", "preferences": {} }
 ```
 
@@ -683,7 +683,7 @@ To fund a user account, you need to send a POST request to our API with the amou
 
 ### Fund User Account
 
-To fund a user account, you need to send a POST request to the `/api/transactions/fund-user/` endpoint with the amount and either the `user_id` or `user_reference`.
+To fund a user account, you need to send a POST request to the `/transactions/fund-user/` endpoint with the amount and either the `user_id` or `user_reference`.
 
 <Tabs groupId="programming-language">
   <TabItem value="curl" label="cURL">
@@ -691,7 +691,7 @@ To fund a user account, you need to send a POST request to the `/api/transaction
   <!-- prettier-ignore-start -->
   ```bash
   # Using token authentication
-  curl -X POST "$baseUrl/api/transactions/fund-user/" \
+  curl -X POST "$baseUrl/transactions/fund-user/" \
     -H "Authorization: Bearer $token" \
     -H "Content-Type: application/json" \
     -d '{
@@ -701,7 +701,7 @@ To fund a user account, you need to send a POST request to the `/api/transaction
     }'
     
   # Or using API key authentication
-  curl -X POST "$baseUrl/api/transactions/fund-user/" \
+  curl -X POST "$baseUrl/transactions/fund-user/" \
     -H "Authorization: Basic $base64_encoded" \
     -H "Content-Type: application/json" \
     -d '{
@@ -727,7 +727,7 @@ To fund a user account, you need to send a POST request to the `/api/transaction
         authHeader = `Basic ${auth.apiKeys.base64_encoded}`;
       }
       
-      const response = await fetch(`${baseUrl}/api/transactions/fund-user/`, {
+      const response = await fetch(`${baseUrl}/transactions/fund-user/`, {
         method: 'POST',
         headers: {
           'Authorization': authHeader,
@@ -768,7 +768,7 @@ elif auth.get('apiKeys'):
 auth_header = f"Basic {auth['apiKeys']['base64_encoded']}"
 
         response = requests.post(
-            f"{baseUrl}/api/transactions/fund-user/",
+            f"{baseUrl}/transactions/fund-user/",
             headers={
                 'Authorization': auth_header,
                 'Content-Type': 'application/json'
@@ -817,7 +817,7 @@ async fn fund_user_account(client: &Client, base_url: &str, auth: &AuthMethod)
 -> Result<serde_json::Value, Box<dyn std::error::Error>> {
 
       let mut request_builder = client
-          .post(&format!("{}/api/transactions/fund-user/", base_url))
+          .post(&format!("{}/transactions/fund-user/", base_url))
           .header("Content-Type", "application/json");
 
       // Apply authentication header
@@ -896,8 +896,8 @@ Upon successful funding, the API will respond with the transaction details:
 
 To check a user's balance, you can use either the `user_id` or `user_reference`.
 
-- `/api/account/user/:userId`
-- `/api/account/user/:reference/reference`
+- `/account/user/:userId`
+- `/account/user/:reference/reference`
 
 <Tabs groupId="programming-language">
   <TabItem value="curl" label="cURL">
@@ -905,12 +905,12 @@ To check a user's balance, you can use either the `user_id` or `user_reference`.
   <!-- prettier-ignore-start -->
   ```bash
   # Using user_id
-  curl -X GET "$baseUrl/api/account/user/1" \
+  curl -X GET "$baseUrl/account/user/1" \
     -H "Authorization: Bearer $token" \
     -H "Content-Type: application/json"
     
   # Or using user_reference
-  curl -X GET "$baseUrl/api/account/user/a1_user_FclirLc2MJecJqsi/reference" \
+  curl -X GET "$baseUrl/account/user/a1_user_FclirLc2MJecJqsi/reference" \
     -H "Authorization: Bearer $token" \
     -H "Content-Type: application/json"
   ```
@@ -932,8 +932,8 @@ To check a user's balance, you can use either the `user_id` or `user_reference`.
       }
       
       const url = isReference 
-        ? `${baseUrl}/api/account/user/${identifier}/reference`
-        : `${baseUrl}/api/account/user/${identifier}`;
+        ? `${baseUrl}/account/user/${identifier}/reference`
+        : `${baseUrl}/account/user/${identifier}`;
       
       const response = await fetch(url, {
         method: 'GET',
@@ -971,8 +971,8 @@ def check_user_balance(auth, identifier, is_reference=False):
         elif getattr(auth, 'api_keys', None):
             auth_header = f"Basic {auth.api_keys.base64_encoded}"
         
-        url = f"{base_url}/api/account/user/{identifier}/reference" if is_reference \
-            else f"{base_url}/api/account/user/{identifier}"
+        url = f"{base_url}/account/user/{identifier}/reference" if is_reference \
+            else f"{base_url}/account/user/{identifier}"
         
         import requests
         response = requests.get(
@@ -1015,11 +1015,11 @@ async fn check_user_balance(client: &Client, base_url: &str, auth: &AuthMethod, 
 -> Result<serde_json::Value, Box<dyn std::error::Error>> {
 
       let mut request_builder = client
-          .get(&format!("{}/api/account/user/{}", base_url, identifier));
+          .get(&format!("{}/account/user/{}", base_url, identifier));
 
       if is_reference {
           request_builder = client
-              .get(&format!("{}/api/account/user/{}/reference", base_url, identifier));
+              .get(&format!("{}/account/user/{}/reference", base_url, identifier));
       }
 
       // Apply authentication header
@@ -1095,12 +1095,12 @@ Here is a visual representation of the flow for funding a user account and check
 sequenceDiagram
     participant Client
     participant API
-    Client->>API: POST /api/transactions/fund-user/
+    Client->>API: POST /transactions/fund-user/
     API-->>Client: { "data": { "user_id": 1, "amount": 1000, ... }, "message": "Account funded successfully" }
-    Client->>API: GET /api/account/user/:userId
+    Client->>API: GET /account/user/:userId
     API-->>Client: { "data": { "id": 1, "balance": 1000, ... }, "message": "User fetched successfully" }
     Note over Client,API: Or use user_reference
-    Client->>API: GET /api/account/user/:reference/reference
+    Client->>API: GET /account/user/:reference/reference
     API-->>Client: { "data": { "id": 1, "balance": 1000, ... }, "message": "User fetched successfully" }
 ```
 
@@ -1110,7 +1110,7 @@ To place a bet offer, you need to send a POST request to our API with the bet de
 
 ### Placing a Bet Offer
 
-To place a bet offer, you need to send a POST request to the `/api/bets/make-offer` endpoint with the bet details. You can either use the `user_id` or `user_reference` to make a bet offer.
+To place a bet offer, you need to send a POST request to the `/bets/make-offer` endpoint with the bet details. You can either use the `user_id` or `user_reference` to make a bet offer.
 
 <Tabs groupId="programming-language">
   <TabItem value="curl" label="cURL">
@@ -1118,7 +1118,7 @@ To place a bet offer, you need to send a POST request to the `/api/bets/make-off
   <!-- prettier-ignore-start -->
   ```bash
   # Using token authentication
-  curl -X POST "$baseUrl/api/bets/make-offer" \
+  curl -X POST "$baseUrl/bets/make-offer" \
     -H "Authorization: Bearer $token" \
     -H "Content-Type: application/json" \
     -d '{
@@ -1129,7 +1129,7 @@ To place a bet offer, you need to send a POST request to the `/api/bets/make-off
     }'
     
   # Or using API key authentication
-  curl -X POST "$baseUrl/api/bets/make-offer" \
+  curl -X POST "$baseUrl/bets/make-offer" \
     -H "Authorization: Basic $base64_encoded" \
     -H "Content-Type: application/json" \
     -d '{
@@ -1156,7 +1156,7 @@ To place a bet offer, you need to send a POST request to the `/api/bets/make-off
         authHeader = `Basic ${auth.apiKeys.base64_encoded}`;
       }
       
-      const response = await fetch(`${baseUrl}/api/bets/make-offer`, {
+      const response = await fetch(`${baseUrl}/bets/make-offer`, {
         method: 'POST',
         headers: {
           'Authorization': authHeader,
@@ -1199,7 +1199,7 @@ def place_bet_offer(auth):
         
         import requests
         response = requests.post(
-            f"{base_url}/api/bets/make-offer",
+            f"{base_url}/bets/make-offer",
             headers={
                 'Authorization': auth_header,
                 'Content-Type': 'application/json'
@@ -1250,7 +1250,7 @@ async fn place_bet_offer(client: &Client, base_url: &str, auth: &AuthMethod)
 -> Result<serde_json::Value, Box<dyn std::error::Error>> {
 
       let mut request_builder = client
-          .post(&format!("{}/api/bets/make-offer", base_url))
+          .post(&format!("{}/bets/make-offer", base_url))
           .header("Content-Type", "application/json");
 
       // Apply authentication header
@@ -1327,7 +1327,7 @@ To view open bet offers, you need to send a GET request to our API. This request
 
 ### Viewing Open Bet Offers
 
-To view open bet offers, you need to send a GET request to the `/api/bets/open-bets` endpoint.
+To view open bet offers, you need to send a GET request to the `/bets/open-bets` endpoint.
 
 <Tabs groupId="programming-language">
   <TabItem value="curl" label="cURL">
@@ -1335,12 +1335,12 @@ To view open bet offers, you need to send a GET request to the `/api/bets/open-b
   <!-- prettier-ignore-start -->
   ```bash
   # Using token authentication
-  curl -X GET "$baseUrl/api/bets/open-bets" \
+  curl -X GET "$baseUrl/bets/open-bets" \
     -H "Authorization: Bearer $token" \
     -H "Content-Type: application/json"
     
   # Or using API key authentication
-  curl -X GET "$baseUrl/api/bets/open-bets" \
+  curl -X GET "$baseUrl/bets/open-bets" \
     -H "Authorization: Basic $base64_encoded" \
     -H "Content-Type: application/json"
   ```
@@ -1361,7 +1361,7 @@ To view open bet offers, you need to send a GET request to the `/api/bets/open-b
         authHeader = `Basic ${auth.apiKeys.base64_encoded}`;
       }
       
-      const response = await fetch(`${baseUrl}/api/bets/open-bets`, {
+      const response = await fetch(`${baseUrl}/bets/open-bets`, {
         method: 'GET',
         headers: {
           'Authorization': authHeader,
@@ -1399,7 +1399,7 @@ def view_open_bet_offers(auth):
 
         import requests
         response = requests.get(
-            f"{base_url}/api/bets/open-bets",
+            f"{base_url}/bets/open-bets",
             headers={
                 'Authorization': auth_header,
                 'Content-Type': 'application/json'
@@ -1435,7 +1435,7 @@ async fn view_open_bet_offers(client: &Client, base_url: &str, auth: &AuthMethod
 -> Result<serde_json::Value, Box<dyn std::error::Error>> {
 
       let mut request_builder = client
-          .get(&format!("{}/api/bets/open-bets", base_url));
+          .get(&format!("{}/bets/open-bets", base_url));
 
       // Apply authentication header
       match auth {
@@ -1518,7 +1518,7 @@ To accept a bet offer, you need to send a POST request to our API with the bet o
 
 ### Accepting Bet Offers
 
-To accept a bet offer, you need to send a POST request to the `/api/bets/accept-offer` endpoint with the bet offer details. The `requesting_user_id`, `requesting_user_reference`, and `meta` are optional. If they are not provided, the system will determine the bets to be accepted. To define the accepting user, use either the `accepting_user_id` or the `accepting_user_reference`.
+To accept a bet offer, you need to send a POST request to the `/bets/accept-offer` endpoint with the bet offer details. The `requesting_user_id`, `requesting_user_reference`, and `meta` are optional. If they are not provided, the system will determine the bets to be accepted. To define the accepting user, use either the `accepting_user_id` or the `accepting_user_reference`.
 
 <Tabs groupId="programming-language">
   <TabItem value="curl" label="cURL">
@@ -1526,7 +1526,7 @@ To accept a bet offer, you need to send a POST request to the `/api/bets/accept-
   <!-- prettier-ignore-start -->
   ```bash
   # Using token authentication
-  curl -X POST "$baseUrl/api/bets/accept-offer" \
+  curl -X POST "$baseUrl/bets/accept-offer" \
     -H "Authorization: Bearer $token" \
     -H "Content-Type: application/json" \
     -d '{
@@ -1541,7 +1541,7 @@ To accept a bet offer, you need to send a POST request to the `/api/bets/accept-
     }'
     
   # Or using API key authentication
-  curl -X POST "$baseUrl/api/bets/accept-offer" \
+  curl -X POST "$baseUrl/bets/accept-offer" \
     -H "Authorization: Basic $base64_encoded" \
     -H "Content-Type: application/json" \
     -d '{
@@ -1572,7 +1572,7 @@ To accept a bet offer, you need to send a POST request to the `/api/bets/accept-
         authHeader = `Basic ${auth.apiKeys.base64_encoded}`;
       }
       
-      const response = await fetch(`${baseUrl}/api/bets/accept-offer`, {
+      const response = await fetch(`${baseUrl}/bets/accept-offer`, {
         method: 'POST',
         headers: {
           'Authorization': authHeader,
@@ -1619,7 +1619,7 @@ def accept_bet_offer(auth):
         
         import requests
         response = requests.post(
-            f"{base_url}/api/bets/accept-offer",
+            f"{base_url}/bets/accept-offer",
             headers={
                 'Authorization': auth_header,
                 'Content-Type': 'application/json'
@@ -1678,7 +1678,7 @@ async fn accept_bet_offer(client: &Client, base_url: &str, auth: &AuthMethod)
 -> Result<serde_json::Value, Box<dyn std::error::Error>> {
 
       let mut request_builder = client
-          .post(&format!("{}/api/bets/accept-offer", base_url))
+          .post(&format!("{}/bets/accept-offer", base_url))
           .header("Content-Type", "application/json");
 
       // Apply authentication header
@@ -1767,11 +1767,11 @@ Here is a visual representation of the flow for placing a bet offer, viewing ope
 sequenceDiagram
     participant Client
     participant API
-    Client->>API: POST /api/bets/make-offer/
+    Client->>API: POST /bets/make-offer/
     API-->>Client: { "data": { "bet_id": 456, "amount": 500, ... }, "message": "Bet offer made successfully" }
-    Client->>API: GET /api/bets/open/
+    Client->>API: GET /bets/open/
     API-->>Client: { "data": [{ "bet_id": 456, "amount": 500, ... }, ...], "message": "Open bets fetched successfully" }
-    Client->>API: POST /api/bets/accept-offer/
+    Client->>API: POST /bets/accept-offer/
     API-->>Client: { "data": { "bet_id": 456, "amount": 500, ... }, "message": "Bet offer accepted successfully" }
 ```
 
@@ -1781,7 +1781,7 @@ To update a wager outcome, you need to send a POST request to our API with the w
 
 ### Update Wager Outcome
 
-To update a wager outcome, you need to send a POST request to the `/api/bets/update-wager-outcome` endpoint with the wager reference and the outcome. The
+To update a wager outcome, you need to send a POST request to the `/bets/update-wager-outcome` endpoint with the wager reference and the outcome. The
 outcome can be one of the following: `win`, `loss`, `half-win`, `half-loss`, `push`, or `void`.
 
 <Tabs groupId="programming-language">
@@ -1790,7 +1790,7 @@ outcome can be one of the following: `win`, `loss`, `half-win`, `half-loss`, `pu
   <!-- prettier-ignore-start -->
   ```bash
   # Using token authentication
-  curl -X POST "$baseUrl/api/bets/update-wager-outcome" \
+  curl -X POST "$baseUrl/bets/update-wager-outcome" \
     -H "Authorization: Bearer $token" \
     -H "Content-Type: application/json" \
     -d '{
@@ -1799,7 +1799,7 @@ outcome can be one of the following: `win`, `loss`, `half-win`, `half-loss`, `pu
     }'
     
   # Or using API key authentication
-  curl -X POST "$baseUrl/api/bets/update-wager-outcome" \
+  curl -X POST "$baseUrl/bets/update-wager-outcome" \
     -H "Authorization: Basic $base64_encoded" \
     -H "Content-Type: application/json" \
     -d '{
@@ -1824,7 +1824,7 @@ outcome can be one of the following: `win`, `loss`, `half-win`, `half-loss`, `pu
         authHeader = `Basic ${auth.apiKeys.base64_encoded}`;
       }
       
-      const response = await fetch(`${baseUrl}/api/bets/update-wager-outcome`, {
+      const response = await fetch(`${baseUrl}/bets/update-wager-outcome`, {
         method: 'POST',
         headers: {
           'Authorization': authHeader,
@@ -1865,7 +1865,7 @@ def update_wager_outcome(auth):
         
         import requests
         response = requests.post(
-            f"{base_url}/api/bets/update-wager-outcome",
+            f"{base_url}/bets/update-wager-outcome",
             headers={
                 'Authorization': auth_header,
                 'Content-Type': 'application/json'
@@ -1912,7 +1912,7 @@ async fn update_wager_outcome(client: &Client, base_url: &str, auth: &AuthMethod
 -> Result<serde_json::Value, Box<dyn std::error::Error>> {
 
     let mut request_builder = client
-        .post(&format!("{}/api/bets/update-wager-outcome", base_url))
+        .post(&format!("{}/bets/update-wager-outcome", base_url))
         .header("Content-Type", "application/json");
 
     // Apply authentication header
@@ -1982,7 +1982,7 @@ To get bet history, you need to send a GET request to our API. This request must
 
 ### Get Bet History
 
-To get bet history, you need to send a GET request to the `/api/bets/history` endpoint.
+To get bet history, you need to send a GET request to the `/bets/history` endpoint.
 
 <Tabs groupId="programming-language">
   <TabItem value="curl" label="cURL">
@@ -1990,12 +1990,12 @@ To get bet history, you need to send a GET request to the `/api/bets/history` en
   <!-- prettier-ignore-start -->
   ```bash
   # Using token authentication
-  curl -X GET "$baseUrl/api/bets/history" \
+  curl -X GET "$baseUrl/bets/history" \
     -H "Authorization: Bearer $token" \
     -H "Content-Type: application/json"
     
   # Or using API key authentication
-  curl -X GET "$baseUrl/api/bets/history" \
+  curl -X GET "$baseUrl/bets/history" \
     -H "Authorization: Basic $base64_encoded" \
     -H "Content-Type: application/json"
   ```
@@ -2016,7 +2016,7 @@ To get bet history, you need to send a GET request to the `/api/bets/history` en
         authHeader = `Basic ${auth.apiKeys.base64_encoded}`;
       }
       
-      const response = await fetch(`${baseUrl}/api/bets/history`, {
+      const response = await fetch(`${baseUrl}/bets/history`, {
         method: 'GET',
         headers: {
           'Authorization': authHeader,
@@ -2053,7 +2053,7 @@ def get_bet_history(auth):
         
         import requests
         response = requests.get(
-            f"{base_url}/api/bets/history",
+            f"{base_url}/bets/history",
             headers={
                 'Authorization': auth_header,
                 'Content-Type': 'application/json'
@@ -2090,7 +2090,7 @@ async fn get_bet_history(client: &Client, base_url: &str, auth: &AuthMethod)
 -> Result<serde_json::Value, Box<dyn std::error::Error>> {
 
       let mut request_builder = client
-          .get(&format!("{}/api/bets/history", base_url));
+          .get(&format!("{}/bets/history", base_url));
 
       // Apply authentication header
       match auth {
@@ -2254,8 +2254,8 @@ Here is a visual representation of the flow for updating a wager outcome and get
 sequenceDiagram
     participant Client
     participant API
-    Client->>API: POST /api/bets/update-wager-outcome
+    Client->>API: POST /bets/update-wager-outcome
     API-->>Client: { "message": "Wager outcome updated successfully" }
-    Client->>API: GET /api/bets/history
+    Client->>API: GET /bets/history
     API-->>Client: { "data": [{ "id": 1, "requesting_user_id": 1, ... }], "message": "Bet history fetched successfully" }
 ```

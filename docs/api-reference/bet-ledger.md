@@ -21,7 +21,7 @@ This request must have the authorization header. Refer to [Authorization method]
 | Property     | Value                          |
 | :----------- | :----------------------------- |
 | method       | `POST`                         |
-| url          | `$baseUrl/api/bets/make-offer` |
+| url          | `$baseUrl/bets/make-offer`     |
 | Content-Type | `application/json`             |
 
 #### Body
@@ -44,7 +44,7 @@ Either the `requesting_user_id` or `requesting_user_reference` must be provided
   <TabItem value="curl" label="cURL">
 
     ```bash
-    curl -X POST "$baseUrl/api/bets/make-offer" \
+    curl -X POST "$baseUrl/bets/make-offer" \
       -H "Content-Type: application/json" \
       -d '{
         "wager_reference": "example_wager_reference",
@@ -59,7 +59,7 @@ Either the `requesting_user_id` or `requesting_user_reference` must be provided
 
     ```javascript
     function makeBetOffer() {
-      const url = `${baseUrl}/api/bets/make-offer`;
+      const url = `${baseUrl}/bets/make-offer`;
       const data = {
         wager_reference: "example_wager_reference",
         requesting_odds: 2,
@@ -91,7 +91,7 @@ Either the `requesting_user_id` or `requesting_user_reference` must be provided
     import json
 
     def make_bet_offer():
-        url = f"{baseUrl}/api/bets/make-offer"
+        url = f"{baseUrl}/bets/make-offer"
         data = {
             "wager_reference": "example_wager_reference",
             "requesting_odds": 2,
@@ -123,7 +123,7 @@ Either the `requesting_user_id` or `requesting_user_reference` must be provided
     #[tokio::main]
     async fn make_bet_offer() {
         let base_url = "your_base_url_here";
-        let url = format!("{}/api/bets/make-offer", base_url);
+        let url = format!("{}/bets/make-offer", base_url);
         let client = Client::new();
         let data = json!({
             "wager_reference": "example_wager_reference",
@@ -240,7 +240,7 @@ This request must have the authorization header. Refer to [Authorization method]
 | Property     | Value                            |
 | :----------- | :------------------------------- |
 | method       | `POST`                           |
-| url          | `$baseUrl/api/bets/accept-offer` |
+| url          | `$baseUrl/bets/accept-offer`     |
 | Content-Type | `application/json`               |
 
 #### Body
@@ -272,7 +272,7 @@ Either the `requesting_user_id` or `requesting_user_reference` can be provided t
   <TabItem value="curl" label="cURL">
 
     ```bash
-    curl -X POST "$baseUrl/api/bets/accept-offer" \
+    curl -X POST "$baseUrl/bets/accept-offer" \
       -H "Content-Type: application/json" \
       -d '{
         "wager_reference": "example_wager_reference",
@@ -288,7 +288,7 @@ Either the `requesting_user_id` or `requesting_user_reference` can be provided t
 
     ```javascript
     function acceptBetOffer() {
-      const url = `${baseUrl}/api/bets/accept-offer`;
+      const url = `${baseUrl}/bets/accept-offer`;
       const data = {
         wager_reference: "example_wager_reference",
         maximum_odds: 2,
@@ -321,7 +321,7 @@ Either the `requesting_user_id` or `requesting_user_reference` can be provided t
     import json
 
     def accept_bet_offer():
-        url = f"{baseUrl}/api/bets/accept-offer"
+        url = f"{baseUrl}/bets/accept-offer"
         data = {
             "wager_reference": "example_wager_reference",
             "maximum_odds": 2,
@@ -354,7 +354,7 @@ Either the `requesting_user_id` or `requesting_user_reference` can be provided t
     #[tokio::main]
     async fn accept_bet_offer() {
         let base_url = "your_base_url_here";
-        let url = format!("{}/api/bets/accept-offer", base_url);
+        let url = format!("{}/bets/accept-offer", base_url);
         let client = Client::new();
         let data = json!({
             "wager_reference": "example_wager_reference",
@@ -479,7 +479,7 @@ This request must have the authorization header. Refer to [Authorization method]
 | Property     | Value                    |
 | :----------- | :----------------------- |
 | method       | `GET`                    |
-| url          | `$baseUrl/api/open-bets` |
+| url          | `$baseUrl/open-bets`     |
 | Content-Type | `application/json`       |
 
 #### Query Params
@@ -510,7 +510,7 @@ This request must have the authorization header. Refer to [Authorization method]
   <TabItem value="curl" label="cURL">
 
     ```bash
-    curl -X GET "$baseUrl/api/open-bets" \
+    curl -X GET "$baseUrl/open-bets" \
       -H "Content-Type: application/json" \
       -G \
       --data-urlencode "page=1" \
@@ -522,7 +522,7 @@ This request must have the authorization header. Refer to [Authorization method]
 
     ```javascript
     function getOpenBets() {
-      const url = new URL(`${baseUrl}/api/open-bets`);
+      const url = new URL(`${baseUrl}/open-bets`);
       const params = {
         page: 1,
         per_page: 20,
@@ -555,7 +555,7 @@ This request must have the authorization header. Refer to [Authorization method]
 
     def get_open_bets():
         base_url = "your_base_url_here"
-        url = f"{base_url}/api/open-bets"
+        url = f"{base_url}/open-bets"
         params = {
             "page": 1,
             "per_page": 20,
@@ -584,7 +584,7 @@ This request must have the authorization header. Refer to [Authorization method]
     #[tokio::main]
     async fn get_open_bets() {
         let base_url = "your_base_url_here";
-        let url = format!("{}/api/open-bets", base_url);
+        let url = format!("{}/open-bets", base_url);
         let client = Client::new();
         let params = [
             ("page", "1"),
@@ -695,7 +695,7 @@ This request must have the authorization header. Refer to [Authorization method]
 | Property     | Value                       |
 | :----------- | :-------------------------- |
 | method       | `GET`                       |
-| url          | `$baseUrl/api/bets/history` |
+| url          | `$baseUrl/bets/history`     |
 | Content-Type | `application/json`          |
 
 #### Query Params
@@ -723,7 +723,7 @@ This request must have the authorization header. Refer to [Authorization method]
   <TabItem value="curl" label="cURL">
 
     ```bash
-    curl -X GET "$baseUrl/api/bets/history" \
+    curl -X GET "$baseUrl/bets/history" \
       -H "Content-Type: application/json" \
       -G \
       --data-urlencode "page=1" \
@@ -737,7 +737,7 @@ This request must have the authorization header. Refer to [Authorization method]
 
     ```javascript
     function getBetHistory() {
-      const url = new URL(`${baseUrl}/api/bets/history`);
+      const url = new URL(`${baseUrl}/bets/history`);
       const params = {
         page: 1,
         per_page: 20,
@@ -770,7 +770,7 @@ This request must have the authorization header. Refer to [Authorization method]
 
     def get_bet_history():
         base_url = "your_base_url_here"
-        url = f"{base_url}/api/bets/history"
+        url = f"{base_url}/bets/history"
         params = {
             "page": 1,
             "per_page": 20,
@@ -798,7 +798,7 @@ This request must have the authorization header. Refer to [Authorization method]
     #[tokio::main]
     async fn get_bet_history() {
         let base_url = "your_base_url_here";
-        let url = format!("{}/api/bets/history", base_url);
+        let url = format!("{}/bets/history", base_url);
         let client = Client::new();
         let params = [
             ("page", "1"),
@@ -988,7 +988,7 @@ This request must have the authorization header. Refer to [Authorization method]
 | Property     | Value                                    |
 | :----------- | :--------------------------------------- |
 | method       | `POST`                                   |
-| url          | `$baseUrl/api/bets/update-wager-outcome` |
+| url          | `$baseUrl/bets/update-wager-outcome`     |
 | Content-Type | `application/json`                       |
 
 #### Body
@@ -1002,7 +1002,7 @@ This request must have the authorization header. Refer to [Authorization method]
   <TabItem value="curl" label="cURL">
 
     ```bash
-    curl -X POST "$baseUrl/api/bets/update-wager-outcome" \
+    curl -X POST "$baseUrl/bets/update-wager-outcome" \
       -H "Content-Type: application/json" \
       -d '{
         "reference": "example_wager_reference",
@@ -1015,7 +1015,7 @@ This request must have the authorization header. Refer to [Authorization method]
 
     ```javascript
     function updateWagerOutcome() {
-      const url = `${baseUrl}/api/bets/update-wager-outcome`;
+      const url = `${baseUrl}/bets/update-wager-outcome`;
       const data = {
         reference: "example_wager_reference",
         outcome: "win"
@@ -1046,7 +1046,7 @@ This request must have the authorization header. Refer to [Authorization method]
 
     def update_wager_outcome():
         base_url = "your_base_url_here"
-        url = f"{base_url}/api/bets/update-wager-outcome"
+        url = f"{base_url}/bets/update-wager-outcome"
         data = {
             "reference": "example_wager_reference",
             "outcome": "win"
@@ -1076,7 +1076,7 @@ This request must have the authorization header. Refer to [Authorization method]
     #[tokio::main]
     async fn update_wager_outcome() {
         let base_url = "your_base_url_here";
-        let url = format!("{}/api/bets/update-wager-outcome", base_url);
+        let url = format!("{}/bets/update-wager-outcome", base_url);
         let client = Client::new();
         let data = json!({
             "reference": "example_wager_reference",
