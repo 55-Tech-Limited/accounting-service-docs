@@ -503,6 +503,215 @@ Upon successful generation, the API will respond with the API key and secret:
 }
 ```
 
+## Verify Account Email
+
+To verify your account email, you need to click on the verification link that was sent to your email address or use the verification token in a GET request to our API.
+
+<Tabs groupId="programming-language">
+  <TabItem value="curl" label="cURL">
+
+```bash
+curl -X GET "$baseUrl/auth/account/verify-email?token=your_verification_token"
+```
+
+  </TabItem>
+  <TabItem value="javascript" label="JavaScript">
+
+```javascript
+const verifyEmail = async (verificationToken) => {
+  try {
+    const response = await fetch(`${baseUrl}/auth/account/verify-email?token=${verificationToken}`, {
+      method: "GET"
+    });
+
+    const data = await response.json();
+    console.log("Email verification response:", data);
+  } catch (error) {
+    console.error("Error verifying email:", error);
+  }
+};
+
+// Usage
+const verificationToken = "your_verification_token"; // Token from the email
+verifyEmail(verificationToken);
+```
+
+  </TabItem>
+  <TabItem value="python" label="Python">
+
+```python
+import requests
+
+def verify_email(verification_token):
+    url = f"{baseUrl}/auth/account/verify-email?token={verification_token}"
+
+    response = requests.get(url)
+
+    if response.status_code == 200:
+        print('Email verified:', response.json())
+    else:
+        print('Error verifying email:', response.text)
+
+# Usage
+verification_token = 'your_verification_token'  # Token from the email
+verify_email(verification_token)
+```
+
+  </TabItem>
+  <TabItem value="rust" label="Rust">
+
+```rust
+use reqwest::Client;
+use serde_json::Value;
+
+async fn verify_email(client: &Client, base_url: &str, verification_token: &str) 
+-> Result<Value, Box<dyn std::error::Error>> {
+    let url = format!("{}/auth/account/verify-email?token={}", base_url, verification_token);
+
+    let response = client
+        .get(&url)
+        .send()
+        .await?;
+
+    let verification_data = response.json::<Value>().await?;
+    println!("Email verification response: {:?}", verification_data);
+
+    Ok(verification_data)
+}
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let client = Client::new();
+    
+    // Verify email
+    let verification_token = "your_verification_token"; // Token from the email
+    let verification_data = verify_email(&client, baseUrl, verification_token).await?;
+
+    Ok(())
+}
+```
+
+  </TabItem>
+</Tabs>
+
+Upon successful verification, the API will respond with a confirmation message:
+
+```json
+{
+    "message": "Email verified successfully"
+}
+```
+
+## Resend Verification Email
+
+If you didn't receive the verification email or the token has expired, you can request a new verification email. You need to be authenticated to use this endpoint.
+
+<Tabs groupId="programming-language">
+  <TabItem value="curl" label="cURL">
+
+```bash
+curl -X POST "$baseUrl/auth/account/resend-verification-email" \
+  -H "Authorization: Bearer $token" \
+  -H "Content-Type: application/json"
+```
+
+  </TabItem>
+  <TabItem value="javascript" label="JavaScript">
+
+```javascript
+const resendVerificationEmail = async (token) => {
+  try {
+    const response = await fetch(`${baseUrl}/auth/account/resend-verification-email`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      }
+    });
+
+    const data = await response.json();
+    console.log("Verification email response:", data);
+  } catch (error) {
+    console.error("Error resending verification email:", error);
+  }
+};
+
+// Usage
+const token = "your_auth_token"; // Replace with actual token
+resendVerificationEmail(token);
+```
+
+  </TabItem>
+  <TabItem value="python" label="Python">
+
+```python
+import requests
+
+def resend_verification_email(token):
+    url = f"{baseUrl}/auth/account/resend-verification-email"
+
+    headers = {
+        'Authorization': f"Bearer {token}",
+        'Content-Type': 'application/json'
+    }
+
+    response = requests.post(url, headers=headers)
+
+    if response.status_code == 200:
+        print('Verification email sent:', response.json())
+    else:
+        print('Error sending verification email:', response.text)
+
+# Usage
+token = 'your_auth_token' # Replace with actual token
+resend_verification_email(token)
+```
+
+  </TabItem>
+  <TabItem value="rust" label="Rust">
+
+```rust
+use reqwest::Client;
+use serde_json::Value;
+
+async fn resend_verification_email(client: &Client, base_url: &str, token: &str)
+-> Result<Value, Box<dyn std::error::Error>> {
+    let response = client
+        .post(&format!("{}/auth/account/resend-verification-email", base_url))
+        .header("Authorization", format!("Bearer {}", token))
+        .header("Content-Type", "application/json")
+        .send()
+        .await?;
+
+    let result = response.json::<Value>().await?;
+    println!("Verification email response: {:?}", result);
+
+    Ok(result)
+}
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let client = Client::new();
+
+    // Resend verification email
+    let token = "your_auth_token"; // Replace with actual token
+    let result = resend_verification_email(&client, baseUrl, token).await?;
+
+    Ok(())
+}
+```
+
+  </TabItem>
+</Tabs>
+
+Upon successful request, the API will respond with a confirmation message:
+
+```json
+{
+    "message": "Verification email sent successfully"
+}
+```
+
 ## Authentication Methods
 
 ### Authentication with Tokens
