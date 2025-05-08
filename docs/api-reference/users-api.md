@@ -28,11 +28,11 @@ This request must have the authorization header. Refer to [Authorization method]
 
 #### Body
 
-| Property   | Type   | Required | Default | Description                  |
-| ---------- | ------ | -------- | ------- | ---------------------------- |
-| name       | string | Yes      | -       | Name of the betting business |
-| reference  | string | No       | -       | Preferred User reference     |
-| preference | object | No       | NULL    | Account password             |
+| Property    | Type   | Required | Default | Description                  |
+| ----------- | ------ | -------- | ------- | ---------------------------- |
+| name        | string | Yes      | -       | Name of the user             |
+| reference   | string | No       | -       | Preferred User reference     |
+| preferences | object | No       | NULL    | User preferences             |
 
 :::note
 
@@ -103,7 +103,7 @@ If you have a special way of tracking your users and want to use your own refere
         }
         response = requests.post(url, headers=headers, data=json.dumps(user_data))
 
-        if response.status_code == 200:
+        if response.status_code == 201:
             print('Success:', response.json())
         else:
             print('Error:', response.text)
@@ -206,6 +206,7 @@ If you have a special way of tracking your users and want to use your own refere
             "name should not be empty"
         ],
         "error": "Bad Request",
+        "statusCode": 400
     }
     ```
 
@@ -321,7 +322,7 @@ This request must have the authorization header. Refer to [Authorization method]
 <Tabs>
   <TabItem  value="Success">
 
-    Http Code: `201`
+    Http Code: `200`
     ```json
     {
         "data": {
@@ -468,7 +469,7 @@ This request must have the authorization header. Refer to [Authorization method]
 <Tabs>
   <TabItem  value="Success">
 
-    Http Code: `201`
+    Http Code: `200`
     ```json
     {
         "data": {
