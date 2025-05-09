@@ -1,6 +1,6 @@
 ---
 sidebar_position: 3
-description: Learn how to fund user account, get transactions, get transaction by id and get transaction by reference
+description: Learn how to fund user account, withdraw from user account, get transactions, get transaction by id and get transaction by reference
 ---
 
 import Tabs from "@theme/Tabs";
@@ -28,9 +28,10 @@ This request must have the authorization header. Refer to [Authorization method]
 
 | Property       | Type   | Required | Default | Description                             |
 | -------------- | ------ | -------- | ------- | --------------------------------------- |
-| amount         | number | Yes      | -       | Amount to be credited to user's account |
+| amount         | number | Yes      | -       | Amount to be credited to user's account (must be >= 0.01) |
 | user_id        | number | No       | -       | User Id                                 |
 | user_reference | string | No       | -       | User Reference                          |
+| description    | string | No       | "Balance funded" | Description for the transaction |
 
 :::info
 
@@ -44,9 +45,11 @@ Either the `user_id` or `user_reference` must be provided
     ```bash
     curl -X POST "$baseUrl/transactions/fund-user" \
       -H "Content-Type: application/json" \
+      -H "Authorization: Bearer $token" \
       -d '{
-        "amount": 100.00,
-        "user_id": 12345
+        "amount": 1000,
+        "user_id": 1,
+        "description": "Deposit via bank transfer"
       }'
     ```
 
@@ -54,15 +57,17 @@ Either the `user_id` or `user_reference` must be provided
   <TabItem value="javascript" label="JavaScript">
 
     ```javascript
-    function fundUser(amount, userId) {
+    function fundUser(auth, amount, userId, description = "Balance funded") {
       fetch(`${baseUrl}/transactions/fund-user`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${auth.token}`
         },
         body: JSON.stringify({
           amount: amount,
-          user_id: userId
+          user_id: userId,
+          description: description
         })
       })
       .then(response => response.json())
@@ -71,7 +76,7 @@ Either the `user_id` or `user_reference` must be provided
     }
 
     // Example usage
-    fundUser(100.00, 12345);
+    fundUser(auth, 1000, 1, "Deposit via bank transfer");
     ```
 
   </TabItem>
@@ -81,25 +86,39 @@ Either the `user_id` or `user_reference` must be provided
     import requests
     import json
 
-    def fund_user(amount, user_id):
+    def fund_user(auth, amount, user_id=None, user_reference=None, description="Balance funded"):
         url = f"{base_url}/transactions/fund-user"
         headers = {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': f"Bearer {auth['token']}"
         }
+        
         payload = {
             'amount': amount,
-            'user_id': user_id
+            'description': description
         }
+        
+        if user_id:
+            payload['user_id'] = user_id
+        elif user_reference:
+            payload['user_reference'] = user_reference
+        else:
+            raise ValueError("Either user_id or user_reference must be provided")
 
         response = requests.post(url, headers=headers, data=json.dumps(payload))
 
-        if response.status_code == 200:
+        if response.status_code == 201:
             print(response.json())
+            return response.json()
         else:
             print(f"Error: {response.status_code}, {response.text}")
+            raise Exception(f"Funding failed: {response.text}")
 
     # Example usage
-    fund_user(100.00, 12345)
+    try:
+        fund_user(auth, 1000, user_id=1, description="Deposit via bank transfer")
+    except Exception as e:
+        print(f"An error occurred: {e}")
     ```
 
   </TabItem>
@@ -108,41 +127,66 @@ Either the `user_id` or `user_reference` must be provided
     ```rust
     use reqwest::Client;
     use serde_json::json;
-    use tokio;
+    use std::error::Error;
 
-    async fn fund_user(amount: f64, user_id: i32) {
-        let base_url = "your_base_url_here";
+    async fn fund_user(
+        token: &str, 
+        amount: f64, 
+        user_id: Option<i32>, 
+        user_reference: Option<&str>,
+        description: Option<&str>
+    ) -> Result<serde_json::Value, Box<dyn Error>> {
         let url = format!("{}/transactions/fund-user", base_url);
         let client = Client::new();
-        let payload = json!({
-            "amount": amount,
-            "user_id": user_id
+        
+        let mut payload = json!({
+            "amount": amount
         });
+        
+        if let Some(id) = user_id {
+            payload["user_id"] = json!(id);
+        } else if let Some(reference) = user_reference {
+            payload["user_reference"] = json!(reference);
+        } else {
+            return Err("Either user_id or user_reference must be provided".into());
+        }
+        
+        if let Some(desc) = description {
+            payload["description"] = json!(desc);
+        }
 
         let response = client.post(&url)
             .header("Content-Type", "application/json")
+            .header("Authorization", format!("Bearer {}", token))
             .json(&payload)
             .send()
-            .await;
+            .await?;
 
-        match response {
-            Ok(resp) => {
-                if resp.status().is_success() {
-                    match resp.json::<serde_json::Value>().await {
-                        Ok(json) => println!("{:?}", json),
-                        Err(err) => eprintln!("Failed to parse JSON: {}", err),
-                    }
-                } else {
-                    eprintln!("Error: {}, {}", resp.status(), resp.text().await.unwrap_or_default());
-                }
-            }
-            Err(err) => eprintln!("Request failed: {}", err),
+        if response.status().is_success() {
+            let json_response = response.json::<serde_json::Value>().await?;
+            println!("Funding successful: {:?}", json_response);
+            Ok(json_response)
+        } else {
+            let error_text = response.text().await?;
+            println!("Error: {}", error_text);
+            Err(error_text.into())
         }
     }
 
     #[tokio::main]
-    async fn main() {
-        fund_user(100.00, 12345).await;
+    async fn main() -> Result<(), Box<dyn Error>> {
+        let token = "your_token_here";
+        
+        // Example with user_id
+        let result = fund_user(
+            token, 
+            1000.0, 
+            Some(1), 
+            None, 
+            Some("Deposit via bank transfer")
+        ).await?;
+        
+        Ok(())
     }
     ```
 
@@ -158,51 +202,385 @@ Either the `user_id` or `user_reference` must be provided
     ```json
     {
         "data": {
-            "user_id": 5,
-            "account_id": 4,
-            "reference": "TX_tM9r78kLSXaTbxW9Dd7ulQHbPdcInOwKd9RIdyt_kUmp-lWq",
+            "id": 1,
+            "user_id": 1,
+            "account_id": 2,
+            "reference": "TX_u6qGJ1A4qw0mV_5wMSJQ7dF5pe0S8HA3c4i1Z5YN7HD7loom",
             "amount": 1000,
             "description": "Balance funded",
             "transaction_type": "credit",
             "transaction_source": "funding",
-            "created_at": "2025-03-11T14:36:41.818Z"
+            "created_at": "2025-05-09T14:57:43.759Z"
         },
         "message": "Account funded successfully"
     }
     ```
 
   </TabItem>
-  <TabItem  value="Error">
+  <TabItem  value="User Not Found">
 
-    **Unauthorized** <br/>
-    Http Code: `401`
-    ```json
-    {
-        "message": "Unauthorized"
-    }
-    ```
-
-    **User not found** <br/>
     Http Code: `404`
     ```json
     {
+        "status": 404,
         "error": "User not found"
     }
     ```
 
-    **Error with body** <br/>
+  </TabItem>
+  <TabItem  value="Invalid Amount">
+
     Http Code: `400`
     ```json
     {
         "message": [
-            "amount must not be less than 1",
+            "amount must not be less than 0.01"
+        ],
+        "error": "Bad Request",
+        "statusCode": 400
+    }
+    ```
+
+  </TabItem>
+  <TabItem  value="Missing Fields">
+
+    Http Code: `400`
+    ```json
+    {
+        "message": [
+            "amount must not be less than 0.01",
             "amount must be a number conforming to the specified constraints",
-            "user_id must not be less than 1",
+            "user_id must not be less than 0.01",
             "user_id must be a number conforming to the specified constraints",
             "user_reference should not be empty",
             "user_reference must be a string"
         ],
-        "error": "Bad Request"
+        "error": "Bad Request",
+        "statusCode": 400
+    }
+    ```
+
+  </TabItem>
+  <TabItem  value="Unauthorized">
+
+    Http Code: `401`
+    ```json
+    {
+        "message": "Unauthorized",
+        "statusCode": 401
+    }
+    ```
+
+  </TabItem>
+</Tabs>
+
+## Withdraw from user account
+
+:::info
+
+This request must have the authorization header. Refer to [Authorization method](/docs/guides/authentication#authentication-methods) guide for more details
+
+:::
+
+### Request
+
+| Property     | Value                             |
+| :----------- | :-------------------------------- |
+| method       | `POST`                            |
+| url          | `$baseUrl/transactions/withdraw`  |
+| Content-Type | `application/json`                |
+
+#### Body
+
+| Property       | Type   | Required | Default | Description                               |
+| -------------- | ------ | -------- | ------- | ----------------------------------------- |
+| amount         | number | Yes      | -       | Amount to be debited from user's account (must be >= 0.01) |
+| user_id        | number | No       | -       | User Id                                   |
+| user_reference | string | No       | -       | User Reference                            |
+| description    | string | No       | "Withdrawal" | Description for the transaction      |
+
+:::info
+
+Either the `user_id` or `user_reference` must be provided. The user must have sufficient balance for the withdrawal.
+
+:::
+
+<Tabs groupId="programming-language">
+  <TabItem value="curl" label="cURL">
+
+    ```bash
+    curl -X POST "$baseUrl/transactions/withdraw" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer $token" \
+      -d '{
+        "amount": 100.00,
+        "user_id": 1,
+        "description": "Bank withdrawal request"
+      }'
+    ```
+
+  </TabItem>
+  <TabItem value="javascript" label="JavaScript">
+
+    ```javascript
+    function withdrawUser(auth, amount, userId, description = "Withdrawal") {
+      return fetch(`${baseUrl}/transactions/withdraw`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${auth.token}`
+        },
+        body: JSON.stringify({
+          amount: amount,
+          user_id: userId,
+          description: description
+        })
+      })
+      .then(response => {
+        if (!response.ok) {
+          return response.json().then(error => {
+            throw new Error(error.error || `Error: ${response.status} ${response.statusText}`);
+          });
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log("Withdrawal successful:", data);
+        return data;
+      })
+      .catch(error => {
+        console.error('Error withdrawing funds:', error);
+        throw error;
+      });
+    }
+
+    // Example usage
+    withdrawUser(auth, 100.00, 1, "Bank withdrawal request")
+      .then(data => {
+        // Handle successful withdrawal
+      })
+      .catch(error => {
+        // Handle errors such as insufficient balance
+      });
+    ```
+
+  </TabItem>
+  <TabItem value="python" label="Python">
+
+    ```python
+    import requests
+    import json
+
+    def withdraw_user(auth, amount, user_id=None, user_reference=None, description="Withdrawal"):
+        url = f"{base_url}/transactions/withdraw"
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f"Bearer {auth['token']}"
+        }
+        
+        payload = {
+            'amount': amount,
+            'description': description
+        }
+        
+        if user_id:
+            payload['user_id'] = user_id
+        elif user_reference:
+            payload['user_reference'] = user_reference
+        else:
+            raise ValueError("Either user_id or user_reference must be provided")
+
+        response = requests.post(url, headers=headers, data=json.dumps(payload))
+
+        if response.status_code == 201:
+            result = response.json()
+            print('Withdrawal successful:', result)
+            return result
+        else:
+            error_data = response.json()
+            error_message = error_data.get('error', f"Error: {response.status_code}")
+            print(f"Error: {response.status_code}, {error_message}")
+            
+            if "balance" in error_data.get('data', {}):
+                print(f"Current balance: {error_data['data']['balance']}")
+                
+            raise Exception(f"Withdrawal failed: {error_message}")
+
+    # Example usage
+    try:
+        withdraw_user(auth, 100.00, user_id=1, description="Bank withdrawal request")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    ```
+
+  </TabItem>
+  <TabItem value="rust" label="Rust">
+
+    ```rust
+    use reqwest::Client;
+    use serde_json::{json, Value};
+    use std::error::Error;
+
+    async fn withdraw_user(
+        token: &str, 
+        amount: f64, 
+        user_id: Option<i32>, 
+        user_reference: Option<&str>,
+        description: Option<&str>
+    ) -> Result<Value, Box<dyn Error>> {
+        let url = format!("{}/transactions/withdraw", base_url);
+        let client = Client::new();
+        
+        let mut payload = json!({
+            "amount": amount
+        });
+        
+        if let Some(id) = user_id {
+            payload["user_id"] = json!(id);
+        } else if let Some(reference) = user_reference {
+            payload["user_reference"] = json!(reference);
+        } else {
+            return Err("Either user_id or user_reference must be provided".into());
+        }
+        
+        if let Some(desc) = description {
+            payload["description"] = json!(desc);
+        }
+
+        let response = client.post(&url)
+            .header("Content-Type", "application/json")
+            .header("Authorization", format!("Bearer {}", token))
+            .json(&payload)
+            .send()
+            .await?;
+
+        if response.status().is_success() {
+            let json_response = response.json::<Value>().await?;
+            println!("Withdrawal successful: {:?}", json_response);
+            Ok(json_response)
+        } else {
+            let error_resp = response.json::<Value>().await?;
+            let error_msg = error_resp["error"].as_str().unwrap_or("Unknown error");
+            
+            if let Some(data) = error_resp.get("data") {
+                if let Some(balance) = data.get("balance") {
+                    println!("Current balance: {}", balance);
+                }
+            }
+            
+            Err(error_msg.into())
+        }
+    }
+
+    #[tokio::main]
+    async fn main() -> Result<(), Box<dyn Error>> {
+        let token = "your_token_here";
+        
+        // Example with user_id
+        match withdraw_user(token, 100.0, Some(1), None, Some("Bank withdrawal request")).await {
+            Ok(result) => println!("Success: {:?}", result),
+            Err(e) => println!("Error: {}", e),
+        }
+        
+        Ok(())
+    }
+    ```
+
+  </TabItem>
+</Tabs>
+
+### Response
+
+<Tabs>
+  <TabItem  value="Success">
+
+    Http Code: `201`
+    ```json
+    {
+        "data": {
+            "id": 3,
+            "user_id": 1,
+            "account_id": 2,
+            "reference": "TX_YXIDYBNaiABJVeXm-_mpnx8WsnWt8ANgwqyjqTd-Vi5WsuXS",
+            "amount": 100,
+            "description": "Withdrawal",
+            "transaction_type": "debit",
+            "transaction_source": "withdrawal",
+            "created_at": "2025-05-09T15:02:37.463Z"
+        },
+        "message": "Account funded successfully"
+    }
+    ```
+
+  </TabItem>
+  <TabItem  value="Insufficient Balance">
+
+    Http Code: `400`
+    ```json
+    {
+        "status": 400,
+        "error": "Not enough balance for withdrawal",
+        "data": {
+            "id": 1,
+            "balance": 1900,
+            "exposure": 0,
+            "effective_balance": 1900
+        }
+    }
+    ```
+
+  </TabItem>
+  <TabItem  value="User Not Found">
+
+    Http Code: `404`
+    ```json
+    {
+        "status": 404,
+        "error": "User not found"
+    }
+    ```
+
+  </TabItem>
+  <TabItem  value="Invalid Amount">
+
+    Http Code: `400`
+    ```json
+    {
+        "message": [
+            "amount must not be less than 0.01"
+        ],
+        "error": "Bad Request",
+        "statusCode": 400
+    }
+    ```
+
+  </TabItem>
+  <TabItem  value="Missing Fields">
+
+    Http Code: `400`
+    ```json
+    {
+        "message": [
+            "amount must not be less than 0.01",
+            "amount must be a number conforming to the specified constraints",
+            "user_id must not be less than 0.01",
+            "user_id must be a number conforming to the specified constraints",
+            "user_reference should not be empty",
+            "user_reference must be a string"
+        ],
+        "error": "Bad Request",
+        "statusCode": 400
+    }
+    ```
+
+  </TabItem>
+  <TabItem  value="Unauthorized">
+
+    Http Code: `401`
+    ```json
+    {
+        "message": "Unauthorized",
+        "statusCode": 401
     }
     ```
 
@@ -250,6 +628,7 @@ This request must have the authorization header. Refer to [Authorization method]
     ```bash
     curl -G "$baseUrl/transactions" \
       -H "Content-Type: application/json" \
+      -H "Authorization: Bearer $token" \
       --data-urlencode "page=1" \
       --data-urlencode "per_page=20" \
       --data-urlencode "user_ids=123,456" \
@@ -264,7 +643,7 @@ This request must have the authorization header. Refer to [Authorization method]
   <TabItem value="javascript" label="JavaScript">
 
     ```javascript
-    async function fetchTransactions(params) {
+    async function fetchTransactions(auth, params) {
       const url = new URL(`${baseUrl}/transactions`);
       Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
 
@@ -272,7 +651,8 @@ This request must have the authorization header. Refer to [Authorization method]
         const response = await fetch(url, {
           method: 'GET',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${auth.token}`
           }
         });
 
@@ -282,13 +662,15 @@ This request must have the authorization header. Refer to [Authorization method]
 
         const data = await response.json();
         console.log(data);
+        return data;
       } catch (error) {
         console.error('Error:', error);
+        throw error;
       }
     }
 
     // Example usage
-    fetchTransactions({
+    fetchTransactions(auth, {
       page: 1,
       per_page: 20,
       user_ids: '123,456',
@@ -306,10 +688,11 @@ This request must have the authorization header. Refer to [Authorization method]
     ```python
     import requests
 
-    def fetch_transactions(params):
+    def fetch_transactions(auth, params):
         url = f"{base_url}/transactions"
         headers = {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': f"Bearer {auth['token']}"
         }
 
         try:
@@ -320,11 +703,13 @@ This request must have the authorization header. Refer to [Authorization method]
 
             data = response.json()
             print(data)
+            return data
         except Exception as error:
             print(f"Error: {error}")
+            raise
 
     # Example usage
-    fetch_transactions({
+    fetch_transactions(auth, {
         'page': 1,
         'per_page': 20,
         'user_ids': '123,456',
@@ -345,34 +730,31 @@ This request must have the authorization header. Refer to [Authorization method]
     use std::collections::HashMap;
     use tokio;
 
-    async fn fetch_transactions(params: HashMap<&str, &str>) {
-        let base_url = "your_base_url_here";
-        let client = Client::new();
+    async fn fetch_transactions(token: &str, params: HashMap<&str, &str>) -> Result<Value, Box<dyn std::error::Error>> {
         let url = format!("{}/transactions", base_url);
+        let client = Client::new();
 
         let response = client.get(&url)
             .header("Content-Type", "application/json")
+            .header("Authorization", format!("Bearer {}", token))
             .query(&params)
             .send()
-            .await;
+            .await?;
 
-        match response {
-            Ok(resp) => {
-                if resp.status().is_success() {
-                    match resp.json::<Value>().await {
-                        Ok(json) => println!("{:?}", json),
-                        Err(err) => eprintln!("Failed to parse JSON: {}", err),
-                    }
-                } else {
-                    eprintln!("Error: {}, {}", resp.status(), resp.text().await.unwrap_or_default());
-                }
-            }
-            Err(err) => eprintln!("Request failed: {}", err),
+        if response.status().is_success() {
+            let json = response.json::<Value>().await?;
+            println!("{:?}", json);
+            Ok(json)
+        } else {
+            let error_text = response.text().await?;
+            eprintln!("Error: {}", error_text);
+            Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, error_text)))
         }
     }
 
     #[tokio::main]
-    async fn main() {
+    async fn main() -> Result<(), Box<dyn std::error::Error>> {
+        let token = "your_token_here";
         let mut params = HashMap::new();
         params.insert("page", "1");
         params.insert("per_page", "20");
@@ -383,7 +765,8 @@ This request must have the authorization header. Refer to [Authorization method]
         params.insert("start_date", "2023-01-01");
         params.insert("end_date", "2023-12-31");
 
-        fetch_transactions(params).await;
+        let transactions = fetch_transactions(token, params).await?;
+        Ok(())
     }
     ```
 

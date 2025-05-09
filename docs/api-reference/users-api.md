@@ -167,44 +167,36 @@ If you have a special way of tracking your users and want to use your own refere
     Http Code: `201`
     ```json
     {
-        "data": {
-            "id": 3,
-            "reference": "johndoe123"
-        },
-        "message": "User created successfully"
+      "data": {
+        "id": 2,
+        "reference": "a2_user_Xhwz442NTj74z6F0"
+      },
+      "message": "User created successfully"
     }
     ```
 
   </TabItem>
   <TabItem  value="Error">
 
+    **Validation error** <br/>
+    Http Code: `400`
+    ```json
+    {
+      "message": [
+        "name must be shorter than or equal to 256 characters",
+        "name should not be empty"
+      ],
+      "error": "Bad Request",
+      "statusCode": 400
+    }
+    ```
+
     **Unauthorized** <br/>
     Http Code: `401`
     ```json
     {
-        "message": "Unauthorized"
-    }
-    ```
-
-    **Record already exists** <br/>
-    Http Code: `400`
-    ```json
-    {
-        "status": 400,
-        "error": "User with reference \"janedoe123\" already exists"
-    }
-    ```
-
-    **Error with body** <br/>
-    Http Code: `400`
-    ```json
-    {
-        "message": [
-            "name must be shorter than or equal to 256 characters",
-            "name should not be empty"
-        ],
-        "error": "Bad Request",
-        "statusCode": 400
+      "message": "Unauthorized",
+      "statusCode": 401
     }
     ```
 
@@ -322,17 +314,19 @@ This request must have the authorization header. Refer to [Authorization method]
     Http Code: `200`
     ```json
     {
-        "data": {
-            "id": 6,
-            "account_id": 4,
-            "reference": "janedoe123",
-            "name": "Jane Doe",
-            "role": "user",
-            "preferences": null,
-            "balance": 0,
-            "exposure": 0
+      "data": {
+        "id": 1,
+        "account_id": 2,
+        "reference": "a2_user_4lH6u7hayvaqs6Ix",
+        "name": "Jane Doe",
+        "role": "user",
+        "preferences": {
+          "allow_negative_balance": true
         },
-        "message": "User fetched successfully"
+        "balance": 0,
+        "exposure": 0
+      },
+      "message": "User fetched successfully"
     }
     ```
 
@@ -343,7 +337,8 @@ This request must have the authorization header. Refer to [Authorization method]
     Http Code: `401`
     ```json
     {
-        "message": "Unauthorized"
+      "message": "Unauthorized",
+      "statusCode": 401
     }
     ```
 
@@ -351,7 +346,8 @@ This request must have the authorization header. Refer to [Authorization method]
     Http Code: `404`
     ```json
     {
-        "error": "User not found"
+      "status": 404,
+      "error": "User not found"
     }
     ```
 
@@ -469,17 +465,19 @@ This request must have the authorization header. Refer to [Authorization method]
     Http Code: `200`
     ```json
     {
-        "data": {
-            "id": 6,
-            "account_id": 4,
-            "reference": "janedoe123",
-            "name": "Jane Doe",
-            "role": "user",
-            "preferences": null,
-            "balance": 0,
-            "exposure": 0
+      "data": {
+        "id": 1,
+        "account_id": 2,
+        "reference": "a2_user_4lH6u7hayvaqs6Ix",
+        "name": "Jane Doe",
+        "role": "user",
+        "preferences": {
+          "allow_negative_balance": true
         },
-        "message": "User fetched successfully"
+        "balance": 0,
+        "exposure": 0
+      },
+      "message": "User fetched successfully"
     }
     ```
 
@@ -490,7 +488,8 @@ This request must have the authorization header. Refer to [Authorization method]
     Http Code: `401`
     ```json
     {
-        "message": "Unauthorized"
+      "message": "Unauthorized",
+      "statusCode": 401
     }
     ```
 
@@ -498,7 +497,8 @@ This request must have the authorization header. Refer to [Authorization method]
     Http Code: `404`
     ```json
     {
-        "error": "User not found"
+      "status": 404,
+      "error": "User not found"
     }
     ```
 

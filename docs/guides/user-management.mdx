@@ -200,8 +200,8 @@ Upon successful creation, the API will respond with the user's details:
 ```json
 {
   "data": {
-    "id": 1,
-    "reference": "a1_user_FclirLc2MJecJqsi"
+    "id": 2,
+    "reference": "a2_user_Xhwz442NTj74z6F0"
   },
   "message": "User created successfully"
 }
@@ -539,14 +539,24 @@ The API will respond with the user's details:
 {
   "data": {
     "id": 1,
-    "account_id": 1,
-    "reference": "a1_user_FclirLc2MJecJqsi",
-    "name": "User 3",
+    "account_id": 2,
+    "reference": "a2_user_4lH6u7hayvaqs6Ix",
+    "name": "Jane Dodde",
     "role": "user",
-    "preferences": null,
-    "balance": 1000,
+    "preferences": {
+      "allow_negative_balance": true
+    },
+    "balance": 0,
     "exposure": 0
   },
   "message": "User fetched successfully"
+}
+```
+
+The API will respond with the updated user's preferences:
+
+```json
+{
+  "message": "account preference updated successfully"
 }
 ```

@@ -269,7 +269,7 @@ The API will respond with a token:
 ```json
 {
   "data": {
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    "token": "OCFUBbMIX4PGXb4ROw5xKVC8kW8tGSBh"
   },
   "message": "Logged into account successfully"
 }
@@ -278,7 +278,7 @@ The API will respond with a token:
 This token should be included as a Bearer token in the Authorization header for all subsequent requests:
 
 ```
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+Authorization: Bearer OCFUBbMIX4PGXb4ROw5xKVC8kW8tGSBh
 ```
 
 ### 2. API Key Authentication
@@ -431,9 +431,9 @@ The API will respond with your API keys:
 ```json
 {
   "data": {
-    "api_key": "jk8sa7dfg98s7df98g7sdfg87",
-    "api_secret": "8sd7fg8sd7fg8sd7f98gs7df98g",
-    "base64_encoded": "ams4c2E3ZGZnOThzN2RmOThnN3NkZmc4Nzo4c2Q3Zmc4c2Q3Zmc4c2Q3Zjk4Z3M3ZGY5OGc="
+    "api_key": "api_key_k4rBSsfzj6SyJbsKOT3YXRXsmKRZuYT4",
+    "api_secret": "api_secret_80d6bx3NNRsqELP6in2eVS56jSGyVNhiUtRMeImnUoJWc8DQYgLnwm1gH45PISQN",
+    "base64_encoded": "YXBpX2tleV9rNHJCU3Nmemo2U3lKYnNLT1QzWVhSWHNtS1JadVlUNDphcGlfc2VjcmV0XzgwZDZieDNOTlJzcUVMUDZpbjJlVlM1NmpTR3lWTmhpVXRSTWVJbW5Vb0pXYzhEUVlnTG53bTFnSDQ1UElTUU4="
   },
   "message": "Api keys generated successfully"
 }
@@ -444,7 +444,7 @@ You can use these API keys in one of two ways:
 1. Using the `base64_encoded` value directly:
 
 ```
-Authorization: Basic ams4c2E3ZGZnOThzN2RmOThnN3NkZmc4Nzo4c2Q3Zmc4c2Q3Zmc4c2Q3Zjk4Z3M3ZGY5OGc=
+Authorization: Basic YXBpX2tleV9rNHJCU3Nmemo2U3lKYnNLT1QzWVhSWHNtS1JadVlUNDphcGlfc2VjcmV0XzgwZDZieDNOTlJzcUVMUDZpbjJlVlM1NmpTR3lWTmhpVXRSTWVJbW5Vb0pXYzhEUVlnTG53bTFnSDQ1UElTUU4=
 ```
 
 2. Using the `api_key` as username and `api_secret` as password for Basic Auth.
@@ -453,12 +453,9 @@ Authorization: Basic ams4c2E3ZGZnOThzN2RmOThnN3NkZmc4Nzo4c2Q3Zmc4c2Q3Zmc4c2Q3Zjk
 
 Once you have authenticated, you can create users who will be placing bets on your platform. To create a user, you need to send a POST request to our API with the user's details. The `reference` field is optional and will be generated if not provided. The `preferences` field is also optional.
 
-<!-- TODO: Format code from here -->
-
 <Tabs groupId="programming-language">
   <TabItem value="curl" label="cURL">
   
-  <!-- prettier-ignore-start -->
   ```bash
   # Using token authentication
   curl -X POST "$baseUrl/account/user" \
@@ -480,12 +477,10 @@ Once you have authenticated, you can create users who will be placing bets on yo
       "preferences": {}  # Optional
     }'
   ```
-  <!-- prettier-ignore-end -->
   
   </TabItem>
   <TabItem value="javascript" label="JavaScript">
   
-  <!-- prettier-ignore-start -->
   ```javascript
   const createUser = async (auth) => {
     try {
@@ -521,12 +516,10 @@ Once you have authenticated, you can create users who will be placing bets on yo
   const auth = await getAuthentication();
   createUser(auth);
   ```
-  <!-- prettier-ignore-end -->
   
   </TabItem>
   <TabItem value="python" label="Python">
   
-  <!-- prettier-ignore-start -->
   ```python
 import requests
 
@@ -561,12 +554,9 @@ auth = get_authentication()
 create_user(auth)
 
 ````
-<!-- prettier-ignore-end -->
-
 </TabItem>
 <TabItem value="rust" label="Rust">
 
-<!-- prettier-ignore-start -->
 ```rust
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
@@ -639,8 +629,6 @@ let client = Client::new();
 
 ````
 
-<!-- prettier-ignore-end -->
-
 </TabItem>
 </Tabs>
 
@@ -649,8 +637,8 @@ Upon successful creation, the API will respond with the user's details:
 ```json
 {
   "data": {
-    "id": 1,
-    "reference": "a1_user_FclirLc2MJecJqsi"
+    "id": 2,
+    "reference": "a2_user_Xhwz442NTj74z6F0"
   },
   "message": "User created successfully"
 }
@@ -688,7 +676,6 @@ To fund a user account, you need to send a POST request to the `/transactions/fu
 <Tabs groupId="programming-language">
   <TabItem value="curl" label="cURL">
   
-  <!-- prettier-ignore-start -->
   ```bash
   # Using token authentication
   curl -X POST "$baseUrl/transactions/fund-user/" \
@@ -710,12 +697,10 @@ To fund a user account, you need to send a POST request to the `/transactions/fu
       // "user_reference": "a1_user_dkjH6xmZzHHHgz5M"  # Optional
     }'
   ```
-  <!-- prettier-ignore-end -->
   
   </TabItem>
   <TabItem value="javascript" label="JavaScript">
   
-  <!-- prettier-ignore-start -->
   ```javascript
   const fundUserAccount = async (auth) => {
     try {
@@ -751,12 +736,10 @@ To fund a user account, you need to send a POST request to the `/transactions/fu
   const auth = await getAuthentication();
   fundUserAccount(auth);
   ```
-  <!-- prettier-ignore-end -->
   
   </TabItem>
   <TabItem value="python" label="Python">
   
-  <!-- prettier-ignore-start -->
 ```python
 import requests
 
@@ -791,12 +774,9 @@ auth = get_authentication()
 fund_user_account(auth)
 
 ````
-  <!-- prettier-ignore-end -->
-
   </TabItem>
   <TabItem value="rust" label="Rust">
 
-  <!-- prettier-ignore-start -->
   ```rust
   use reqwest::Client;
   use serde::{Deserialize, Serialize};
@@ -869,8 +849,6 @@ let client = Client::new();
 
 ````
 
-<!-- prettier-ignore-end -->
-
 </TabItem>
 </Tabs>
 
@@ -879,14 +857,15 @@ Upon successful funding, the API will respond with the transaction details:
 ```json
 {
   "data": {
+    "id": 1,
     "user_id": 1,
-    "account_id": 1,
-    "reference": "TX_m9O57HPundloKRBnky96CHCcf-_z2xI5lX77DQx8w8AERwdB",
+    "account_id": 2,
+    "reference": "TX_u6qGJ1A4qw0mV_5wMSJQ7dF5pe0S8HA3c4i1Z5YN7HD7loom",
     "amount": 1000,
     "description": "Balance funded",
     "transaction_type": "credit",
     "transaction_source": "funding",
-    "created_at": "2025-03-06T02:35:27.028Z"
+    "created_at": "2025-05-09T14:57:43.759Z"
   },
   "message": "Account funded successfully"
 }
@@ -902,7 +881,6 @@ To check a user's balance, you can use either the `user_id` or `user_reference`.
 <Tabs groupId="programming-language">
   <TabItem value="curl" label="cURL">
   
-  <!-- prettier-ignore-start -->
   ```bash
   # Using user_id
   curl -X GET "$baseUrl/account/user/1" \
@@ -914,12 +892,10 @@ To check a user's balance, you can use either the `user_id` or `user_reference`.
     -H "Authorization: Bearer $token" \
     -H "Content-Type: application/json"
   ```
-  <!-- prettier-ignore-end -->
   
   </TabItem>
   <TabItem value="javascript" label="JavaScript">
   
-  <!-- prettier-ignore-start -->
   ```javascript
   const checkUserBalance = async (auth, identifier, isReference = false) => {
     try {
@@ -955,12 +931,10 @@ To check a user's balance, you can use either the `user_id` or `user_reference`.
   checkUserBalance(auth, 1); // Using user_id
   // checkUserBalance(auth, 'a1_user_FclirLc2MJecJqsi', true); // Using user_reference
   ```
-  <!-- prettier-ignore-end -->
   
   </TabItem>
   <TabItem value="python" label="Python">
   
-  <!-- prettier-ignore-start -->
 ```python
 def check_user_balance(auth, identifier, is_reference=False):
     try:
@@ -996,12 +970,9 @@ check_user_balance(auth, 1) # Using user_id
 # check_user_balance(auth, 'a1_user_FclirLc2MJecJqsi', True) # Using user_reference
 
 ````
-  <!-- prettier-ignore-end -->
-
   </TabItem>
   <TabItem value="rust" label="Rust">
 
-  <!-- prettier-ignore-start -->
   ```rust
   use reqwest::Client;
   use serde::{Deserialize, Serialize};
@@ -1064,8 +1035,6 @@ let client = Client::new();
 
 ````
 
-<!-- prettier-ignore-end -->
-
 </TabItem>
 </Tabs>
 
@@ -1075,11 +1044,13 @@ The API will respond with the user's details:
 {
   "data": {
     "id": 1,
-    "account_id": 1,
-    "reference": "a1_user_FclirLc2MJecJqsi",
-    "name": "User 3",
+    "account_id": 2,
+    "reference": "a2_user_4lH6u7hayvaqs6Ix",
+    "name": "Jane Dodde",
     "role": "user",
-    "preferences": null,
+    "preferences": {
+      "allow_negative_balance": true
+    },
     "balance": 1000,
     "exposure": 0
   },
@@ -1115,7 +1086,6 @@ To place a bet offer, you need to send a POST request to the `/bets/make-offer` 
 <Tabs groupId="programming-language">
   <TabItem value="curl" label="cURL">
   
-  <!-- prettier-ignore-start -->
   ```bash
   # Using token authentication
   curl -X POST "$baseUrl/bets/make-offer" \
@@ -1139,12 +1109,10 @@ To place a bet offer, you need to send a POST request to the `/bets/make-offer` 
       "wager_reference": "wager-4"
     }'
   ```
-  <!-- prettier-ignore-end -->
   
   </TabItem>
   <TabItem value="javascript" label="JavaScript">
   
-  <!-- prettier-ignore-start -->
   ```javascript
   const placeBetOffer = async (auth) => {
     try {
@@ -1181,12 +1149,10 @@ To place a bet offer, you need to send a POST request to the `/bets/make-offer` 
   const auth = await getAuthentication();
   placeBetOffer(auth);
   ```
-  <!-- prettier-ignore-end -->
   
   </TabItem>
   <TabItem value="python" label="Python">
   
-  <!-- prettier-ignore-start -->
 ```python
 def place_bet_offer(auth):
     try:
@@ -1223,12 +1189,9 @@ auth = get_authentication()
 place_bet_offer(auth)
 
 ````
-  <!-- prettier-ignore-end -->
-
   </TabItem>
   <TabItem value="rust" label="Rust">
 
-  <!-- prettier-ignore-start -->
   ```rust
   use reqwest::Client;
   use serde::{Deserialize, Serialize};
@@ -1303,8 +1266,6 @@ let client = Client::new();
 
 ````
 
-<!-- prettier-ignore-end -->
-
 </TabItem>
 </Tabs>
 
@@ -1332,7 +1293,6 @@ To view open bet offers, you need to send a GET request to the `/bets/open-bets`
 <Tabs groupId="programming-language">
   <TabItem value="curl" label="cURL">
   
-  <!-- prettier-ignore-start -->
   ```bash
   # Using token authentication
   curl -X GET "$baseUrl/bets/open-bets" \
@@ -1344,12 +1304,10 @@ To view open bet offers, you need to send a GET request to the `/bets/open-bets`
     -H "Authorization: Basic $base64_encoded" \
     -H "Content-Type: application/json"
   ```
-  <!-- prettier-ignore-end -->
   
   </TabItem>
   <TabItem value="javascript" label="JavaScript">
   
-  <!-- prettier-ignore-start -->
   ```javascript
   const viewOpenBetOffers = async (auth) => {
     try {
@@ -1380,13 +1338,10 @@ To view open bet offers, you need to send a GET request to the `/bets/open-bets`
   const auth = await getAuthentication();
   viewOpenBetOffers(auth);
   ```
-  <!-- prettier-ignore-end -->
   
   </TabItem>
   <TabItem value="python" label="Python">
   
-  <!-- prettier-ignore-start -->
-
 ```python
 def view_open_bet_offers(auth):
     try:
@@ -1416,12 +1371,9 @@ auth = get_authentication()
 view_open_bet_offers(auth)
 ```
 
-  <!-- prettier-ignore-end -->
-
   </TabItem>
   <TabItem value="rust" label="Rust">
   
-  <!-- prettier-ignore-start -->
   ```rust
   use reqwest::Client;
   use serde::{Deserialize, Serialize};
@@ -1479,7 +1431,6 @@ let client = Client::new();
 }
 
 ````
-<!-- prettier-ignore-end -->
 
 </TabItem>
 </Tabs>
@@ -1488,29 +1439,29 @@ The API will respond with the open bet offers:
 
 ```json
 {
-"data": [
-  {
-    "id": 1,
-    "account_id": 1,
-    "offer_status": "requesting",
-    "wager_id": 1,
-    "wager_reference": "wager-4",
-    "requesting_user_id": 1,
-    "requesting_user_reference": "a1_user_FclirLc2MJecJqsi",
-    "requesting_odds": 3,
-    "requesting_amount": 300,
-    "created_at": "2025-03-06T02:49:52.080Z"
-  }
-],
-"per_page": 20,
-"page": 1,
-"total": 1,
-"from": 1,
-"to": 1,
-"last_page": 1,
-"total_requesting_amount": 300
+  "data": [
+    {
+      "id": 1,
+      "account_id": 1,
+      "offer_status": "requesting",
+      "wager_id": 1,
+      "wager_reference": "wager-4",
+      "requesting_user_id": 1,
+      "requesting_user_reference": "a1_user_FclirLc2MJecJqsi",
+      "requesting_odds": 3,
+      "requesting_amount": 300,
+      "created_at": "2025-03-06T02:49:52.080Z"
+    }
+  ],
+  "per_page": 20,
+  "page": 1,
+  "total": 1,
+  "from": 1,
+  "to": 1,
+  "last_page": 1,
+  "total_requesting_amount": 300
 }
-````
+```
 
 ## Accepting Bet Offers
 
@@ -1523,7 +1474,6 @@ To accept a bet offer, you need to send a POST request to the `/bets/accept-offe
 <Tabs groupId="programming-language">
   <TabItem value="curl" label="cURL">
   
-  <!-- prettier-ignore-start -->
   ```bash
   # Using token authentication
   curl -X POST "$baseUrl/bets/accept-offer" \
@@ -1555,12 +1505,10 @@ To accept a bet offer, you need to send a POST request to the `/bets/accept-offe
       // "meta": {"data": 12}  # Optional
     }'
   ```
-  <!-- prettier-ignore-end -->
   
   </TabItem>
   <TabItem value="javascript" label="JavaScript">
   
-  <!-- prettier-ignore-start -->
   ```javascript
   const acceptBetOffer = async (auth) => {
     try {
@@ -1601,12 +1549,10 @@ To accept a bet offer, you need to send a POST request to the `/bets/accept-offe
   const auth = await getAuthentication();
   acceptBetOffer(auth);
   ```
-  <!-- prettier-ignore-end -->
   
   </TabItem>
   <TabItem value="python" label="Python">
   
-  <!-- prettier-ignore-start -->
 ```python
 def accept_bet_offer(auth):
     try:
@@ -1647,12 +1593,9 @@ auth = get_authentication()
 accept_bet_offer(auth)
 
 ````
-  <!-- prettier-ignore-end -->
-
   </TabItem>
   <TabItem value="rust" label="Rust">
 
-  <!-- prettier-ignore-start -->
   ```rust
   use reqwest::Client;
   use serde::{Deserialize, Serialize};
@@ -1735,8 +1678,6 @@ let client = Client::new();
 
 ````
 
-<!-- prettier-ignore-end -->
-
 </TabItem>
 </Tabs>
 
@@ -1787,7 +1728,6 @@ outcome can be one of the following: `win`, `loss`, `half-win`, `half-loss`, `pu
 <Tabs groupId="programming-language">
   <TabItem value="curl" label="cURL">
   
-  <!-- prettier-ignore-start -->
   ```bash
   # Using token authentication
   curl -X POST "$baseUrl/bets/update-wager-outcome" \
@@ -1807,12 +1747,10 @@ outcome can be one of the following: `win`, `loss`, `half-win`, `half-loss`, `pu
       "outcome": "half-win"
     }'
   ```
-  <!-- prettier-ignore-end -->
   
   </TabItem>
   <TabItem value="javascript" label="JavaScript">
   
-  <!-- prettier-ignore-start -->
   ```javascript
   const updateWagerOutcome = async (auth) => {
     try {
@@ -1847,13 +1785,11 @@ outcome can be one of the following: `win`, `loss`, `half-win`, `half-loss`, `pu
   const auth = await getAuthentication();
   updateWagerOutcome(auth);
   ```
-  <!-- prettier-ignore-end -->
   
   </TabItem>
   <TabItem value="python" label="Python">
   
-  <!-- prettier-ignore-start -->
-  ```python
+```python
 def update_wager_outcome(auth):
     try:
         # Determine authentication method
@@ -1887,12 +1823,9 @@ auth = get_authentication()
 update_wager_outcome(auth)
 
 ````
-<!-- prettier-ignore-end -->
-
 </TabItem>
 <TabItem value="rust" label="Rust">
 
-<!-- prettier-ignore-start -->
 ```rust
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
@@ -1963,8 +1896,6 @@ let client = Client::new();
 
 ````
 
-<!-- prettier-ignore-end -->
-
 </TabItem>
 </Tabs>
 
@@ -1987,7 +1918,6 @@ To get bet history, you need to send a GET request to the `/bets/history` endpoi
 <Tabs groupId="programming-language">
   <TabItem value="curl" label="cURL">
   
-  <!-- prettier-ignore-start -->
   ```bash
   # Using token authentication
   curl -X GET "$baseUrl/bets/history" \
@@ -1999,12 +1929,10 @@ To get bet history, you need to send a GET request to the `/bets/history` endpoi
     -H "Authorization: Basic $base64_encoded" \
     -H "Content-Type: application/json"
   ```
-  <!-- prettier-ignore-end -->
   
   </TabItem>
   <TabItem value="javascript" label="JavaScript">
   
-  <!-- prettier-ignore-start -->
   ```javascript
   const getBetHistory = async (auth) => {
     try {
@@ -2035,12 +1963,10 @@ To get bet history, you need to send a GET request to the `/bets/history` endpoi
   const auth = await getAuthentication();
   getBetHistory(auth);
   ```
-  <!-- prettier-ignore-end -->
   
   </TabItem>
   <TabItem value="python" label="Python">
   
-  <!-- prettier-ignore-start -->
 ```python
 def get_bet_history(auth):
     try:
@@ -2071,12 +1997,9 @@ auth = get_authentication()
 get_bet_history(auth)
 
 ````
-  <!-- prettier-ignore-end -->
-
   </TabItem>
   <TabItem value="rust" label="Rust">
 
-  <!-- prettier-ignore-start -->
   ```rust
   use reqwest::Client;
   use serde::{Deserialize, Serialize};
@@ -2134,8 +2057,6 @@ let client = Client::new();
 }
 
 ````
-
-<!-- prettier-ignore-end -->
 
 </TabItem>
 </Tabs>
