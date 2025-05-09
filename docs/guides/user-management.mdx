@@ -85,7 +85,7 @@ import requests
 import json
 
 def create_user(auth):
-    url = f"{baseUrl}/account/user"
+    url = f"{base_url}/account/user"
 
     headers = {
         'Content-Type': 'application/json'
@@ -105,7 +105,7 @@ def create_user(auth):
 
     response = requests.post(url, headers=headers, data=json.dumps(payload))
 
-    if response.status_code == 200:
+    if response.status_code == 201:
         print('User created:', response.json())
     else:
         print('Error creating user:', response.text)
@@ -162,10 +162,15 @@ async fn create_user(client: &Client, base_url: &str, auth: &AuthMethod)
       .send()
       .await?;
 
-  let user_data = response.json::<serde_json::Value>().await?;
-  println!("User created: {:?}", user_data);
-
-  Ok(user_data)
+  if response.status().is_success() {
+      let user_data = response.json::<serde_json::Value>().await?;
+      println!("User created: {:?}", user_data);
+      Ok(user_data)
+  } else {
+      let error_message = response.text().await?;
+      println!("Error creating user: {:?}", error_message);
+      Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, error_message)))
+  }
 }
 
 #[tokio::main]
@@ -177,11 +182,11 @@ let client = Client::new();
 
   // Create user with token
   let auth = AuthMethod::Token(token);
-  let user_data = create_user(&client, baseUrl, &auth).await?;
+  let user_data = create_user(&client, base_url, &auth).await?;
 
   // Or create user with API keys
   // let auth = AuthMethod::ApiKeys(api_keys);
-  // let user_data = create_user(&client, baseUrl, &auth).await?;
+  // let user_data = create_user(&client, base_url, &auth).await?;
 
   Ok(())
 }
@@ -286,7 +291,7 @@ getUserDetailsById(auth, userId);
 import requests
 
 def get_user_details_by_id(auth, user_id):
-    url = f"{baseUrl}/account/user/{user_id}"
+    url = f"{base_url}/account/user/{user_id}"
 
     headers = {
         'Content-Type': 'application/json'
@@ -356,11 +361,11 @@ let client = Client::new();
 
   // Get user details with token
   let auth = AuthMethod::Token(token);
-  let user_data = get_user_details_by_id(&client, baseUrl, &auth, "1").await?;
+  let user_data = get_user_details_by_id(&client, base_url, &auth, "1").await?;
 
   // Or get user details with API keys
   // let auth = AuthMethod::ApiKeys(api_keys);
-  // let user_data = get_user_details_by_id(&client, baseUrl, &auth, "1").await?;
+  // let user_data = get_user_details_by_id(&client, base_url, &auth, "1").await?;
 
   Ok(())
 }
@@ -376,12 +381,12 @@ let client = Client::new();
 
 ```bash
 # Using token authentication
-curl -X GET "$baseUrl/account/user/reference/$reference" \
+curl -X GET "$baseUrl/account/user/$reference/reference" \
   -H "Authorization: Bearer $token" \
   -H "Content-Type: application/json"
 
 # Or using API key authentication
-curl -X GET "$baseUrl/account/user/reference/$reference" \
+curl -X GET "$baseUrl/account/user/$reference/reference" \
   -H "Authorization: Basic $base64_encoded" \
   -H "Content-Type: application/json"
 ```
@@ -401,7 +406,7 @@ const getUserDetailsByReference = async (auth, reference) => {
     }
 
     const response = await fetch(
-      `${baseUrl}/account/user/reference/${reference}`,
+      `${baseUrl}/account/user/${reference}/reference`,
       {
         method: "GET",
         headers: {
@@ -431,7 +436,7 @@ getUserDetailsByReference(auth, reference);
 import requests
 
 def get_user_details_by_reference(auth, reference):
-    url = f"{baseUrl}/account/user/reference/{reference}"
+    url = f"{base_url}/account/user/{reference}/reference"
 
     headers = {
         'Content-Type': 'application/json'
@@ -472,7 +477,7 @@ async fn get_user_details_by_reference(client: &Client, base_url: &str, auth: &A
 -> Result<Value, Box<dyn std::error::Error>> {
 
   let mut request_builder = client
-      .get(&format!("{}/account/user/reference/{}", base_url, reference))
+      .get(&format!("{}/account/user/{}/reference", base_url, reference))
       .header("Content-Type", "application/json");
 
   // Apply authentication header
@@ -501,11 +506,11 @@ let client = Client::new();
 
   // Get user details with token
   let auth = AuthMethod::Token(token);
-  let user_data = get_user_details_by_reference(&client, baseUrl, &auth, "danny_user").await?;
+  let user_data = get_user_details_by_reference(&client, base_url, &auth, "danny_user").await?;
 
   // Or get user details with API keys
   // let auth = AuthMethod::ApiKeys(api_keys);
-  // let user_data = get_user_details_by_reference(&client, baseUrl, &auth, "danny_user").await?;
+  // let user_data = get_user_details_by_reference(&client, base_url, &auth, "danny_user").await?;
 
   Ok(())
 }

@@ -96,7 +96,7 @@ If you have a special way of tracking your users and want to use your own refere
     import requests
     import json
 
-    def create_user(base_url, user_data):
+    def create_user(user_data):
         url = f"{base_url}/account/user"
         headers = {
             'Content-Type': 'application/json'
@@ -109,14 +109,13 @@ If you have a special way of tracking your users and want to use your own refere
             print('Error:', response.text)
 
     # Example usage:
-    base_url = 'https://your-api-domain.com'  # Replace with your actual base URL
     user_data = {
         "name": "John Doe",
         "reference": "johndoe123",
         "preferences": {}
     }
 
-    create_user(base_url, user_data)
+    create_user(user_data)
     ```
 
   </TabItem>
@@ -127,7 +126,7 @@ If you have a special way of tracking your users and want to use your own refere
     use serde_json::json;
     use std::error::Error;
 
-    async fn create_user(base_url: &str, user_data: serde_json::Value) -> Result<(), Box<dyn Error>> {
+    async fn create_user(user_data: serde_json::Value) -> Result<(), Box<dyn Error>> {
         let client = Client::new();
         let response = client.post(&format!("{}/account/user", base_url))
             .json(&user_data)
@@ -146,14 +145,13 @@ If you have a special way of tracking your users and want to use your own refere
 
     #[tokio::main]
     async fn main() -> Result<(), Box<dyn Error>> {
-        let base_url = "https://your-api-domain.com"; // Replace with your actual base URL
         let user_data = json!({
             "name": "John Doe",
             "reference": "johndoe123",
             "preferences": {}
         });
 
-        create_user(base_url, user_data).await?;
+        create_user(user_data).await?;
         Ok(())
     }
     ```
@@ -269,7 +267,7 @@ This request must have the authorization header. Refer to [Authorization method]
     import requests
 
     def get_user_details(user_id):
-        url = f"{baseUrl}/account/user/{user_id}"
+        url = f"{base_url}/account/user/{user_id}"
         response = requests.get(url)
 
         if response.status_code == 200:
@@ -291,7 +289,6 @@ This request must have the authorization header. Refer to [Authorization method]
     use std::error::Error;
 
     async fn get_user_details(user_id: &str) -> Result<(), Box<dyn Error>> {
-        let base_url = "https://your-api-domain.com"; // Replace with your actual base URL
         let url = format!("{}/account/user/{}", base_url, user_id);
         let client = Client::new();
         let response = client.get(&url).send().await?;
@@ -417,7 +414,7 @@ This request must have the authorization header. Refer to [Authorization method]
     import requests
 
     def get_user_details(reference):
-        url = f"{baseUrl}/account/user/{reference}/reference"
+        url = f"{base_url}/account/user/{reference}/reference"
         response = requests.get(url)
 
         if response.status_code == 200:
@@ -455,7 +452,7 @@ This request must have the authorization header. Refer to [Authorization method]
 
     #[tokio::main]
     async fn main() -> Result<(), Box<dyn Error>> {
-        let reference = "janedoe123"; // Replace with the actual user Reference
+        let reference = "janedoe123"; // Replace with the actual user reference
         get_user_details(reference).await?;
         Ok(())
     }
