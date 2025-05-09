@@ -201,7 +201,29 @@ Either the `requesting_user_id` or `requesting_user_reference` must be provided
     Http Code: `400`
     ```json
     {
-        "error": "Wager has already been decided"
+        "status": 400,
+        "error": "Wager outcome already decided"
+    }
+    ```
+
+    **Insufficient balance** <br/>
+    Http Code: `400`
+    ```json
+    {
+        "status": 400,
+        "error": "Effective balance too low",
+        "data": {
+            "id": 1,
+            "balance": 101900,
+            "exposure": 60300,
+            "effective_balance": 41600,
+            "preferences": {
+                "allow_negative_balance": false
+            },
+            "account_preferences": {
+                "allow_negative_balance": false
+            }
+        }
     }
     ```
 
@@ -443,6 +465,24 @@ Either the `requesting_user_id` or `requesting_user_reference` can be provided t
     }
     ```
 
+    **Insufficient balance** <br/>
+    Http Code: `400`
+    ```json
+    {
+        "status": 400,
+        "error": "Effective balance too low",
+        "data": {
+            "id": 2,
+            "balance": 0,
+            "exposure": 0,
+            "effective_balance": 0,
+            "preferences": {},
+            "account_preferences": {
+                "allow_negative_balance": false
+            }
+        }
+    }
+    ```
 
     **Error with body** <br/>
     Http Code: `400`
@@ -479,7 +519,7 @@ This request must have the authorization header. Refer to [Authorization method]
 | Property     | Value                    |
 | :----------- | :----------------------- |
 | method       | `GET`                    |
-| url          | `$baseUrl/open-bets`     |
+| url          | `$baseUrl/bets/open-bets`     |
 | Content-Type | `application/json`       |
 
 #### Query Params
@@ -510,7 +550,7 @@ This request must have the authorization header. Refer to [Authorization method]
   <TabItem value="curl" label="cURL">
 
     ```bash
-    curl -X GET "$baseUrl/open-bets" \
+    curl -X GET "$baseUrl/bets/open-bets" \
       -H "Content-Type: application/json" \
       -G \
       --data-urlencode "page=1" \
@@ -522,7 +562,7 @@ This request must have the authorization header. Refer to [Authorization method]
 
     ```javascript
     function getOpenBets() {
-      const url = new URL(`${baseUrl}/open-bets`);
+      const url = new URL(`${baseUrl}/bets/open-bets`);
       const params = {
         page: 1,
         per_page: 20,
@@ -555,7 +595,7 @@ This request must have the authorization header. Refer to [Authorization method]
 
     def get_open_bets():
         base_url = "your_base_url_here"
-        url = f"{base_url}/open-bets"
+        url = f"{base_url}/bets/open-bets"
         params = {
             "page": 1,
             "per_page": 20,
@@ -570,7 +610,6 @@ This request must have the authorization header. Refer to [Authorization method]
             print('Error:', response.text)
 
     # Example usage
-
     get_open_bets()
     ```
 
@@ -584,7 +623,7 @@ This request must have the authorization header. Refer to [Authorization method]
     #[tokio::main]
     async fn get_open_bets() {
         let base_url = "your_base_url_here";
-        let url = format!("{}/open-bets", base_url);
+        let url = format!("{}/bets/open-bets", base_url);
         let client = Client::new();
         let params = [
             ("page", "1"),
@@ -1162,6 +1201,204 @@ This request must have the authorization header. Refer to [Authorization method]
         ],
         "error": "Bad Request",
         "statusCode": 400
+    }
+    ```
+
+  </TabItem>
+</Tabs>
+
+## Get Single Bet
+
+:::info
+
+This request must have the authorization header. Refer to [Authorization method](/docs/guides/authentication#authentication-methods) guide for more details
+
+:::
+
+### Request
+
+| Property     | Value                       |
+| :----------- | :-------------------------- |
+| method       | `GET`                       |
+| url          | `$baseUrl/bets/:id`         |
+| Content-Type | `application/json`          |
+
+<Tabs groupId="programming-language">
+  <TabItem value="curl" label="cURL">
+
+    ```bash
+    curl -X GET "$baseUrl/bets/123" \
+      -H "Content-Type: application/json"
+    ```
+
+  </TabItem>
+  <TabItem value="javascript" label="JavaScript">
+
+    ```javascript
+    function getSingleBet(betId) {
+      const url = `${baseUrl}/bets/${betId}`;
+
+      fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => response.json())
+      .then(data => console.log('Success:', data))
+      .catch(error => console.error('Error:', error));
+    }
+
+    // Example usage
+    getSingleBet(123);
+    ```
+
+  </TabItem>
+  <TabItem value="python" label="Python">
+
+    ```python
+    import requests
+
+    def get_single_bet(bet_id):
+        url = f"{base_url}/bets/{bet_id}"
+        headers = {
+            "Content-Type": "application/json"
+        }
+
+        response = requests.get(url, headers=headers)
+        if response.status_code == 200:
+            print('Success:', response.json())
+        else:
+            print('Error:', response.text)
+
+    # Example usage
+    get_single_bet(123)
+    ```
+
+  </TabItem>
+  <TabItem value="rust" label="Rust">
+
+    ```rust
+    use reqwest::Client;
+    use tokio;
+
+    #[tokio::main]
+    async fn get_single_bet(bet_id: i32) {
+        let base_url = "your_base_url_here";
+        let url = format!("{}/bets/{}", base_url, bet_id);
+        let client = Client::new();
+
+        let response = client.get(&url)
+            .header("Content-Type", "application/json")
+            .send()
+            .await;
+
+        match response {
+            Ok(resp) => {
+                if resp.status().is_success() {
+                    let json: serde_json::Value = resp.json().await.unwrap();
+                    println!("Success: {:?}", json);
+                } else {
+                    let text = resp.text().await.unwrap();
+                    println!("Error: {}", text);
+                }
+            },
+            Err(err) => {
+                println!("Error: {}", err);
+            }
+        }
+    }
+
+    // Example usage
+    get_single_bet(123);
+    ```
+
+  </TabItem>
+</Tabs>
+
+### Response
+
+<Tabs>
+  <TabItem  value="Success">
+
+    Http Code: `200`
+    ```json
+    {
+        "data": {
+            "id": 2,
+            "requesting_user_id": 4,
+            "requesting_user_reference": "a4_user_2YRDqo69dO4DGdin",
+            "accepting_user_id": 4,
+            "accepting_user_reference": "a4_user_2YRDqo69dO4DGdin",
+            "offer_status": "accepted",
+            "effective_amount": 300,
+            "effective_odds": 3,
+            "created_at": "2025-03-11T15:50:33.601Z",
+            "wager": {
+                "id": 2,
+                "reference": "wager-4",
+                "outcome": "undecided",
+                "account_id": 4,
+                "created_at": "2025-03-11T15:50:33.601Z",
+                "updated_at": "2025-03-11T15:50:33.601Z"
+            },
+            "bet_trails": [
+                {
+                    "id": 4,
+                    "bet_id": 2,
+                    "account_id": 4,
+                    "wager_id": 2,
+                    "offer_status": "requesting",
+                    "description": "Requesting for bet",
+                    "outcome": "undecided",
+                    "requesting_odds": 3,
+                    "requesting_amount": 300,
+                    "accepting_odds": null,
+                    "accepting_amount": null,
+                    "effective_odds": null,
+                    "effective_amount": null,
+                    "created_at": "2025-03-11T15:50:33.601Z",
+                    "transactions": []
+                },
+                {
+                    "id": 6,
+                    "bet_id": 2,
+                    "account_id": 4,
+                    "wager_id": 2,
+                    "offer_status": "accepted",
+                    "description": "Bet offer accepted",
+                    "outcome": "undecided",
+                    "requesting_odds": 3,
+                    "requesting_amount": 300,
+                    "accepting_odds": 3,
+                    "accepting_amount": 300,
+                    "effective_odds": null,
+                    "effective_amount": null,
+                    "created_at": "2025-03-11T16:20:43.304Z",
+                    "transactions": []
+                }
+            ]
+        },
+        "message": "Bet retrieved successfully"
+    }
+    ```
+
+  </TabItem>
+  <TabItem  value="Error">
+
+    **Unauthorized** <br/>
+    Http Code: `401`
+    ```json
+    {
+        "message": "Unauthorized"
+    }
+    ```
+
+    **Not found** <br/>
+    Http Code: `404`
+    ```json
+    {
+        "error": "Bet not found"
     }
     ```
 
