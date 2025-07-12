@@ -48,6 +48,7 @@ To integrate Wager Track into your betting platform for accounting and record-ke
 
 1. [Create an account](/docs/guides/getting-started#creating-an-account) for your betting business
 2. Set up [authentication](/docs/guides/authentication) to access the API
+3. Review [behavioral notes](/docs/guides/behavioral-notes) for important API behaviors and considerations
 3. Use our guides to implement [user management](/docs/guides/user-management)
 4. Explore our [API Reference](/docs/api-reference/auth) for detailed endpoint documentation
 5. Start recording and tracking your betting activities with our comprehensive API services

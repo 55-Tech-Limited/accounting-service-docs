@@ -444,218 +444,6 @@ This request must have the authorization header. Refer to [Authorization method]
   </TabItem>
 </Tabs>
 
-## Rollback Bet
-
-This endpoint allows administrators to rollback a bet to its previous state, reversing all financial transactions associated with it.
-
-:::info
-
-This request must have the authorization header. Refer to [Authorization method](/docs/guides/authentication#authentication-methods) guide for more details
-
-:::
-
-### Request
-
-| Property     | Value                                |
-| :----------- | :----------------------------------- |
-| method       | `POST`                               |
-| url          | `$baseUrl/admin/bets/:betId/rollback` |
-| Content-Type | `application/json`                   |
-
-#### Path Parameters
-
-| Parameter | Description          |
-| --------- | -------------------- |
-| betId     | The ID of the bet    |
-
-<Tabs groupId="programming-language">
-  <TabItem value="curl" label="cURL">
-
-    ```bash
-    curl -X POST "$baseUrl/admin/bets/7/rollback" \
-      -H "Authorization: Bearer $token"
-    ```
-
-  </TabItem>
-  <TabItem value="javascript" label="JavaScript">
-
-    ```javascript
-    const rollbackBet = async (betId) => {
-      try {
-        const response = await fetch(`${baseUrl}/admin/bets/${betId}/rollback`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        
-        const data = await response.json();
-        console.log('Rollback result:', data);
-      } catch (error) {
-        console.error('Error:', error);
-      }
-    };
-
-    // Example usage:
-    const betId = 7;
-    rollbackBet(betId);
-    ```
-
-  </TabItem>
-  <TabItem value="python" label="Python">
-
-    ```python
-    import requests
-
-    def rollback_bet(token, bet_id):
-        url = f"{base_url}/admin/bets/{bet_id}/rollback"
-        
-        headers = {
-            'Authorization': f'Bearer {token}'
-        }
-        
-        response = requests.post(url, headers=headers)
-
-        if response.status_code == 200:
-            print('Rollback successful:', response.json())
-            return response.json()
-        else:
-            print('Error:', response.text)
-            return None
-
-    # Example usage:
-    token = 'your_auth_token'  # Replace with actual token
-    bet_id = 7
-
-    result = rollback_bet(token, bet_id)
-    ```
-
-  </TabItem>
-  <TabItem value="rust" label="Rust">
-
-    ```rust
-    use reqwest::Client;
-    use serde_json::Value;
-    use std::error::Error;
-
-    async fn rollback_bet(
-        client: &Client, 
-        base_url: &str, 
-        token: &str,
-        bet_id: u64
-    ) -> Result<(), Box<dyn Error>> {
-        let url = format!("{}/admin/bets/{}/rollback", base_url, bet_id);
-        
-        let response = client.post(&url)
-            .header("Authorization", format!("Bearer {}", token))
-            .send()
-            .await?;
-
-        if response.status().is_success() {
-            let data: Value = response.json().await?;
-            println!("Rollback successful: {:?}", data);
-        } else {
-            println!("Error: {:?}", response.text().await?);
-        }
-
-        Ok(())
-    }
-
-    #[tokio::main]
-    async fn main() -> Result<(), Box<dyn Error>> {
-        let client = Client::new();
-        let base_url = "your_base_url"; // Replace with actual base URL
-        let token = "your_auth_token"; // Replace with actual token
-        let bet_id = 7;
-
-        rollback_bet(&client, base_url, token, bet_id).await?;
-        
-        Ok(())
-    }
-    ```
-
-  </TabItem>
-</Tabs>
-
-### Response
-
-<Tabs>
-  <TabItem value="Success">
-
-    Http Code: `200`
-    ```json
-    {
-      "message": "Bet rolled back successfully"
-    }
-    ```
-
-  </TabItem>
-  <TabItem value="Error">
-
-    **Unauthorized** <br/>
-    Http Code: `401`
-    ```json
-    {
-      "message": "Unauthorized",
-      "statusCode": 401
-    }
-    ```
-
-    **Forbidden** <br/>
-    Http Code: `403`
-    ```json
-    {
-      "status": 403,
-      "error": "Admin access required"
-    }
-    ```
-
-    **Already Rolled Back** <br/>
-    Http Code: `400`
-    ```json
-    {
-      "status": 400,
-      "error": "Bet already rolled back"
-    }
-    ```
-
-    **Not Found** <br/>
-    Http Code: `404`
-    ```json
-    {
-      "status": 404,
-      "error": "Bet not found"
-    }
-    ```
-
-    **Insufficient Balance** <br/>
-    Http Code: `400`
-    ```json
-    {
-      "status": 400,
-      "error": "Unable to rollback bet",
-      "data": [
-        {
-          "message": "User balance not sufficient to rollback bet",
-          "user": {
-            "id": 2,
-            "reference": "a2_user_Xhwz442NTj74z6F0",
-            "current_balance": 0,
-            "balance_after_rollback": -90000,
-            "current_exposure": 0,
-            "exposure_after_rollback": 0
-          },
-          "associated_bet_ids": [
-            7
-          ]
-        }
-      ]
-    }
-    ```
-
-  </TabItem>
-</Tabs>
-
 ## Force Update Wager Outcome
 
 This endpoint allows administrators to force-update the outcome of a wager, even if it has already been decided.
@@ -910,6 +698,729 @@ This request must have the authorization header. Refer to [Authorization method]
           "associated_bet_ids": [
             7
           ]
+        }
+      ]
+    }
+    ```
+
+  </TabItem>
+</Tabs>
+
+## Set Bet Inactive
+
+This endpoint allows administrators to deactivate a bet by its ID. When a bet is set as inactive, it will trigger a rollback of the bet's financial impact, restoring user balances and exposure to their previous state.
+
+:::warning Important Behavior
+
+When a bet is set as inactive:
+- The bet's `isActive` status is set to `false`
+- A rollback transaction is performed to restore user balances
+- The bet's offer status remains unchanged
+- An audit trail is created with the admin user's details
+- If the bet has already been settled, appropriate balance adjustments are made
+
+:::
+
+### Request
+
+| Property     | Value                                    |
+| :----------- | :--------------------------------------- |
+| method       | `POST`                                   |
+| url          | `$baseUrl/admin/bets/:betId/set-inactive` |
+| Content-Type | `application/json`                       |
+
+#### Path Parameters
+
+| Parameter | Description              |
+| --------- | ------------------------ |
+| betId     | The ID of the bet to deactivate |
+
+<Tabs groupId="programming-language">
+  <TabItem value="curl" label="cURL">
+
+    ```bash
+    curl -X POST "$baseUrl/admin/bets/7/set-inactive" \
+      -H "Authorization: Bearer $token" \
+      -H "Content-Type: application/json"
+    ```
+
+  </TabItem>
+  <TabItem value="javascript" label="JavaScript">
+
+    ```javascript
+    const setBetInactive = async (betId) => {
+      try {
+        const response = await fetch(`${baseUrl}/admin/bets/${betId}/set-inactive`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        const result = await response.json();
+        console.log('Bet deactivated:', result);
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    };
+
+    // Example usage:
+    setBetInactive(7);
+    ```
+
+  </TabItem>
+  <TabItem value="python" label="Python">
+
+    ```python
+    import requests
+
+    def set_bet_inactive(token, bet_id):
+        url = f"{base_url}/admin/bets/{bet_id}/set-inactive"
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {token}'
+        }
+        
+        response = requests.post(url, headers=headers)
+
+        if response.status_code == 200:
+            print('Bet deactivated successfully:', response.json())
+            return response.json()
+        else:
+            print('Error:', response.text)
+            return None
+
+    # Example usage:
+    token = 'your_auth_token'  # Replace with actual token
+    bet_id = 7
+
+    result = set_bet_inactive(token, bet_id)
+    ```
+
+  </TabItem>
+  <TabItem value="rust" label="Rust">
+
+    ```rust
+    use reqwest::Client;
+    use serde_json::Value;
+    use std::error::Error;
+
+    async fn set_bet_inactive(
+        client: &Client, 
+        base_url: &str, 
+        token: &str,
+        bet_id: u64
+    ) -> Result<(), Box<dyn Error>> {
+        let url = format!("{}/admin/bets/{}/set-inactive", base_url, bet_id);
+        
+        let response = client.post(&url)
+            .header("Content-Type", "application/json")
+            .header("Authorization", format!("Bearer {}", token))
+            .send()
+            .await?;
+
+        if response.status().is_success() {
+            let data: Value = response.json().await?;
+            println!("Bet deactivated successfully: {:?}", data);
+        } else {
+            println!("Error: {:?}", response.text().await?);
+        }
+
+        Ok(())
+    }
+
+    #[tokio::main]
+    async fn main() -> Result<(), Box<dyn Error>> {
+        let client = Client::new();
+        let base_url = "your_base_url"; // Replace with actual base URL
+        let token = "your_auth_token"; // Replace with actual token
+        let bet_id = 7;
+
+        set_bet_inactive(&client, base_url, token, bet_id).await?;
+        
+        Ok(())
+    }
+    ```
+
+  </TabItem>
+</Tabs>
+
+### Response
+
+<Tabs>
+  <TabItem value="Success">
+
+    Http Code: `200`
+    ```json
+    {
+      "message": "Bet set inactive successfully"
+    }
+    ```
+
+  </TabItem>
+  <TabItem value="Error">
+
+    **Unauthorized** <br/>
+    Http Code: `401`
+    ```json
+    {
+      "message": "Unauthorized",
+      "statusCode": 401
+    }
+    ```
+
+    **Forbidden** <br/>
+    Http Code: `403`
+    ```json
+    {
+      "status": 403,
+      "error": "Admin access required"
+    }
+    ```
+
+    **Not Found** <br/>
+    Http Code: `404`
+    ```json
+    {
+      "status": 404,
+      "error": "Bet not found"
+    }
+    ```
+
+    **Already Inactive** <br/>
+    Http Code: `400`
+    ```json
+    {
+      "status": 400,
+      "error": "Bet already inactive"
+    }
+    ```
+
+    **Insufficient Balance** <br/>
+    Http Code: `400`
+    ```json
+    {
+      "status": 400,
+      "error": "Unable to set bet inactive",
+      "data": [
+        {
+          "message": "User balance not sufficient to rollback bet",
+          "user": {
+            "id": 2,
+            "reference": "a2_user_Xhwz442NTj74z6F0",
+            "current_balance": 0,
+            "balance_after_action": -270000,
+            "current_exposure": 0,
+            "exposure_after_action": 0
+          },
+          "associated_bet_ids": [7]
+        }
+      ]
+    }
+    ```
+
+  </TabItem>
+</Tabs>
+
+## Set Bet Active
+
+This endpoint allows administrators to reactivate a previously deactivated bet by its ID. When a bet is set as active, it will restore the bet's financial impact on user balances and exposure.
+
+:::warning Important Behavior
+
+When a bet is set as active:
+- The bet's `isActive` status is set to `true`
+- Transaction actions are performed to restore the bet's financial impact
+- The bet's offer status remains unchanged
+- An audit trail is created with the admin user's details
+- User balances and exposure are updated based on the bet's current state
+
+:::
+
+### Request
+
+| Property     | Value                                  |
+| :----------- | :------------------------------------- |
+| method       | `POST`                                 |
+| url          | `$baseUrl/admin/bets/:betId/set-active` |
+| Content-Type | `application/json`                     |
+
+#### Path Parameters
+
+| Parameter | Description              |
+| --------- | ------------------------ |
+| betId     | The ID of the bet to reactivate |
+
+<Tabs groupId="programming-language">
+  <TabItem value="curl" label="cURL">
+
+    ```bash
+    curl -X POST "$baseUrl/admin/bets/7/set-active" \
+      -H "Authorization: Bearer $token" \
+      -H "Content-Type: application/json"
+    ```
+
+  </TabItem>
+  <TabItem value="javascript" label="JavaScript">
+
+    ```javascript
+    const setBetActive = async (betId) => {
+      try {
+        const response = await fetch(`${baseUrl}/admin/bets/${betId}/set-active`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        const result = await response.json();
+        console.log('Bet activated:', result);
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    };
+
+    // Example usage:
+    setBetActive(7);
+    ```
+
+  </TabItem>
+  <TabItem value="python" label="Python">
+
+    ```python
+    import requests
+
+    def set_bet_active(token, bet_id):
+        url = f"{base_url}/admin/bets/{bet_id}/set-active"
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {token}'
+        }
+        
+        response = requests.post(url, headers=headers)
+
+        if response.status_code == 200:
+            print('Bet activated successfully:', response.json())
+            return response.json()
+        else:
+            print('Error:', response.text)
+            return None
+
+    # Example usage:
+    token = 'your_auth_token'  # Replace with actual token
+    bet_id = 7
+
+    result = set_bet_active(token, bet_id)
+    ```
+
+  </TabItem>
+  <TabItem value="rust" label="Rust">
+
+    ```rust
+    use reqwest::Client;
+    use serde_json::Value;
+    use std::error::Error;
+
+    async fn set_bet_active(
+        client: &Client, 
+        base_url: &str, 
+        token: &str,
+        bet_id: u64
+    ) -> Result<(), Box<dyn Error>> {
+        let url = format!("{}/admin/bets/{}/set-active", base_url, bet_id);
+        
+        let response = client.post(&url)
+            .header("Content-Type", "application/json")
+            .header("Authorization", format!("Bearer {}", token))
+            .send()
+            .await?;
+
+        if response.status().is_success() {
+            let data: Value = response.json().await?;
+            println!("Bet activated successfully: {:?}", data);
+        } else {
+            println!("Error: {:?}", response.text().await?);
+        }
+
+        Ok(())
+    }
+
+    #[tokio::main]
+    async fn main() -> Result<(), Box<dyn Error>> {
+        let client = Client::new();
+        let base_url = "your_base_url"; // Replace with actual base URL
+        let token = "your_auth_token"; // Replace with actual token
+        let bet_id = 7;
+
+        set_bet_active(&client, base_url, token, bet_id).await?;
+        
+        Ok(())
+    }
+    ```
+
+  </TabItem>
+</Tabs>
+
+### Response
+
+<Tabs>
+  <TabItem value="Success">
+
+    Http Code: `200`
+    ```json
+    {
+      "message": "Bet set active successfully"
+    }
+    ```
+
+  </TabItem>
+  <TabItem value="Error">
+
+    **Unauthorized** <br/>
+    Http Code: `401`
+    ```json
+    {
+      "message": "Unauthorized",
+      "statusCode": 401
+    }
+    ```
+
+    **Forbidden** <br/>
+    Http Code: `403`
+    ```json
+    {
+      "status": 403,
+      "error": "Admin access required"
+    }
+    ```
+
+    **Not Found** <br/>
+    Http Code: `404`
+    ```json
+    {
+      "status": 404,
+      "error": "Bet not found"
+    }
+    ```
+
+    **Already Active** <br/>
+    Http Code: `400`
+    ```json
+    {
+      "status": 400,
+      "error": "Bet already active"
+    }
+    ```
+
+    **Insufficient Balance** <br/>
+    Http Code: `400`
+    ```json
+    {
+      "status": 400,
+      "error": "Unable to set bet active",
+      "data": [
+        {
+          "message": "User balance not sufficient to activate bet",
+          "user": {
+            "id": 2,
+            "reference": "a2_user_Xhwz442NTj74z6F0",
+            "current_balance": 0,
+            "balance_after_action": -270000,
+            "current_exposure": 0,
+            "exposure_after_action": 0
+          },
+          "associated_bet_ids": [7]
+        }
+      ]
+    }
+    ```
+
+  </TabItem>
+</Tabs>
+
+## Force Update Bet Override Outcome
+
+This endpoint allows administrators to force update the override outcome of a specific bet. This is useful for correcting bet outcomes when there are disputes or errors in the original settlement.
+
+:::warning Important Behavior
+
+When a bet's override outcome is updated:
+- The current bet's financial impact is rolled back first
+- The bet's `override_outcome` is updated to the new value
+- If the bet is in "requesting" or "accepting" state and the override outcome is not "undecided", the bet's offer status is changed to "expired"
+- If the override outcome is set to "undecided" and the bet is "expired", the offer status is restored to "requesting" or "accepting"
+- New transaction actions are performed based on the updated outcome
+- An audit trail is created with the admin user's details
+
+:::
+
+### Request
+
+| Property     | Value                                           |
+| :----------- | :---------------------------------------------- |
+| method       | `POST`                                          |
+| url          | `$baseUrl/admin/bets/force-update-override-outcome` |
+| Content-Type | `application/json`                              |
+
+#### Body Parameters
+
+| Parameter         | Type     | Required | Description                                      |
+| ----------------- | -------- | -------- | ------------------------------------------------ |
+| account_id        | number   | Yes      | The ID of the account that owns the bet         |
+| bet_id            | number   | Yes      | The ID of the bet to update                     |
+| override_outcome  | string   | No       | The new override outcome ("win", "lose", "draw", "undecided", or null to remove) |
+| description       | string   | No       | Optional description for the action             |
+
+<Tabs groupId="programming-language">
+  <TabItem value="curl" label="cURL">
+
+    ```bash
+    curl -X POST "$baseUrl/admin/bets/force-update-override-outcome" \
+      -H "Authorization: Bearer $token" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "account_id": 2,
+        "bet_id": 7,
+        "override_outcome": "win",
+        "description": "Corrected outcome after review"
+      }'
+    ```
+
+  </TabItem>
+  <TabItem value="javascript" label="JavaScript">
+
+    ```javascript
+    const forceUpdateBetOverrideOutcome = async (data) => {
+      try {
+        const response = await fetch(`${baseUrl}/admin/bets/force-update-override-outcome`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        console.log('Override outcome updated:', result);
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    };
+
+    // Example usage:
+    const betData = {
+      account_id: 2,
+      bet_id: 7,
+      override_outcome: "win",
+      description: "Corrected outcome after review"
+    };
+
+    forceUpdateBetOverrideOutcome(betData);
+    ```
+
+  </TabItem>
+  <TabItem value="python" label="Python">
+
+    ```python
+    import requests
+    import json
+
+    def force_update_bet_override_outcome(token, account_id, bet_id, override_outcome, description=None):
+        url = f"{base_url}/admin/bets/force-update-override-outcome"
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {token}'
+        }
+        
+        payload = {
+            'account_id': account_id,
+            'bet_id': bet_id,
+            'override_outcome': override_outcome
+        }
+        
+        if description:
+            payload['description'] = description
+        
+        response = requests.post(url, headers=headers, data=json.dumps(payload))
+
+        if response.status_code == 200:
+            print('Override outcome updated successfully:', response.json())
+            return response.json()
+        else:
+            print('Error:', response.text)
+            return None
+
+    # Example usage:
+    token = 'your_auth_token'  # Replace with actual token
+    account_id = 2
+    bet_id = 7
+    override_outcome = "win"
+    description = "Corrected outcome after review"
+
+    result = force_update_bet_override_outcome(token, account_id, bet_id, override_outcome, description)
+    ```
+
+  </TabItem>
+  <TabItem value="rust" label="Rust">
+
+    ```rust
+    use reqwest::Client;
+    use serde_json::{json, Value};
+    use std::error::Error;
+
+    async fn force_update_bet_override_outcome(
+        client: &Client, 
+        base_url: &str, 
+        token: &str,
+        account_id: u64,
+        bet_id: u64,
+        override_outcome: Option<&str>,
+        description: Option<&str>
+    ) -> Result<(), Box<dyn Error>> {
+        let url = format!("{}/admin/bets/force-update-override-outcome", base_url);
+        
+        // Build the payload
+        let mut payload = json!({
+            "account_id": account_id,
+            "bet_id": bet_id
+        });
+        
+        if let Some(outcome) = override_outcome {
+            payload["override_outcome"] = json!(outcome);
+        }
+        
+        if let Some(desc) = description {
+            payload["description"] = json!(desc);
+        }
+        
+        let response = client.post(&url)
+            .header("Content-Type", "application/json")
+            .header("Authorization", format!("Bearer {}", token))
+            .json(&payload)
+            .send()
+            .await?;
+
+        if response.status().is_success() {
+            let data: Value = response.json().await?;
+            println!("Override outcome updated successfully: {:?}", data);
+        } else {
+            println!("Error: {:?}", response.text().await?);
+        }
+
+        Ok(())
+    }
+
+    #[tokio::main]
+    async fn main() -> Result<(), Box<dyn Error>> {
+        let client = Client::new();
+        let base_url = "your_base_url"; // Replace with actual base URL
+        let token = "your_auth_token"; // Replace with actual token
+        let account_id = 2;
+        let bet_id = 7;
+        let override_outcome = Some("win");
+        let description = Some("Corrected outcome after review");
+
+        force_update_bet_override_outcome(
+            &client, 
+            base_url, 
+            token, 
+            account_id, 
+            bet_id, 
+            override_outcome, 
+            description
+        ).await?;
+        
+        Ok(())
+    }
+    ```
+
+  </TabItem>
+</Tabs>
+
+### Response
+
+<Tabs>
+  <TabItem value="Success">
+
+    Http Code: `200`
+    ```json
+    {
+      "message": "Override outcome updated successfully"
+    }
+    ```
+
+  </TabItem>
+  <TabItem value="Error">
+
+    **Unauthorized** <br/>
+    Http Code: `401`
+    ```json
+    {
+      "message": "Unauthorized",
+      "statusCode": 401
+    }
+    ```
+
+    **Forbidden** <br/>
+    Http Code: `403`
+    ```json
+    {
+      "status": 403,
+      "error": "Admin access required"
+    }
+    ```
+
+    **Not Found** <br/>
+    Http Code: `404`
+    ```json
+    {
+      "status": 404,
+      "error": "Bet not found"
+    }
+    ```
+
+    **Inactive Bet** <br/>
+    Http Code: `400`
+    ```json
+    {
+      "status": 400,
+      "error": "Cannot update override outcome for inactive bet"
+    }
+    ```
+
+    **Same Outcome** <br/>
+    Http Code: `400`
+    ```json
+    {
+      "status": 400,
+      "error": "Override outcome is already set to this value"
+    }
+    ```
+
+    **Insufficient Balance** <br/>
+    Http Code: `400`
+    ```json
+    {
+      "status": 400,
+      "error": "Unable to update override outcome",
+      "data": [
+        {
+          "message": "User balance not sufficient for outcome update",
+          "user": {
+            "id": 2,
+            "reference": "a2_user_Xhwz442NTj74z6F0",
+            "current_balance": 0,
+            "balance_after_action": -270000,
+            "current_exposure": 0,
+            "exposure_after_action": 0
+          },
+          "associated_bet_ids": [7]
         }
       ]
     }
