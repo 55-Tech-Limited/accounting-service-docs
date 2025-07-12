@@ -195,6 +195,16 @@ This request must have the authorization header. Refer to [Authorization method]
     }
     ```
 
+    **Invalid Account ID** <br/>
+    Http Code: `400`
+    ```json
+    {
+      "status": 400,
+      "error": "Bad Request",
+      "message": "Validation failed (numeric string is expected)"
+    }
+    ```
+
   </TabItem>
 </Tabs>
 
@@ -218,17 +228,20 @@ This request must have the authorization header. Refer to [Authorization method]
 
 #### Query Parameters
 
-| Parameter   | Type   | Required | Default | Description                       |
-| ----------- | ------ | -------- | ------- | --------------------------------- |
-| page        | number | No       | 1       | Page number for pagination        |
-| per_page    | number | No       | 20      | Number of results per page        |
-| search      | string | No       | -       | Search term for account name/email|
+| Parameter        | Type   | Required | Default     | Description                                                    |
+| ---------------- | ------ | -------- | ----------- | -------------------------------------------------------------- |
+| page             | number | No       | 1           | Page number for pagination                                     |
+| per_page         | number | No       | 20          | Number of results per page                                     |
+| search           | string | No       | -           | Search term for account name/email                            |
+| email_verified   | boolean| No       | -           | Filter by email verification status (true/false)             |
+| sort_by          | string | No       | created_at  | Sort field (effective_odds, effective_amount, created_at)     |
+| sort_direction   | string | No       | asc         | Sort direction (asc, desc)                                    |
 
 <Tabs groupId="programming-language">
   <TabItem value="curl" label="cURL">
 
     ```bash
-    curl -X GET "$baseUrl/admin/accounts?page=1&per_page=10&search=email" \
+    curl -X GET "$baseUrl/admin/accounts?page=1&per_page=10&search=email&email_verified=true&sort_by=created_at&sort_direction=desc" \
       -H "Authorization: Bearer $token"
     ```
 
@@ -243,6 +256,9 @@ This request must have the authorization header. Refer to [Authorization method]
         if (options.page) params.append('page', options.page);
         if (options.perPage) params.append('per_page', options.perPage);
         if (options.search) params.append('search', options.search);
+        if (options.emailVerified !== undefined) params.append('email_verified', options.emailVerified);
+        if (options.sortBy) params.append('sort_by', options.sortBy);
+        if (options.sortDirection) params.append('sort_direction', options.sortDirection);
         
         const response = await fetch(`${baseUrl}/admin/accounts?${params.toString()}`, {
           method: 'GET',
@@ -262,7 +278,10 @@ This request must have the authorization header. Refer to [Authorization method]
     const options = {
       page: 1,
       perPage: 10,
-      search: 'email'
+      search: 'email',
+      emailVerified: true,
+      sortBy: 'created_at',
+      sortDirection: 'desc'
     };
 
     getAccounts(options);
@@ -275,14 +294,19 @@ This request must have the authorization header. Refer to [Authorization method]
     import requests
     from urllib.parse import urlencode
 
-    def get_accounts(token, page=1, per_page=20, search=None):
+    def get_accounts(token, page=1, per_page=20, search=None, email_verified=None, sort_by='created_at', sort_direction='asc'):
         params = {
             'page': page,
-            'per_page': per_page
+            'per_page': per_page,
+            'sort_by': sort_by,
+            'sort_direction': sort_direction
         }
         
         if search:
             params['search'] = search
+        
+        if email_verified is not None:
+            params['email_verified'] = str(email_verified).lower()
             
         query_string = urlencode(params)
         url = f"{base_url}/admin/accounts?{query_string}"
@@ -303,7 +327,7 @@ This request must have the authorization header. Refer to [Authorization method]
     # Example usage:
     token = 'your_auth_token'  # Replace with actual token
 
-    accounts = get_accounts(token, page=1, per_page=10, search='email')
+    accounts = get_accounts(token, page=1, per_page=10, search='email', email_verified=True, sort_by='created_at', sort_direction='desc')
     ```
 
   </TabItem>
@@ -320,7 +344,10 @@ This request must have the authorization header. Refer to [Authorization method]
         token: &str,
         page: Option<u32>,
         per_page: Option<u32>,
-        search: Option<&str>
+        search: Option<&str>,
+        email_verified: Option<bool>,
+        sort_by: Option<&str>,
+        sort_direction: Option<&str>
     ) -> Result<(), Box<dyn Error>> {
         let mut url = format!("{}/admin/accounts?", base_url);
         
@@ -335,6 +362,18 @@ This request must have the authorization header. Refer to [Authorization method]
         
         if let Some(s) = search {
             url.push_str(&format!("search={}&", s));
+        }
+        
+        if let Some(ev) = email_verified {
+            url.push_str(&format!("email_verified={}&", ev));
+        }
+        
+        if let Some(sb) = sort_by {
+            url.push_str(&format!("sort_by={}&", sb));
+        }
+        
+        if let Some(sd) = sort_direction {
+            url.push_str(&format!("sort_direction={}&", sd));
         }
         
         // Remove trailing & if exists
@@ -369,7 +408,10 @@ This request must have the authorization header. Refer to [Authorization method]
             token, 
             Some(1), 
             Some(10), 
-            Some("email")
+            Some("email"),
+            Some(true),
+            Some("created_at"),
+            Some("desc")
         ).await?;
         
         Ok(())
@@ -438,6 +480,22 @@ This request must have the authorization header. Refer to [Authorization method]
     {
       "status": 403,
       "error": "Admin access required"
+    }
+    ```
+
+    **Invalid Query Parameters** <br/>
+    Http Code: `400`
+    ```json
+    {
+      "status": 400,
+      "error": "Bad Request",
+      "message": [
+        "page must be a number",
+        "per_page must be a number",
+        "email_verified must be a boolean value",
+        "sort_by must be one of the following values: effective_odds, effective_amount, created_at",
+        "sort_direction must be one of the following values: asc, desc"
+      ]
     }
     ```
 
@@ -678,22 +736,56 @@ This request must have the authorization header. Refer to [Authorization method]
     }
     ```
 
+    **Outcome Already Set** <br/>
+    Http Code: `400`
+    ```json
+    {
+      "status": 400,
+      "error": "Wager outcome already win"
+    }
+    ```
+
+    **Invalid Outcome Value** <br/>
+    Http Code: `400`
+    ```json
+    {
+      "status": 400,
+      "error": "Bad Request",
+      "message": [
+        "outcome - (invalid_value) not a valid bet outcome (undecided, win, loss, push, half-win, half-loss, void)"
+      ]
+    }
+    ```
+
+    **Invalid Request Body** <br/>
+    Http Code: `400`
+    ```json
+    {
+      "status": 400,
+      "error": "Bad Request",
+      "message": [
+        "account_id must be a number",
+        "wager_reference should not be empty"
+      ]
+    }
+    ```
+
     **Insufficient Balance** <br/>
     Http Code: `400`
     ```json
     {
       "status": 400,
-      "error": "Unable to rollback bet",
+      "error": "Unable to set bet inactive",
       "data": [
         {
-          "message": "User balance not sufficient to rollback bet",
+          "message": "User balance not sufficient for action",
           "user": {
             "id": 2,
             "reference": "a2_user_Xhwz442NTj74z6F0",
             "current_balance": 0,
-            "balance_after_rollback": -270000,
+            "balance_after_action": -270000,
             "current_exposure": 0,
-            "exposure_after_rollback": 0
+            "exposure_after_action": 0
           },
           "associated_bet_ids": [
             7
@@ -898,6 +990,16 @@ When a bet is set as inactive:
     }
     ```
 
+    **Invalid Bet ID** <br/>
+    Http Code: `400`
+    ```json
+    {
+      "status": 400,
+      "error": "Bad Request",
+      "message": "Validation failed (numeric string is expected)"
+    }
+    ```
+
     **Insufficient Balance** <br/>
     Http Code: `400`
     ```json
@@ -906,7 +1008,7 @@ When a bet is set as inactive:
       "error": "Unable to set bet inactive",
       "data": [
         {
-          "message": "User balance not sufficient to rollback bet",
+          "message": "User balance not sufficient for action",
           "user": {
             "id": 2,
             "reference": "a2_user_Xhwz442NTj74z6F0",
@@ -1116,6 +1218,16 @@ When a bet is set as active:
     }
     ```
 
+    **Invalid Bet ID** <br/>
+    Http Code: `400`
+    ```json
+    {
+      "status": 400,
+      "error": "Bad Request",
+      "message": "Validation failed (numeric string is expected)"
+    }
+    ```
+
     **Insufficient Balance** <br/>
     Http Code: `400`
     ```json
@@ -1124,7 +1236,7 @@ When a bet is set as active:
       "error": "Unable to set bet active",
       "data": [
         {
-          "message": "User balance not sufficient to activate bet",
+          "message": "User balance not sufficient for action",
           "user": {
             "id": 2,
             "reference": "a2_user_Xhwz442NTj74z6F0",
@@ -1168,12 +1280,12 @@ When a bet's override outcome is updated:
 
 #### Body Parameters
 
-| Parameter         | Type     | Required | Description                                      |
-| ----------------- | -------- | -------- | ------------------------------------------------ |
-| account_id        | number   | Yes      | The ID of the account that owns the bet         |
-| bet_id            | number   | Yes      | The ID of the bet to update                     |
-| override_outcome  | string   | No       | The new override outcome ("win", "lose", "draw", "undecided", or null to remove) |
-| description       | string   | No       | Optional description for the action             |
+| Parameter         | Type     | Required | Description                                                                                        |
+| ----------------- | -------- | -------- | -------------------------------------------------------------------------------------------------- |
+| account_id        | number   | Yes      | The ID of the account that owns the bet                                                           |
+| bet_id            | number   | Yes      | The ID of the bet to update                                                                       |
+| override_outcome  | string   | No       | The new override outcome (undecided, win, loss, push, half-win, half-loss, void, or null to remove) |
+| description       | string   | No       | Optional description for the action                                                               |
 
 <Tabs groupId="programming-language">
   <TabItem value="curl" label="cURL">
@@ -1403,6 +1515,31 @@ When a bet's override outcome is updated:
     }
     ```
 
+    **Invalid Outcome Value** <br/>
+    Http Code: `400`
+    ```json
+    {
+      "status": 400,
+      "error": "Bad Request",
+      "message": [
+        "override_outcome - (invalid_value) not a valid bet outcome (undecided, win, loss, push, half-win, half-loss, void)"
+      ]
+    }
+    ```
+
+    **Invalid Request Body** <br/>
+    Http Code: `400`
+    ```json
+    {
+      "status": 400,
+      "error": "Bad Request",
+      "message": [
+        "account_id must be a number",
+        "bet_id must be a number"
+      ]
+    }
+    ```
+
     **Insufficient Balance** <br/>
     Http Code: `400`
     ```json
@@ -1411,7 +1548,7 @@ When a bet's override outcome is updated:
       "error": "Unable to update override outcome",
       "data": [
         {
-          "message": "User balance not sufficient for outcome update",
+          "message": "User balance not sufficient for action",
           "user": {
             "id": 2,
             "reference": "a2_user_Xhwz442NTj74z6F0",
