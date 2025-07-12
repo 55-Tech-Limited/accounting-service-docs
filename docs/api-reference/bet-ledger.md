@@ -956,6 +956,7 @@ This request must have the authorization header. Refer to [Authorization method]
                 "effective_amount": 300,
                 "effective_odds": 3,
                 "override_outcome": null,
+                "is_active": true,
                 "created_at": "2025-03-11T15:50:33.601Z",
                 "wager": {
                     "id": 2,
@@ -1014,6 +1015,7 @@ This request must have the authorization header. Refer to [Authorization method]
                 "effective_amount": null,
                 "effective_odds": null,
                 "override_outcome": null,
+                "is_active": true,
                 "created_at": "2025-03-11T16:11:08.156Z",
                 "wager": {
                       "id": 2,
@@ -1053,6 +1055,12 @@ This request must have the authorization header. Refer to [Authorization method]
         "last_page": 1
     }
     ```
+
+:::info Field Description
+
+**is_active**: A boolean field indicating whether the bet is currently active or inactive. Active bets (true) can be accepted by other users and appear in open bet listings. Inactive bets (false) cannot be accepted and are excluded from open bet results.
+
+:::
 
   </TabItem>
   <TabItem  value="Error">
@@ -1640,6 +1648,7 @@ This request must have the authorization header. Refer to [Authorization method]
             "effective_amount": 300,
             "effective_odds": 3,
             "override_outcome": null,
+            "is_active": true,
             "created_at": "2025-03-11T15:50:33.601Z",
             "wager": {
                 "id": 2,
@@ -1691,6 +1700,12 @@ This request must have the authorization header. Refer to [Authorization method]
         "message": "Bet retrieved successfully"
     }
     ```
+
+:::info Field Description
+
+**is_active**: A boolean field indicating whether the bet is currently active or inactive. Active bets (true) can be accepted by other users and appear in open bet listings. Inactive bets (false) cannot be accepted and are excluded from open bet results.
+
+:::
 
   </TabItem>
   <TabItem  value="Error">
