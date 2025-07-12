@@ -805,7 +805,7 @@ This endpoint allows administrators to deactivate a bet by its ID. When a bet is
 :::warning Important Behavior
 
 When a bet is set as inactive:
-- The bet's `isActive` status is set to `false`
+- The bet's `is_active` status is set to `false`
 - A rollback transaction is performed to restore user balances
 - The bet's offer status remains unchanged
 - An audit trail is created with the admin user's details
@@ -1033,7 +1033,7 @@ This endpoint allows administrators to reactivate a previously deactivated bet b
 :::warning Important Behavior
 
 When a bet is set as active:
-- The bet's `isActive` status is set to `true`
+- The bet's `is_active` status is set to `true`
 - Transaction actions are performed to restore the bet's financial impact
 - The bet's offer status remains unchanged
 - An audit trail is created with the admin user's details

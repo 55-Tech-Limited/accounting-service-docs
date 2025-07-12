@@ -20,7 +20,7 @@ When a bet is set to inactive using the `POST /admin/bets/:betId/set-inactive` e
 - **Financial Rollback**: The system performs a complete rollback of the bet's financial impact
 - **Balance Restoration**: User balances are restored to their state before the bet was placed
 - **Exposure Adjustment**: User exposure is adjusted to remove the bet's impact
-- **Status Change**: The bet's `isActive` flag is set to `false`
+- **Status Change**: The bet's `is_active` flag is set to `false`
 - **Audit Trail**: An action record is created with the admin user's details
 - **Offer Status**: The bet's offer status remains unchanged
 
@@ -37,7 +37,7 @@ When a bet is set to active using the `POST /admin/bets/:betId/set-active` endpo
 - **Financial Restoration**: The system restores the bet's financial impact
 - **Balance Adjustment**: User balances are adjusted to reflect the bet's presence
 - **Exposure Restoration**: User exposure is updated to include the bet
-- **Status Change**: The bet's `isActive` flag is set to `true`
+- **Status Change**: The bet's `is_active` flag is set to `true`
 - **Audit Trail**: An action record is created with the admin user's details
 
 ### Override Outcome Management
