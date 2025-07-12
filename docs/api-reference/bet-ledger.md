@@ -32,7 +32,8 @@ This request must have the authorization header. Refer to [Authorization method]
 | requesting_odds           | number (>=1) | Yes      | -       | Requesting odds           |
 | requesting_amount         | number (>0)  | Yes      | -       | Requesting amount         |
 | requesting_user_id        | number       | No       | -       | Requesting user id        |
-| requesting_user_reference | number       | No       | -       | Requesting user reference |
+| requesting_user_reference | string       | No       | -       | Requesting user reference |
+| meta                      | object       | No       | -       | User specified meta data  |
 
 :::info
 
@@ -193,7 +194,26 @@ Either the `requesting_user_id` or `requesting_user_reference` must be provided
     Http Code: `404`
     ```json
     {
+        "status": 404,
         "error": "Requesting user not found"
+    }
+    ```
+
+    **Account not found** <br/>
+    Http Code: `404`
+    ```json
+    {
+        "status": 404,
+        "error": "Account not found"
+    }
+    ```
+
+    **Missing user identifier** <br/>
+    Http Code: `400`
+    ```json
+    {
+        "status": 400,
+        "error": "requesting_user_id or requesting_user_reference must be defined"
     }
     ```
 
@@ -453,7 +473,44 @@ Either the `requesting_user_id` or `requesting_user_reference` can be provided t
     Http Code: `404`
     ```json
     {
-        "error": "Requesting user not found"
+        "status": 404,
+        "error": "Accepting user not found"
+    }
+    ```
+
+    **Account not found** <br/>
+    Http Code: `404`
+    ```json
+    {
+        "status": 404,
+        "error": "Account not found"
+    }
+    ```
+
+    **Wager not found** <br/>
+    Http Code: `404`
+    ```json
+    {
+        "status": 404,
+        "error": "Wager with reference not found"
+    }
+    ```
+
+    **Missing user identifier** <br/>
+    Http Code: `400`
+    ```json
+    {
+        "status": 400,
+        "error": "requesting_user_id or requesting_user_reference must be defined"
+    }
+    ```
+
+    **Requesting user does not exist** <br/>
+    Http Code: `400`
+    ```json
+    {
+        "status": 400,
+        "error": "Requesting user does not exist"
     }
     ```
 
@@ -461,6 +518,7 @@ Either the `requesting_user_id` or `requesting_user_reference` can be provided t
     Http Code: `400`
     ```json
     {
+        "status": 400,
         "error": "Accepting amount greater than the maximum amount of \"300\""
     }
     ```
@@ -529,11 +587,12 @@ This request must have the authorization header. Refer to [Authorization method]
 | page                       | number                                                   | No       | 1            | Current page                               |
 | per_page                   | number                                                   | No       | 20           | Number of items per page                   |
 | wager_references           | string                                                   | No       | -            | Comma separated wager references           |
+| account_ids                | number(comma separated)                                  | No       | -            | Comma separated account ids                |
 | requesting_user_ids        | number(comma separated)                                  | No       | -            | Comma separated requesting user ids        |
 | requesting_user_references | string(comma separated)                                  | No       | -            | Comma separated requesting user references |
 | created_after              | number(timestamp) \| DateString                          | No       | -            | Filter result from this date               |
 | created_before             | number(timestamp) \| DateString                          | No       | -            | Filter result to this date                 |
-| minimum_odds               | number                                                   | No       | -            | Minimum odds                               |
+| minimum_odds               | number                                                   | No       | 1            | Minimum odds                               |
 | maximum_odds               | number                                                   | No       | -            | Maximum odds                               |
 | minimum_amount             | number                                                   | No       | -            | Minimum amount                             |
 | maximum_amount             | number                                                   | No       | -            | Maximum amount                             |
@@ -739,18 +798,21 @@ This request must have the authorization header. Refer to [Authorization method]
 
 #### Query Params
 
-| Property         | Type                                                                            | Required | Default      | Description                      |
-| ---------------- | ------------------------------------------------------------------------------- | -------- | ------------ | -------------------------------- |
-| page             | number                                                                          | No       | 1            | Current page                     |
-| per_page         | number                                                                          | No       | 20           | Number of items per page         |
-| wager_references | string                                                                          | No       | -            | Comma separated wager references |
-| user_ids         | number(comma separated)                                                         | No       | -            | Comma separated user ids         |
-| user_references  | string(comma separated)                                                         | No       | -            | Comma separated user references  |
-| bet_outcomes     | "undecided" \| "win" \| "loss" \| "push" \| "half-win" \| "half-loss" \| "void" | No       | -            | Comma separated bet outcomes     |
-| created_after    | number(timestamp) \| DateString                                                 | No       | -            | Filter result from this date     |
-| created_before   | number(timestamp) \| DateString                                                 | No       | -            | Filter result to this date       |
-| sort_by          | "effective_odds" \| "effective_amount" \| "created_at"                          | No       | "created_at" | Sort by                          |
-| sort_direction   | "asc" \| "desc"                                                                 | No       | "asc"        | Sort direction                   |
+| Property                       | Type                                                                            | Required | Default      | Description                      |
+| ------------------------------ | ------------------------------------------------------------------------------- | -------- | ------------ | -------------------------------- |
+| page                           | number                                                                          | No       | 1            | Current page                     |
+| per_page                       | number                                                                          | No       | 20           | Number of items per page         |
+| wager_references               | string                                                                          | No       | -            | Comma separated wager references |
+| account_ids                    | number(comma separated)                                                         | No       | -            | Comma separated account ids      |
+| user_ids                       | number(comma separated)                                                         | No       | -            | Comma separated user ids         |
+| user_references                | string(comma separated)                                                         | No       | -            | Comma separated user references  |
+| bet_outcomes                   | "undecided" \| "win" \| "loss" \| "push" \| "half-win" \| "half-loss" \| "void" | No       | -            | Comma separated bet outcomes     |
+| created_after                  | number(timestamp) \| DateString                                                 | No       | -            | Filter result from this date     |
+| created_before                 | number(timestamp) \| DateString                                                 | No       | -            | Filter result to this date       |
+| include_bet_trails             | boolean                                                                         | No       | false        | Include bet trails in response   |
+| include_bet_trails_transactions| boolean                                                                         | No       | false        | Include bet trail transactions   |
+| sort_by                        | "effective_odds" \| "effective_amount" \| "created_at"                          | No       | "created_at" | Sort by                          |
+| sort_direction                 | "asc" \| "desc"                                                                 | No       | "asc"        | Sort direction                   |
 
 :::info
 
@@ -1187,10 +1249,20 @@ This request must have the authorization header. Refer to [Authorization method]
     }
     ```
 
+    **Wager not found** <br/>
+    Http Code: `404`
+    ```json
+    {
+        "status": 404,
+        "error": "Wager with reference does not exist"
+    }
+    ```
+
     **Wager already decided** <br/>
     Http Code: `400`
     ```json
     {
+        "status": 400,
         "error": "Wager has already been decided"
     }
     ```
@@ -1202,6 +1274,228 @@ This request must have the authorization header. Refer to [Authorization method]
         "message": [
             "reference should not be empty",
             "outcome should not be empty",
+            "($value) not a valid bet outcome (undecided, win, loss, push, half-win, half-loss, void)"
+        ],
+        "error": "Bad Request",
+        "statusCode": 400
+    }
+    ```
+
+  </TabItem>
+</Tabs>
+
+## Override Bet Outcome
+
+:::info
+
+This request must have the authorization header. Refer to [Authorization method](/docs/guides/authentication#authentication-methods) guide for more details
+
+:::
+
+### Request
+
+| Property     | Value                                    |
+| :----------- | :--------------------------------------- |
+| method       | `POST`                                   |
+| url          | `$baseUrl/bets/override-outcome`         |
+| Content-Type | `application/json`                       |
+
+#### Body
+
+| Property          | Type                                                                            | Required | Default | Description               |
+| ----------------- | ------------------------------------------------------------------------------- | -------- | ------- | ------------------------- |
+| bet_id            | number                                                                          | Yes      | -       | Bet ID to override        |
+| override_outcome  | "undecided" \| "win" \| "loss" \| "push" \| "half-win" \| "half-loss" \| "void" | Yes      | -       | Override bet outcome      |
+
+<Tabs groupId="programming-language">
+  <TabItem value="curl" label="cURL">
+
+    ```bash
+    curl -X POST "$baseUrl/bets/override-outcome" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "bet_id": 123,
+        "override_outcome": "win"
+      }'
+    ```
+
+  </TabItem>
+  <TabItem value="javascript" label="JavaScript">
+
+    ```javascript
+    function overrideBetOutcome() {
+      const url = `${baseUrl}/bets/override-outcome`;
+      const data = {
+        bet_id: 123,
+        override_outcome: "win"
+      };
+
+      fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      })
+      .then(response => response.json())
+      .then(data => console.log('Success:', data))
+      .catch(error => console.error('Error:', error));
+    }
+
+    // Example usage
+    overrideBetOutcome();
+    ```
+
+  </TabItem>
+  <TabItem value="python" label="Python">
+
+    ```python
+    import requests
+    import json
+
+    def override_bet_outcome():
+        base_url = "your_base_url_here"
+        url = f"{base_url}/bets/override-outcome"
+        data = {
+            "bet_id": 123,
+            "override_outcome": "win"
+        }
+        headers = {
+            "Content-Type": "application/json"
+        }
+
+        response = requests.post(url, headers=headers, data=json.dumps(data))
+        if response.status_code == 200:
+            print('Success:', response.json())
+        else:
+            print('Error:', response.text)
+
+    # Example usage
+    override_bet_outcome()
+    ```
+
+  </TabItem>
+  <TabItem value="rust" label="Rust">
+
+    ```rust
+    use reqwest::Client;
+    use serde_json::json;
+    use tokio;
+
+    #[tokio::main]
+    async fn override_bet_outcome() {
+        let base_url = "your_base_url_here";
+        let url = format!("{}/bets/override-outcome", base_url);
+        let client = Client::new();
+        let data = json!({
+            "bet_id": 123,
+            "override_outcome": "win"
+        });
+
+        let response = client.post(&url)
+            .header("Content-Type", "application/json")
+            .json(&data)
+            .send()
+            .await;
+
+        match response {
+            Ok(resp) => {
+                if resp.status().is_success() {
+                    let json: serde_json::Value = resp.json().await.unwrap();
+                    println!("Success: {:?}", json);
+                } else {
+                    let text = resp.text().await.unwrap();
+                    println!("Error: {}", text);
+                }
+            },
+            Err(err) => {
+                println!("Error: {}", err);
+            }
+        }
+    }
+
+    // Example usage
+    override_bet_outcome();
+    ```
+
+  </TabItem>
+</Tabs>
+
+### Response
+
+<Tabs>
+  <TabItem  value="Success">
+
+    Http Code: `200`
+    ```json
+    {
+        "message": "Bet outcome override updated successfully"
+    }
+    ```
+
+  </TabItem>
+  <TabItem  value="Error">
+
+    **Unauthorized** <br/>
+    Http Code: `401`
+    ```json
+    {
+        "message": "Unauthorized"
+    }
+    ```
+
+    **Bet not found** <br/>
+    Http Code: `404`
+    ```json
+    {
+        "status": 404,
+        "error": "Bet with ID 123 does not exist"
+    }
+    ```
+
+    **Wager already decided** <br/>
+    Http Code: `400`
+    ```json
+    {
+        "status": 400,
+        "error": "Cannot override bet outcome - wager has already been decided"
+    }
+    ```
+
+    **Bet outcome already overridden** <br/>
+    Http Code: `400`
+    ```json
+    {
+        "status": 400,
+        "error": "Cannot override bet outcome - bet outcome has already been overridden"
+    }
+    ```
+
+    **Bet offer status not accepted** <br/>
+    Http Code: `400`
+    ```json
+    {
+        "status": 400,
+        "error": "Cannot override bet outcome - bet offer status must be 'accepted'"
+    }
+    ```
+
+    **Bet is inactive** <br/>
+    Http Code: `400`
+    ```json
+    {
+        "status": 400,
+        "error": "Cannot override bet outcome - bet is inactive"
+    }
+    ```
+
+    **Validation error** <br/>
+    Http Code: `400`
+    ```json
+    {
+        "message": [
+            "bet_id must be a number conforming to the specified constraints",
+            "override_outcome should not be empty",
             "($value) not a valid bet outcome (undecided, win, loss, push, half-win, half-loss, void)"
         ],
         "error": "Bad Request",
@@ -1227,6 +1521,13 @@ This request must have the authorization header. Refer to [Authorization method]
 | method       | `GET`                       |
 | url          | `$baseUrl/bets/:id`         |
 | Content-Type | `application/json`          |
+
+#### Query Params
+
+| Property                        | Type    | Required | Default | Description                      |
+| ------------------------------- | ------- | -------- | ------- | -------------------------------- |
+| include_bet_trails              | boolean | No       | false   | Include bet trails in response   |
+| include_bet_trails_transactions | boolean | No       | false   | Include bet trail transactions   |
 
 <Tabs groupId="programming-language">
   <TabItem value="curl" label="cURL">
