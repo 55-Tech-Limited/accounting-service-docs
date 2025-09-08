@@ -169,7 +169,8 @@ If you have a special way of tracking your users and want to use your own refere
     {
       "data": {
         "id": 2,
-        "reference": "a2_user_Xhwz442NTj74z6F0"
+  "reference": "a2_user_Xhwz442NTj74z6F0",
+  "created_at": "2025-09-08T12:00:00.000Z"
       },
       "message": "User created successfully"
     }
@@ -197,6 +198,104 @@ If you have a special way of tracking your users and want to use your own refere
     {
       "message": "Unauthorized",
       "statusCode": 401
+    }
+    ```
+
+  </TabItem>
+</Tabs>
+
+## Get Paginated Users
+
+List users in your account with simple pagination.
+
+### Request
+
+| Property | Value                         |
+| :------- | :---------------------------- |
+| method   | `GET`                         |
+| url      | `$baseUrl/account/user`       |
+
+#### Query Parameters
+
+| Name      | Required | Default | Description              |
+| --------- | -------- | ------- | ------------------------ |
+| page      | No       | 1       | Page number (1-based)    |
+| per_page  | No       | 20      | Items per page (max 100) |
+
+<Tabs groupId="programming-language">
+  <TabItem value="curl" label="cURL">
+
+    ```bash
+    curl -X GET "$baseUrl/account/user?page=1&per_page=2"
+    ```
+
+  </TabItem>
+  <TabItem value="javascript" label="JavaScript">
+
+    ```javascript
+    const listUsers = async (page = 1, perPage = 2) => {
+      const res = await fetch(`${baseUrl}/account/user?page=${page}&per_page=${perPage}`);
+      const data = await res.json();
+      console.log(data);
+    };
+
+    listUsers();
+    ```
+
+  </TabItem>
+</Tabs>
+
+### Response
+
+<Tabs>
+  <TabItem  value="Success">
+
+    Http Code: `200`
+    ```json
+    {
+      "data": {
+        "items": [
+          {
+            "id": 1,
+            "account_id": 2,
+            "reference": "a2_user_4lH6u7hayvaqs6Ix",
+            "name": "Jane Doe",
+            "role": "user",
+            "preferences": { "allow_negative_balance": true },
+            "balance": 0,
+            "exposure": 0,
+            "created_at": "2025-09-08T12:00:00.000Z"
+          },
+          {
+            "id": 2,
+            "account_id": 2,
+            "reference": "a2_user_Xhwz442NTj74z6F0",
+            "name": "John Doe",
+            "role": "user",
+            "preferences": {},
+            "balance": 0,
+            "exposure": 0,
+            "created_at": "2025-09-08T12:05:10.000Z"
+          }
+        ],
+        "page": 1,
+        "per_page": 2,
+        "total": 12,
+        "total_pages": 6
+      },
+      "message": "Users fetched successfully"
+    }
+    ```
+
+  </TabItem>
+  <TabItem  value="Error">
+
+    **Bad Request** <br/>
+    Http Code: `400`
+    ```json
+    {
+      "statusCode": 400,
+      "message": "Invalid page"
     }
     ```
 
@@ -324,7 +423,8 @@ This request must have the authorization header. Refer to [Authorization method]
           "allow_negative_balance": true
         },
         "balance": 0,
-        "exposure": 0
+  "exposure": 0,
+  "created_at": "2025-09-08T12:00:00.000Z"
       },
       "message": "User fetched successfully"
     }
@@ -475,7 +575,8 @@ This request must have the authorization header. Refer to [Authorization method]
           "allow_negative_balance": true
         },
         "balance": 0,
-        "exposure": 0
+  "exposure": 0,
+  "created_at": "2025-09-08T12:00:00.000Z"
       },
       "message": "User fetched successfully"
     }
