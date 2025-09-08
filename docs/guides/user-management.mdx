@@ -566,35 +566,109 @@ The API will respond with the updated user's preferences:
 
 ## Get Paginated Users
 
-List users with simple pagination.
+Retrieve a list of users for your account. Supports pagination, optional search, and sorting.
 
-### Request
+Parameters (query string):
+- `page` (default 1) – Page number (min 1)
+- `per_page` (default 20) – Results per page (1–100)
+- `search` – Partial match on name or reference (case-insensitive)
+- `sort_by` (default `created_at`) – One of: id, name, reference, created_at, balance, exposure
+- `sort_order` (default `desc`) – asc or desc
 
-| Property | Value                   |
-| :------- | :---------------------- |
-| method   | `GET`                   |
-| url      | `$baseUrl/account/user` |
-
-#### Query Parameters
-
-| Name     | Required | Default | Description              |
-| -------- | -------- | ------- | ------------------------ |
-| page     | No       | 1       | Page number (1-based)    |
-| per_page | No       | 20      | Items per page (max 100) |
+<Tabs groupId="programming-language">
+  <TabItem value="curl" label="cURL">
 
 ```bash
-curl -X GET "$baseUrl/account/user?page=1&per_page=2"
+# Using token authentication
+curl -X GET "$baseUrl/account/user?page=1&per_page=2" \
+  -H "Authorization: Bearer $token" \
+  -H "Content-Type: application/json"
+
+# Or using API key authentication
+curl -X GET "$baseUrl/account/user?page=1&per_page=2" \
+  -H "Authorization: Basic $base64_encoded" \
+  -H "Content-Type: application/json"
 ```
+
+  </TabItem>
+  <TabItem value="javascript" label="JavaScript">
 
 ```javascript
-const listUsers = async (page = 1, perPage = 2) => {
-  const res = await fetch(`${baseUrl}/account/user?page=${page}&per_page=${perPage}`);
-  console.log(await res.json());
+const listUsers = async (auth, params = {}) => {
+  let authHeader;
+  if (auth.token) authHeader = `Bearer ${auth.token}`;
+  else if (auth.apiKeys) authHeader = `Basic ${auth.apiKeys.base64_encoded}`;
+
+  const q = new URLSearchParams(params).toString();
+  const response = await fetch(`${baseUrl}/account/user${q ? `?${q}` : ''}`, {
+    method: 'GET',
+    headers: {
+      Authorization: authHeader,
+      'Content-Type': 'application/json'
+    }
+  });
+  return response.json();
 };
-listUsers();
+
+// Usage
+const auth = await getAuthentication();
+listUsers(auth, { page: 1, per_page: 2 }).then(console.log);
 ```
 
-### Response
+  </TabItem>
+  <TabItem value="python" label="Python">
+
+```python
+import requests
+
+def list_users(auth, params=None):
+    params = params or {"page": 1, "per_page": 2}
+    url = f"{base_url}/account/user"
+    headers = { 'Content-Type': 'application/json' }
+
+    if 'token' in auth:
+        headers['Authorization'] = f"Bearer {auth['token']}"
+    elif 'apiKeys' in auth:
+        headers['Authorization'] = f"Basic {auth['apiKeys']['base64_encoded']}"
+
+    response = requests.get(url, headers=headers, params=params)
+    print(response.json())
+
+# Usage
+auth = get_authentication()
+list_users(auth, {"page": 1, "per_page": 2})
+```
+
+  </TabItem>
+  <TabItem value="rust" label="Rust">
+
+```rust
+use reqwest::Client;
+use serde_json::Value;
+
+enum AuthMethod { Token(String), ApiKeys(ApiKeys) }
+
+async fn list_users(client: &Client, base_url: &str, auth: &AuthMethod) -> Result<Value, Box<dyn std::error::Error>> {
+    let mut req = client
+        .get(&format!("{}/account/user?page=1&per_page=2", base_url))
+        .header("Content-Type", "application/json");
+
+    match auth {
+        AuthMethod::Token(t) => req = req.header("Authorization", format!("Bearer {}", t)),
+        AuthMethod::ApiKeys(k) => req = req.header("Authorization", format!("Basic {}", k.base64_encoded)),
+    }
+
+    let resp = req.send().await?;
+    let data = resp.json::<Value>().await?;
+    println!("Users: {:?}", data);
+    Ok(data)
+}
+```
+
+  </TabItem>
+</Tabs>
+
+Sample response:
 
 ```json
 {
