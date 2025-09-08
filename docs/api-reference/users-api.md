@@ -206,21 +206,29 @@ If you have a special way of tracking your users and want to use your own refere
 
 ## Get Paginated Users
 
-List users in your account with simple pagination.
+:::info
+
+This request must have the authorization header. Refer to [Authorization method](/docs/guides/authentication#authentication-methods) guide for more details
+
+:::
 
 ### Request
 
-| Property | Value                         |
-| :------- | :---------------------------- |
-| method   | `GET`                         |
-| url      | `$baseUrl/account/user`       |
+| Property     | Value                   |
+| :----------- | :---------------------- |
+| method       | `GET`                   |
+| url          | `$baseUrl/account/user` |
+| Content-Type | `application/json`      |
 
 #### Query Parameters
 
-| Name      | Required | Default | Description              |
-| --------- | -------- | ------- | ------------------------ |
-| page      | No       | 1       | Page number (1-based)    |
-| per_page  | No       | 20      | Items per page (max 100) |
+| Property   | Type   | Required | Default | Description                                           |
+| ---------- | ------ | -------- | ------- | ----------------------------------------------------- |
+| page       | number | No       | 1       | Page number (minimum 1)                               |
+| per_page   | number | No       | 20      | Results per page (1 - 100)                            |
+| search     | string | No       | -       | Case-insensitive partial match on name or reference   |
+| sort_by    | string | No       | created_at | One of: id, name, reference, created_at, balance, exposure |
+| sort_order | string | No       | desc    | asc or desc                                           |
 
 <Tabs groupId="programming-language">
   <TabItem value="curl" label="cURL">
@@ -233,13 +241,50 @@ List users in your account with simple pagination.
   <TabItem value="javascript" label="JavaScript">
 
     ```javascript
-    const listUsers = async (page = 1, perPage = 2) => {
-      const res = await fetch(`${baseUrl}/account/user?page=${page}&per_page=${perPage}`);
-      const data = await res.json();
-      console.log(data);
+    const listUsers = async (params = {}) => {
+      const q = new URLSearchParams(params).toString();
+      const res = await fetch(`${baseUrl}/account/user${q ? `?${q}` : ''}`);
+      return res.json();
     };
 
-    listUsers();
+    listUsers({ page: 1, per_page: 2 }).then(console.log);
+    ```
+
+  </TabItem>
+  <TabItem value="python" label="Python">
+
+    ```python
+    import requests
+
+    def list_users(params=None):
+        params = params or {}
+        url = f"{base_url}/account/user"
+        response = requests.get(url, params=params)
+        print(response.json())
+
+    list_users({"page": 1, "per_page": 2})
+    ```
+
+  </TabItem>
+  <TabItem value="rust" label="Rust">
+
+    ```rust
+    use reqwest::Client;
+    use std::error::Error;
+
+    async fn list_users() -> Result<(), Box<dyn Error>> {
+        let url = format!("{}/account/user?page=1&per_page=2", base_url);
+        let client = Client::new();
+        let resp = client.get(&url).send().await?;
+        let data: serde_json::Value = resp.json().await?;
+        println!("{:?}", data);
+        Ok(())
+    }
+
+    #[tokio::main]
+    async fn main() -> Result<(), Box<dyn Error>> {
+        list_users().await
+    }
     ```
 
   </TabItem>
@@ -290,17 +335,30 @@ List users in your account with simple pagination.
   </TabItem>
   <TabItem  value="Error">
 
-    **Bad Request** <br/>
+    **Validation error** <br/>
     Http Code: `400`
     ```json
     {
       "statusCode": 400,
-      "message": "Invalid page"
+      "message": [
+        "sort_by must be one of the following values: id, name, reference, created_at, balance, exposure"
+      ],
+      "error": "Bad Request"
+    }
+    ```
+
+    **Unauthorized** <br/>
+    Http Code: `401`
+    ```json
+    {
+      "message": "Unauthorized",
+      "statusCode": 401
     }
     ```
 
   </TabItem>
 </Tabs>
+
 
 ## Get User By Id
 
