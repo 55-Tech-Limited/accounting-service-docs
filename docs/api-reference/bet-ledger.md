@@ -501,7 +501,7 @@ Either the `requesting_user_id` or `requesting_user_reference` can be provided t
     ```json
     {
         "status": 400,
-        "error": "requesting_user_id or requesting_user_reference must be defined"
+        "error": "accepting_user_id or accepting_user_reference must be defined"
     }
     ```
 
@@ -1286,6 +1286,385 @@ This request must have the authorization header. Refer to [Authorization method]
         ],
         "error": "Bad Request",
         "statusCode": 400
+    }
+    ```
+
+  </TabItem>
+</Tabs>
+
+## Cancel Bet Offer
+
+:::info
+
+This request must have the authorization header. Refer to [Authorization method](/docs/guides/authentication#authentication-methods) guide for more details
+
+:::
+
+### Request
+
+| Property     | Value                            |
+| :----------- | :------------------------------- |
+| method       | `POST`                           |
+| url          | `$baseUrl/bets/cancel-offer`     |
+| Content-Type | `application/json`               |
+
+#### Body
+
+| Property                  | Type    | Required | Default | Description                                    |
+| ------------------------- | ------- | -------- | ------- | ---------------------------------------------- |
+| requesting_user_id        | number  | No       | -       | Requesting user id                             |
+| requesting_user_reference | string  | No       | -       | Requesting user reference                      |
+| wager_reference           | string  | Yes      | -       | Wager reference                                |
+| cancel_amount             | number  | No       | -       | Specific amount to cancel (partial cancel)    |
+| cancel_all                | boolean | No       | false   | Cancel all open bets for this wager           |
+
+:::info
+
+Either the `requesting_user_id` or `requesting_user_reference` must be provided to identify the requesting user.
+
+:::
+
+:::info
+
+Either `cancel_amount` must be provided OR `cancel_all` must be set to `true`. If both are provided, `cancel_all` takes precedence.
+
+:::
+
+:::warning Important Notes
+
+- Only open (requesting status) bets can be canceled
+- Accepted bets cannot be canceled
+- Partial cancellation creates a new bet for the remaining amount
+- User exposure is automatically reduced by the canceled amount
+- All cancellations are recorded in the bet trail for audit purposes
+
+:::
+
+<Tabs groupId="programming-language">
+  <TabItem value="curl" label="cURL">
+
+    ```bash
+    # Cancel specific amount using user reference
+    curl -X POST "$baseUrl/bets/cancel-offer" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "requesting_user_reference": "user123",
+        "wager_reference": "wager456",
+        "cancel_amount": 50
+      }'
+    
+    # Cancel specific amount using user ID
+    curl -X POST "$baseUrl/bets/cancel-offer" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "requesting_user_id": 123,
+        "wager_reference": "wager456",
+        "cancel_amount": 50
+      }'
+    
+    # Cancel all bets for a wager
+    curl -X POST "$baseUrl/bets/cancel-offer" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "requesting_user_reference": "user123",
+        "wager_reference": "wager456",
+        "cancel_all": true
+      }'
+    ```
+
+  </TabItem>
+  <TabItem value="javascript" label="JavaScript">
+
+    ```javascript
+    function cancelBetOffer(options = {}) {
+      const {
+        useUserId = false,
+        partial = false,
+        userId = 123,
+        userReference = "user123",
+        wagerReference = "wager456",
+        cancelAmount = 50
+      } = options;
+
+      const url = `${baseUrl}/bets/cancel-offer`;
+      
+      // Build request data based on options
+      const data = {
+        wager_reference: wagerReference
+      };
+
+      // Add user identifier
+      if (useUserId) {
+        data.requesting_user_id = userId;
+      } else {
+        data.requesting_user_reference = userReference;
+      }
+
+      // Add cancellation type
+      if (partial) {
+        data.cancel_amount = cancelAmount;
+      } else {
+        data.cancel_all = true;
+      }
+
+      return fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log('Success:', data);
+        return data;
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        throw error;
+      });
+    }
+
+    // Example usage
+    
+    // Partial cancellation using user reference
+    cancelBetOffer({
+      useUserId: false,
+      partial: true,
+      userReference: "user123",
+      wagerReference: "wager456",
+      cancelAmount: 50
+    });
+
+    // Cancel all using user ID
+    cancelBetOffer({
+      useUserId: true,
+      partial: false,
+      userId: 123,
+      wagerReference: "wager456"
+    });
+
+    // Simple usage with defaults
+    cancelBetOffer({ partial: true });
+    ```
+
+  </TabItem>
+  <TabItem value="python" label="Python">
+
+    ```python
+    import requests
+    import json
+
+    def cancel_bet_offer(use_user_id=False, partial=False):
+        url = f"{baseUrl}/bets/cancel-offer"
+        
+        if partial:
+            if use_user_id:
+                data = {
+                    "requesting_user_id": 123,
+                    "wager_reference": "wager456",
+                    "cancel_amount": 50
+                }
+            else:
+                data = {
+                    "requesting_user_reference": "user123",
+                    "wager_reference": "wager456",
+                    "cancel_amount": 50
+                }
+        else:
+            if use_user_id:
+                data = {
+                    "requesting_user_id": 123,
+                    "wager_reference": "wager456", 
+                    "cancel_all": True
+                }
+            else:
+                data = {
+                    "requesting_user_reference": "user123",
+                    "wager_reference": "wager456", 
+                    "cancel_all": True
+                }
+        
+        headers = {
+            "Content-Type": "application/json"
+        }
+
+        response = requests.post(url, headers=headers, data=json.dumps(data))
+        if response.status_code == 200:
+            print('Success:', response.json())
+        else:
+            print('Error:', response.text)
+
+    # Example usage
+    cancel_bet_offer(False, True)   # Using user reference, partial cancellation
+    cancel_bet_offer(True, False)   # Using user ID, cancel all
+    ```
+
+  </TabItem>
+  <TabItem value="rust" label="Rust">
+
+    ```rust
+    use reqwest::Client;
+    use serde_json::json;
+    use tokio;
+
+    #[tokio::main]
+    async fn cancel_bet_offer(use_user_id: bool, partial: bool) {
+        let base_url = "your_base_url_here";
+        let url = format!("{}/bets/cancel-offer", base_url);
+        let client = Client::new();
+        
+        let data = match (use_user_id, partial) {
+            (true, true) => json!({
+                "requesting_user_id": 123,
+                "wager_reference": "wager456",
+                "cancel_amount": 50
+            }),
+            (false, true) => json!({
+                "requesting_user_reference": "user123",
+                "wager_reference": "wager456",
+                "cancel_amount": 50
+            }),
+            (true, false) => json!({
+                "requesting_user_id": 123,
+                "wager_reference": "wager456",
+                "cancel_all": true
+            }),
+            (false, false) => json!({
+                "requesting_user_reference": "user123",
+                "wager_reference": "wager456",
+                "cancel_all": true
+            }),
+        };
+
+        let response = client.post(&url)
+            .header("Content-Type", "application/json")
+            .json(&data)
+            .send()
+            .await;
+
+        match response {
+            Ok(resp) => {
+                if resp.status().is_success() {
+                    let json: serde_json::Value = resp.json().await.unwrap();
+                    println!("Success: {:?}", json);
+                } else {
+                    let text = resp.text().await.unwrap();
+                    println!("Error: {}", text);
+                }
+            },
+            Err(err) => {
+                println!("Error: {}", err);
+            }
+        }
+    }
+
+    // Example usage
+    cancel_bet_offer(false, true);  // Using user reference, partial cancellation
+    cancel_bet_offer(true, false);  // Using user ID, cancel all
+    ```
+
+  </TabItem>
+</Tabs>
+
+### Response
+
+<Tabs>
+  <TabItem  value="Success">
+
+    Http Code: `200`
+    ```json
+    {
+        "data": [
+            {
+                "bet_id": 123,
+                "requesting_user_reference": "user123",
+                "requesting_user_id": 1,
+                "canceled_amount": 50,
+                "original_amount": 100,
+                "wager_reference": "wager456",
+                "wager_id": 2
+            }
+        ],
+        "message": "Bet offer canceled successfully"
+    }
+    ```
+
+  </TabItem>
+  <TabItem  value="Error">
+
+    **Unauthorized** <br/>
+    Http Code: `401`
+    ```json
+    {
+        "message": "Unauthorized"
+    }
+    ```
+
+    **User not found** <br/>
+    Http Code: `404`
+    ```json
+    {
+        "status": 404,
+        "error": "Requesting user not found"
+    }
+    ```
+
+    **Wager not found** <br/>
+    Http Code: `404`
+    ```json
+    {
+        "status": 404,
+        "error": "Wager with reference not found"
+    }
+    ```
+
+    **No cancelable bets** <br/>
+    Http Code: `404`
+    ```json
+    {
+        "status": 404,
+        "error": "No cancelable bets found"
+    }
+    ```
+
+    **Missing parameters** <br/>
+    Http Code: `400`
+    ```json
+    {
+        "status": 400,
+        "error": "requesting_user_id or requesting_user_reference must be defined"
+    }
+    ```
+
+    **Missing cancellation parameters** <br/>
+    Http Code: `400`
+    ```json
+    {
+        "status": 400,
+        "error": "Either cancel_all must be true or cancel_amount must be provided"
+    }
+    ```
+
+    **Cancel amount too high** <br/>
+    Http Code: `400`
+    ```json
+    {
+        "status": 400,
+        "error": "Cancel amount greater than the maximum cancelable amount of \"100\""
+    }
+    ```
+
+    **Validation error** <br/>
+    Http Code: `400`
+    ```json
+    {
+        "message": [
+            "requesting_user_reference should not be empty",
+            "wager_reference should not be empty",
+            "cancel_amount must be a positive number"
+        ],
+        "error": "Bad Request"
     }
     ```
 
