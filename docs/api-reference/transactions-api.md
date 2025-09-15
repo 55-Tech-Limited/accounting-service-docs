@@ -785,7 +785,6 @@ This request must have the authorization header. Refer to [Authorization method]
             {
                 "id": 5,
                 "account_id": 4,
-                "betTrail_id": null,
                 "user_id": 123,
                 "user_reference": "janedoe123",
                 "reference": "TX_DjpdJjlfEqPQAFazlI3c1OvLoZdjfXSw1ut92z6IbHDG3gLP",
@@ -799,7 +798,6 @@ This request must have the authorization header. Refer to [Authorization method]
             {
                 "id": 4,
                 "account_id": 4,
-                "betTrail_id": null,
                 "user_id": "user2",
                 "user_reference": "a4_user_lhgDKSI2Tg-B1BWl",
                 "reference": "TX_tM9r78kLSXaTbxW9Dd7ulQHbPdcInOwKd9RIdyt_kUmp-lWq",
