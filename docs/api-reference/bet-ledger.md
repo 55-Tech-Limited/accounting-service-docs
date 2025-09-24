@@ -2145,6 +2145,593 @@ This request must have the authorization header. Refer to [Authorization method]
   </TabItem>
 </Tabs>
 
+## Batch Bet Operations (Atomic)
+
+:::info
+This request must have the authorization header. Refer to [Authorization method](/docs/guides/authentication#authentication-methods) guide for more details.
+:::
+
+Execute multiple bet operations in a single atomic transaction. If any operation fails, the entire batch is rolled back and NO operation is applied.
+
+### Request
+
+| Property     | Value                 |
+| ------------ | --------------------- |
+| method       | `POST`                |
+| url          | `$baseUrl/bets/batch` |
+| Content-Type | `application/json`    |
+
+### Atomic Behavior
+
+- All operations are validated first (structure, uniqueness, user existence, odds, exposure).
+- Exposure / balance checks are performed considering the cumulative effect of the whole batch.
+- If ANY operation fails validation or business logic, the entire batch aborts (no partial updates).
+- A successful batch returns HTTP `201`.
+- A failed batch returns HTTP `400` (or other appropriate error) with no side-effects.
+- There is NO HTTP 207 (partial success) for this endpoint.
+
+#### Body
+
+| Field       | Type                               | Required | Description |
+| ----------- | ---------------------------------- | -------- | ----------- |
+| operations  | Array&lt;BatchOperation&gt;        | Yes      | Ordered list of operations to execute atomically |
+
+#### BatchOperation Type
+
+```typescript
+type BatchOperation = {
+  operation_type: "make_bet_offer" | "accept_bet_offer" | "cancel_bet_offer" | "update_wager_outcome" | "override_bet_outcome";
+  operation_id: string;
+  data: object; // Corresponds to the request body of the individual endpoint
+}
+```
+
+| Field           | Type     | Required | Description |
+| --------------- | -------- | -------- | ----------- |
+| operation_type  | string   | Yes      | One of allowed enum values (below) |
+| operation_id    | string   | Yes      | Client-supplied unique identifier within the batch |
+| data            | object   | Yes      | Operation payload - corresponds to the request body of the individual endpoint for that operation type |
+
+:::note Data Field Correspondence
+
+The `data` object for each operation type corresponds exactly to the request body parameters of the individual API endpoints:
+
+- `make_bet_offer` → Uses the same fields as [Make Bet Offer](#make-bet-offer) request body
+- `accept_bet_offer` → Uses the same fields as [Accept Bet Offer](#accept-bet-offer) request body  
+- `cancel_bet_offer` → Uses the same fields as [Cancel Bet Offer](#cancel-bet-offer) request body
+- `update_wager_outcome` → Uses the same fields as [Update Wager Outcome](#update-wager-outcome) request body
+- `override_bet_outcome` → Uses the same fields as [Override Bet Outcome](#override-bet-outcome) request body
+
+:::
+
+Duplicate `operation_id` values cause the entire batch to fail.
+
+#### Supported operation_type Values
+
+| Enum Value              | Description |
+| ----------------------- | ----------- |
+| `make_bet_offer`        | Create a new bet offer (requesting state) |
+| `accept_bet_offer`      | Accept (match) existing requesting offers |
+| `cancel_bet_offer`      | Cancel open bet offers (requesting state) |
+| `update_wager_outcome`  | Decide a wager's outcome |
+| `override_bet_outcome`  | Override an accepted bet's outcome |
+
+---
+
+### Operation Payload Schemas (data)
+
+#### 1. make_bet_offer
+
+| Field                      | Type            | Required | Notes |
+| -------------------------- | --------------- | -------- | ----- |
+| requesting_user_id         | number          | No       | Required if `requesting_user_reference` absent |
+| requesting_user_reference  | string          | No       | Required if `requesting_user_id` absent |
+| wager_reference            | string          | No       | Required if `bet_id` absent |
+| bet_id                     | number          | No       | Alternative to `wager_reference` (takes precedence if both) |
+| requesting_odds            | number (>=1)    | Yes      | Decimal odds |
+| requesting_amount          | number (>0)     | Yes      | Stake amount |
+| meta                       | object          | No       | Arbitrary metadata (string:string) |
+
+#### 2. accept_bet_offer
+
+| Field                      | Type         | Required | Notes |
+| -------------------------- | ------------ | -------- | ----- |
+| accepting_user_id          | number       | No       | Required if `accepting_user_reference` absent |
+| accepting_user_reference   | string       | No       | Required if `accepting_user_id` absent |
+| requesting_user_id         | number       | No       | Optional filter (only accept from this user id) |
+| requesting_user_reference  | string       | No       | Optional filter (only accept from this user reference) |
+| wager_reference            | string       | No       | Required if `bet_id` absent |
+| bet_id                     | number       | No       | Alternative to `wager_reference` (takes precedence) |
+| maximum_odds               | number (>=1) | Yes      | Reject if matched odds exceed this |
+| accepting_amount           | number (>0)  | Yes      | Amount to accept |
+| meta                       | object       | No       | Arbitrary metadata |
+
+#### 3. cancel_bet_offer
+
+| Field                      | Type         | Required | Notes |
+| -------------------------- | ------------ | -------- | ----- |
+| requesting_user_id         | number       | No       | Required if `requesting_user_reference` absent |
+| requesting_user_reference  | string       | No       | Required if `requesting_user_id` absent |
+| wager_references           | string[]     | No       | Required if `bet_id` absent |
+| bet_id                     | number       | No       | Targets one specific bet (odds filters ignored) |
+| cancel_amount              | number (>0)  | No       | Partial cancellation amount |
+| cancel_all                 | boolean      | No       | If true, cancels all matching amounts |
+| minimum_odds               | number (>=1.01) | No    | Only cancel odds &gt;= value (ignored if bet_id) |
+| maximum_odds               | number (>=1.01) | No    | Only cancel odds &lt;= value (ignored if bet_id) |
+
+Constraints:
+- Provide either `cancel_amount` OR `cancel_all: true`.
+- Provide `wager_references` or `bet_id`.
+- Only requesting (open) offers are cancelable.
+- Partial cancellation leaves remaining amount as a new or adjusted open bet.
+
+#### 4. update_wager_outcome
+
+| Field     | Type                                                                                | Required | Notes |
+| --------- | ----------------------------------------------------------------------------------- | -------- | ----- |
+| reference | string                                                                              | Yes      | Wager reference |
+| outcome   | "undecided" \| "win" \| "loss" \| "push" \| "half-win" \| "half-loss" \| "void"     | Yes      | New outcome |
+
+#### 5. override_bet_outcome
+
+| Field            | Type                                                                                | Required | Notes |
+| ---------------- | ----------------------------------------------------------------------------------- | -------- | ----- |
+| bet_id           | number                                                                              | Yes      | Accepted bet id |
+| override_outcome | "undecided" \| "win" \| "loss" \| "push" \| "half-win" \| "half-loss" \| "void"     | Yes      | Override outcome |
+
+:::note Operation Requirements
+
+- **Make Offer**: Either `requesting_user_id` or `requesting_user_reference` required
+- **Accept Offer**: Either `accepting_user_id` or `accepting_user_reference` required
+- **Cancel Bet Offer**: `requesting_user_id` and `wager_references` are required, plus either `cancel_amount` or `cancel_all`
+- **Update Wager Outcome**: `reference` and `outcome` are both required
+- **Override Bet Outcome**: `bet_id` and `override_outcome` are both required
+
+:::
+
+:::warning Batch Operation Notes
+
+- **Atomic guarantee**: zero side-effects on any failure.
+- **Exposure computation**: Cumulative across all operations in batch
+- **Unique operation IDs**: Must be unique within the batch
+- **Sequential processing**: Operations processed in array order
+- **Validation**: Each operation validated separately before execution
+- **Error isolation**: Any single failure aborts entire batch
+
+:::
+
+<Tabs groupId="programming-language">
+  <TabItem value="curl" label="cURL">
+
+    ```bash
+    curl -X POST "$baseUrl/bets/batch" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer YOUR_TOKEN" \
+      -d '{
+        "operations": [
+          {
+            "operation_type": "make_bet_offer",
+            "operation_id": "offer-1",
+            "data": {
+              "requesting_user_id": 101,
+              "requesting_odds": 2.0,
+              "requesting_amount": 100,
+              "wager_reference": "atomic-wager-1"
+            }
+          },
+          {
+            "operation_type": "accept_bet_offer",
+            "operation_id": "accept-1",
+            "data": {
+              "accepting_user_id": 102,
+              "wager_reference": "atomic-wager-1",
+              "maximum_odds": 2.2,
+              "accepting_amount": 50
+            }
+          },
+          {
+            "operation_type": "cancel_bet_offer",
+            "operation_id": "cancel-1",
+            "data": {
+              "requesting_user_id": 101,
+              "wager_references": ["atomic-wager-1"],
+              "cancel_amount": 25,
+              "minimum_odds": 1.8
+            }
+          },
+          {
+            "operation_type": "update_wager_outcome",
+            "operation_id": "decide-1",
+            "data": {
+              "reference": "atomic-wager-1",
+              "outcome": "win"
+            }
+          }
+        ]
+      }'
+    ```
+
+  </TabItem>
+  <TabItem value="javascript" label="JavaScript">
+
+    ```javascript
+    async function runAtomicBatch() {
+      const body = {
+        operations: [
+          {
+            operation_type: "make_bet_offer",
+            operation_id: "offer-1",
+            data: {
+              requesting_user_id: 101,
+              requesting_odds: 2.0,
+              requesting_amount: 100,
+              wager_reference: "atomic-wager-1"
+            }
+          },
+          {
+            operation_type: "accept_bet_offer",
+            operation_id: "accept-1",
+            data: {
+              accepting_user_id: 102,
+              wager_reference: "atomic-wager-1",
+              maximum_odds: 2.2,
+              accepting_amount: 50
+            }
+          },
+          {
+            operation_type: "cancel_bet_offer",
+            operation_id: "cancel-1",
+            data: {
+              requesting_user_id: 101,
+              wager_references: ["atomic-wager-1"],
+              cancel_all: true
+            }
+          }
+        ]
+      };
+
+      try {
+        const response = await fetch(`${baseUrl}/bets/batch`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer YOUR_TOKEN'
+          },
+          body: JSON.stringify(body)
+        });
+
+        const result = await response.json();
+        
+        if (response.status === 201) {
+          console.log('Batch applied atomically:', result);
+        } else {
+          console.warn('Batch failed (no changes applied):', result);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    }
+
+    // Example usage
+    runAtomicBatch();
+    ```
+
+  </TabItem>
+  <TabItem value="python" label="Python">
+
+    ```python
+    import requests
+    import json
+    from typing import List, Dict, Any
+
+    def run_atomic_batch():
+        url = f"{base_url}/bets/batch"
+        
+        operations = [
+            {
+                "operation_type": "make_bet_offer",
+                "operation_id": "offer-1",
+                "data": {
+                    "requesting_user_id": 101,
+                    "requesting_odds": 2.0,
+                    "requesting_amount": 100,
+                    "wager_reference": "atomic-wager-1"
+                }
+            },
+            {
+                "operation_type": "accept_bet_offer",
+                "operation_id": "accept-1",
+                "data": {
+                    "accepting_user_id": 102,
+                    "wager_reference": "atomic-wager-1",
+                    "maximum_odds": 2.2,
+                    "accepting_amount": 50
+                }
+            },
+            {
+                "operation_type": "cancel_bet_offer",
+                "operation_id": "cancel-1",
+                "data": {
+                    "requesting_user_id": 101,
+                    "wager_references": ["atomic-wager-1"],
+                    "cancel_all": True
+                }
+            }
+        ]
+        
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer YOUR_TOKEN"
+        }
+        
+        data = {"operations": operations}
+        
+        try:
+            response = requests.post(url, headers=headers, data=json.dumps(data))
+            result = response.json()
+            
+            if response.status_code == 201:
+                print("Batch applied atomically:", result)
+            else:
+                print("Batch failed (no changes applied):", result)
+                
+        except Exception as error:
+            print("Error:", error)
+
+    # Example usage
+    run_atomic_batch()
+    ```
+
+  </TabItem>
+  <TabItem value="rust" label="Rust">
+
+    ```rust
+    use reqwest::Client;
+    use serde_json::json;
+    use tokio;
+
+    #[tokio::main]
+    async fn run_atomic_batch() {
+        let base_url = "your_base_url_here";
+        let client = Client::new();
+
+        let payload = json!({
+            "operations": [
+                {
+                    "operation_type": "make_bet_offer",
+                    "operation_id": "offer-1",
+                    "data": {
+                        "requesting_user_id": 101,
+                        "requesting_odds": 2.0,
+                        "requesting_amount": 100,
+                        "wager_reference": "atomic-wager-1"
+                    }
+                },
+                {
+                    "operation_type": "accept_bet_offer",
+                    "operation_id": "accept-1",
+                    "data": {
+                        "accepting_user_id": 102,
+                        "wager_reference": "atomic-wager-1",
+                        "maximum_odds": 2.2,
+                        "accepting_amount": 50
+                    }
+                },
+                {
+                    "operation_type": "cancel_bet_offer",
+                    "operation_id": "cancel-1",
+                    "data": {
+                        "requesting_user_id": 101,
+                        "wager_references": ["atomic-wager-1"],
+                        "cancel_all": true
+                    }
+                }
+            ]
+        });
+
+        match client.post(format!("{}/bets/batch", base_url))
+            .header("Content-Type", "application/json")
+            .header("Authorization", "Bearer YOUR_TOKEN")
+            .json(&payload)
+            .send()
+            .await {
+            Ok(resp) => {
+                let status = resp.status();
+                let body: serde_json::Value = resp.json().await.unwrap_or(json!({"parse":"error"}));
+                println!("Status: {status}");
+                println!("Body: {body}");
+            },
+            Err(e) => eprintln!("Request error: {e}")
+        }
+    }
+    ```
+
+  </TabItem>
+</Tabs>
+
+### Response
+
+<Tabs>
+  <TabItem value="Success">
+
+    **All operations successful**<br/>
+    Http Code: `201`
+    ```json
+    {
+      "message": "All batch operations completed successfully",
+      "results": [
+        {
+          "operation_id": "offer-1",
+          "operation_type": "make_bet_offer",
+          "success": true,
+          "data": {
+            "bet_id": 1201,
+            "wager_reference": "atomic-wager-1",
+            "wager_id": 501
+          }
+        },
+        {
+          "operation_id": "accept-1",
+          "operation_type": "accept_bet_offer",
+          "success": true,
+          "data": [
+            {
+              "bet_id": 1201,
+              "requesting_user_id": 101,
+              "accepted_amount": 50,
+              "accepted_odds": 2.0,
+              "wager_reference": "atomic-wager-1",
+              "wager_id": 501
+            }
+          ]
+        },
+        {
+          "operation_id": "cancel-1",
+          "operation_type": "cancel_bet_offer",
+          "success": true,
+          "data": [
+            {
+              "bet_id": 1203,
+              "wager_reference": "atomic-wager-1",
+              "wager_id": 501
+            }
+          ]
+        },
+        {
+          "operation_id": "decide-1",
+          "operation_type": "update_wager_outcome",
+          "success": true,
+          "message": "Wager outcome updated successfully"
+        }
+      ]
+    }
+    ```
+
+  </TabItem>
+  <TabItem value="Error">
+
+    **Exposure / Balance Aggregation Failure**<br/>
+    Http Code: `400`
+    ```json
+    {
+      "status": 400,
+      "error": "Batch operations would cause negative effective balance for user(s): 1",
+      "data": {
+        "balance_issues": [
+          {
+            "id": 1,
+            "balance": 109700,
+            "exposure": 2600,
+            "effective_balance": 107100,
+            "additional_exposure": 10000000000000,
+            "preferences": {}
+          }
+        ],
+        "operation_count": 2,
+        "affected_users": 1
+      }
+    }
+    ```
+
+    **Duplicate Operation IDs**<br/>
+    Http Code: `400`
+    ```json
+    {
+      "status": 400,
+      "error": "Operation IDs must be unique within a batch"
+    }
+    ```
+
+    **Invalid operation_type**<br/>
+    Http Code: `400`
+    ```json
+    {
+      "status": 400,
+      "error": "Invalid operation type 'invalid_op'. Supported types: make_bet_offer, accept_bet_offer, cancel_bet_offer, update_wager_outcome, override_bet_outcome"
+    }
+    ```
+
+    **Structural Validation Error**<br/>
+    Http Code: `400`
+    ```json
+    {
+      "status": 400,
+      "error": "operations must be a non-empty array"
+    }
+    ```
+
+    **Per-Operation Validation Failure**<br/>
+    Http Code: `400`
+    ```json
+    {
+      "status": 400,
+      "error": "Validation failed for batch operations",
+      "data": {
+        "errors": [
+          {
+            "operation_id": "offer-1",
+            "errors": [
+              "requesting_odds must not be less than 1",
+              "requesting_amount must be a positive number"
+            ]
+          },
+          {
+            "operation_id": "cancel-1",
+            "errors": [
+              "Either cancel_all must be true or cancel_amount must be provided"
+            ]
+          }
+        ]
+      }
+    }
+    ```
+
+    **Unauthorized**<br/>
+    Http Code: `401`
+    ```json
+    {
+      "message": "Unauthorized"
+    }
+    ```
+
+  </TabItem>
+</Tabs>
+
+### Common Failure Reasons
+
+| Scenario                         | Error Snippet |
+| -------------------------------- | ------------- |
+| Over-exposure                    | "would cause negative effective balance" |
+| Duplicate IDs                    | "Operation IDs must be unique within a batch" |
+| Missing user identifiers         | "must be defined" |
+| Invalid odds/value               | "must not be less than" |
+| Nothing to cancel                | "No cancelable bets found" |
+| Wager already decided            | "Wager has already been decided" |
+| Override invalid state           | "bet offer status must be 'accepted'" |
+
+:::tip Performance Benefits
+
+Batch operations provide several advantages:
+
+- **Reduced Network Overhead**: Multiple operations in a single HTTP request
+- **Atomic Transaction Processing**: All-or-nothing guarantee maintains data consistency
+- **Cumulative Exposure Validation**: Balance checks consider the entire batch effect
+- **Better Error Management**: Single point of failure with detailed error information
+- **Improved Throughput**: Ideal for high-frequency trading and bulk operations
+
+:::
+
+:::warning Important Notes
+
+- **Atomic guarantee**: zero side-effects on any failure.
+- **No partial success**: Unlike some batch APIs, this endpoint never applies partial results
+- **Exposure is computed cumulatively**: multiple make/accept operations may jointly exceed limits.
+- **Use unique, meaningful `operation_id` values** for reliable correlation.
+- **`bet_id` overrides `wager_reference`** when both are present (in supported operations).
+- **Cancel logic ignores odds filters** when `bet_id` is supplied.
+
+:::
+
 ## Get Single Bet
 
 :::info
