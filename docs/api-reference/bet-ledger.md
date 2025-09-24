@@ -273,6 +273,12 @@ Either `wager_reference` or `bet_id` must be provided. If `bet_id` is specified,
     }
     ```
 
+    :::tip Understanding Exposure
+
+    For detailed information about how exposure and effective balance are calculated, see our [Exposure Calculations Guide](/docs/guides/exposure-calculations).
+
+    :::
+
     **Error with body** <br/>
     Http Code: `400`
     ```json
