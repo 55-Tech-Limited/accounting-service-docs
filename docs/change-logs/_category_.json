@@ -1,0 +1,8 @@
+{
+  "label": "Change Logs",
+  "position": 4,
+  "link": {
+    "type": "generated-index",
+    "description": "Documentation change logs and release notes for the accounting service API."
+  }
+}
