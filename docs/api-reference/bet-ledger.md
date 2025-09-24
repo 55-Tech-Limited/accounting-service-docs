@@ -1369,14 +1369,16 @@ This request must have the authorization header. Refer to [Authorization method]
 
 #### Body
 
-| Property                  | Type    | Required | Default | Description                                    |
-| ------------------------- | ------- | -------- | ------- | ---------------------------------------------- |
-| requesting_user_id        | number  | No       | -       | Requesting user id                             |
-| requesting_user_reference | string  | No       | -       | Requesting user reference                      |
-| wager_reference           | string  | No       | -       | Wager reference                                |
-| bet_id                    | number  | No       | -       | Bet ID (alternative to wager_reference)       |
-| cancel_amount             | number  | No       | -       | Specific amount to cancel (partial cancel)    |
-| cancel_all                | boolean | No       | false   | Cancel all open bets for this wager           |
+| Property                  | Type      | Required | Default | Description                                       |
+| ------------------------- | --------- | -------- | ------- | ------------------------------------------------- |
+| requesting_user_id        | number    | No       | -       | Requesting user id                                |
+| requesting_user_reference | string    | No       | -       | Requesting user reference                         |
+| wager_references          | string[]  | No       | []      | Array of wager references to target              |
+| bet_id                    | number    | No       | -       | Bet ID (alternative to wager_references)         |
+| cancel_amount             | number    | No       | -       | Specific amount to cancel (partial cancel)       |
+| cancel_all                | boolean   | No       | false   | Cancel all matching bets                          |
+| minimum_odds              | number    | No       | -       | Only cancel bets with odds &gt;= this value         |
+| maximum_odds              | number    | No       | -       | Only cancel bets with odds &lt;= this value         |
 
 :::info
 
@@ -1392,7 +1394,7 @@ Either `cancel_amount` must be provided OR `cancel_all` must be set to `true`. I
 
 :::note
 
-Either `wager_reference` or `bet_id` must be provided. If `bet_id` is specified, the `wager_reference` field will be ignored.
+Either `wager_references` array or `bet_id` must be provided. If `bet_id` is specified, odds filtering (`minimum_odds`, `maximum_odds`) is ignored and the specific bet is targeted regardless of its odds.
 
 :::
 
@@ -1403,6 +1405,9 @@ Either `wager_reference` or `bet_id` must be provided. If `bet_id` is specified,
 - Partial cancellation creates a new bet for the remaining amount
 - User exposure is automatically reduced by the canceled amount
 - All cancellations are recorded in the bet trail for audit purposes
+- **Odds filtering**: Use `minimum_odds` and/or `maximum_odds` to target specific bet ranges
+- **Wager references**: Multiple wager references can be processed in a single request
+- **Bet ID priority**: When `bet_id` is provided, odds filters are ignored
 
 :::
 
@@ -1410,16 +1415,16 @@ Either `wager_reference` or `bet_id` must be provided. If `bet_id` is specified,
   <TabItem value="curl" label="cURL">
 
     ```bash
-    # Cancel specific amount using user reference and wager_reference
+    # Cancel specific amount using wager references
     curl -X POST "$baseUrl/bets/cancel-offer" \
       -H "Content-Type: application/json" \
       -d '{
         "requesting_user_reference": "user123",
-        "wager_reference": "wager456",
-        "cancel_amount": 50
+        "wager_references": ["wager456", "wager789"],
+        "cancel_amount": 150
       }'
     
-    # Cancel specific amount using user ID and bet_id
+    # Cancel specific amount using bet ID (ignores odds filters)
     curl -X POST "$baseUrl/bets/cancel-offer" \
       -H "Content-Type: application/json" \
       -d '{
@@ -1428,13 +1433,25 @@ Either `wager_reference` or `bet_id` must be provided. If `bet_id` is specified,
         "cancel_amount": 50
       }'
     
-    # Cancel all bets for a wager using bet_id
+    # Cancel all bets with odds filtering
     curl -X POST "$baseUrl/bets/cancel-offer" \
       -H "Content-Type: application/json" \
       -d '{
         "requesting_user_reference": "user123",
-        "bet_id": 789,
-        "cancel_all": true
+        "wager_references": ["wager456"],
+        "cancel_all": true,
+        "minimum_odds": 2.0,
+        "maximum_odds": 4.0
+      }'
+    
+    # Cancel bets above minimum odds only
+    curl -X POST "$baseUrl/bets/cancel-offer" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "requesting_user_reference": "user123",
+        "wager_references": ["wager456", "wager789"],
+        "cancel_all": true,
+        "minimum_odds": 2.5
       }'
     ```
 
@@ -1445,19 +1462,20 @@ Either `wager_reference` or `bet_id` must be provided. If `bet_id` is specified,
     function cancelBetOffer(options = {}) {
       const {
         useUserId = false,
-        partial = false,
         userId = 123,
         userReference = "user123",
-        wagerReference = "wager456",
-        cancelAmount = 50
+        wagerReferences = ["wager456"],
+        betId = null,
+        cancelAmount = null,
+        cancelAll = false,
+        minimumOdds = null,
+        maximumOdds = null
       } = options;
 
       const url = `${baseUrl}/bets/cancel-offer`;
       
-      // Build request data based on options
-      const data = {
-        wager_reference: wagerReference
-      };
+      // Build request data
+      const data = {};
 
       // Add user identifier
       if (useUserId) {
@@ -1466,11 +1484,27 @@ Either `wager_reference` or `bet_id` must be provided. If `bet_id` is specified,
         data.requesting_user_reference = userReference;
       }
 
+      // Add target identification
+      if (betId) {
+        data.bet_id = betId;
+        // When bet_id is used, odds filters are ignored
+      } else {
+        data.wager_references = wagerReferences;
+        
+        // Add odds filters if provided
+        if (minimumOdds !== null) {
+          data.minimum_odds = minimumOdds;
+        }
+        if (maximumOdds !== null) {
+          data.maximum_odds = maximumOdds;
+        }
+      }
+
       // Add cancellation type
-      if (partial) {
+      if (cancelAmount !== null) {
         data.cancel_amount = cancelAmount;
       } else {
-        data.cancel_all = true;
+        data.cancel_all = cancelAll;
       }
 
       return fetch(url, {
@@ -1493,25 +1527,37 @@ Either `wager_reference` or `bet_id` must be provided. If `bet_id` is specified,
 
     // Example usage
     
-    // Partial cancellation using user reference
+    // Partial cancellation with multiple wagers
     cancelBetOffer({
-      useUserId: false,
-      partial: true,
       userReference: "user123",
-      wagerReference: "wager456",
+      wagerReferences: ["wager456", "wager789"],
+      cancelAmount: 100
+    });
+
+    // Cancel all bets with odds filtering
+    cancelBetOffer({
+      userReference: "user123",
+      wagerReferences: ["wager456"],
+      cancelAll: true,
+      minimumOdds: 2.0,
+      maximumOdds: 5.0
+    });
+
+    // Cancel specific bet by ID (ignores odds filters)
+    cancelBetOffer({
+      useUserId: true,
+      userId: 123,
+      betId: 789,
       cancelAmount: 50
     });
 
-    // Cancel all using user ID
+    // Cancel all high odds bets only
     cancelBetOffer({
-      useUserId: true,
-      partial: false,
-      userId: 123,
-      wagerReference: "wager456"
+      userReference: "user123",
+      wagerReferences: ["wager456"],
+      cancelAll: true,
+      minimumOdds: 3.0
     });
-
-    // Simple usage with defaults
-    cancelBetOffer({ partial: true });
     ```
 
   </TabItem>
@@ -1520,50 +1566,94 @@ Either `wager_reference` or `bet_id` must be provided. If `bet_id` is specified,
     ```python
     import requests
     import json
+    from typing import Optional, List
 
-    def cancel_bet_offer(use_user_id=False, partial=False):
+    def cancel_bet_offer(
+        use_user_id: bool = False,
+        user_id: int = 123,
+        user_reference: str = "user123",
+        wager_references: List[str] = None,
+        bet_id: Optional[int] = None,
+        cancel_amount: Optional[float] = None,
+        cancel_all: bool = False,
+        minimum_odds: Optional[float] = None,
+        maximum_odds: Optional[float] = None
+    ):
         url = f"{baseUrl}/bets/cancel-offer"
         
-        if partial:
-            if use_user_id:
-                data = {
-                    "requesting_user_id": 123,
-                    "wager_reference": "wager456",
-                    "cancel_amount": 50
-                }
-            else:
-                data = {
-                    "requesting_user_reference": "user123",
-                    "wager_reference": "wager456",
-                    "cancel_amount": 50
-                }
+        # Build request data
+        data = {}
+        
+        # Add user identifier
+        if use_user_id:
+            data["requesting_user_id"] = user_id
         else:
-            if use_user_id:
-                data = {
-                    "requesting_user_id": 123,
-                    "wager_reference": "wager456", 
-                    "cancel_all": True
-                }
-            else:
-                data = {
-                    "requesting_user_reference": "user123",
-                    "wager_reference": "wager456", 
-                    "cancel_all": True
-                }
+            data["requesting_user_reference"] = user_reference
+        
+        # Add target identification
+        if bet_id:
+            data["bet_id"] = bet_id
+            # When bet_id is used, odds filters are ignored
+        else:
+            data["wager_references"] = wager_references or ["wager456"]
+            
+            # Add odds filters if provided
+            if minimum_odds is not None:
+                data["minimum_odds"] = minimum_odds
+            if maximum_odds is not None:
+                data["maximum_odds"] = maximum_odds
+        
+        # Add cancellation type
+        if cancel_amount is not None:
+            data["cancel_amount"] = cancel_amount
+        else:
+            data["cancel_all"] = cancel_all
         
         headers = {
             "Content-Type": "application/json"
         }
 
         response = requests.post(url, headers=headers, data=json.dumps(data))
-        if response.status_code == 200:
+        if response.status_code == 201:
             print('Success:', response.json())
         else:
             print('Error:', response.text)
+        
+        return response
 
     # Example usage
-    cancel_bet_offer(False, True)   # Using user reference, partial cancellation
-    cancel_bet_offer(True, False)   # Using user ID, cancel all
+    
+    # Partial cancellation with multiple wagers
+    cancel_bet_offer(
+        user_reference="user123",
+        wager_references=["wager456", "wager789"],
+        cancel_amount=100
+    )
+    
+    # Cancel all bets with odds filtering
+    cancel_bet_offer(
+        user_reference="user123",
+        wager_references=["wager456"],
+        cancel_all=True,
+        minimum_odds=2.0,
+        maximum_odds=5.0
+    )
+    
+    # Cancel specific bet by ID
+    cancel_bet_offer(
+        use_user_id=True,
+        user_id=123,
+        bet_id=789,
+        cancel_amount=50
+    )
+    
+    # Cancel only high odds bets
+    cancel_bet_offer(
+        user_reference="user123",
+        wager_references=["wager456"],
+        cancel_all=True,
+        minimum_odds=3.0
+    )
     ```
 
   </TabItem>
@@ -1571,37 +1661,58 @@ Either `wager_reference` or `bet_id` must be provided. If `bet_id` is specified,
 
     ```rust
     use reqwest::Client;
-    use serde_json::json;
+    use serde_json::{json, Value};
     use tokio;
 
+    struct CancelBetOfferOptions {
+        use_user_id: bool,
+        user_id: Option<u32>,
+        user_reference: Option<String>,
+        wager_references: Option<Vec<String>>,
+        bet_id: Option<u32>,
+        cancel_amount: Option<f64>,
+        cancel_all: bool,
+        minimum_odds: Option<f64>,
+        maximum_odds: Option<f64>,
+    }
+
     #[tokio::main]
-    async fn cancel_bet_offer(use_user_id: bool, partial: bool) {
+    async fn cancel_bet_offer(options: CancelBetOfferOptions) {
         let base_url = "your_base_url_here";
         let url = format!("{}/bets/cancel-offer", base_url);
         let client = Client::new();
         
-        let data = match (use_user_id, partial) {
-            (true, true) => json!({
-                "requesting_user_id": 123,
-                "wager_reference": "wager456",
-                "cancel_amount": 50
-            }),
-            (false, true) => json!({
-                "requesting_user_reference": "user123",
-                "wager_reference": "wager456",
-                "cancel_amount": 50
-            }),
-            (true, false) => json!({
-                "requesting_user_id": 123,
-                "wager_reference": "wager456",
-                "cancel_all": true
-            }),
-            (false, false) => json!({
-                "requesting_user_reference": "user123",
-                "wager_reference": "wager456",
-                "cancel_all": true
-            }),
-        };
+        let mut data = json!({});
+        
+        // Add user identifier
+        if options.use_user_id {
+            data["requesting_user_id"] = json!(options.user_id.unwrap_or(123));
+        } else {
+            data["requesting_user_reference"] = json!(options.user_reference.unwrap_or("user123".to_string()));
+        }
+        
+        // Add target identification
+        if let Some(bet_id) = options.bet_id {
+            data["bet_id"] = json!(bet_id);
+            // When bet_id is used, odds filters are ignored
+        } else {
+            data["wager_references"] = json!(options.wager_references.unwrap_or(vec!["wager456".to_string()]));
+            
+            // Add odds filters if provided
+            if let Some(min_odds) = options.minimum_odds {
+                data["minimum_odds"] = json!(min_odds);
+            }
+            if let Some(max_odds) = options.maximum_odds {
+                data["maximum_odds"] = json!(max_odds);
+            }
+        }
+        
+        // Add cancellation type
+        if let Some(cancel_amount) = options.cancel_amount {
+            data["cancel_amount"] = json!(cancel_amount);
+        } else {
+            data["cancel_all"] = json!(options.cancel_all);
+        }
 
         let response = client.post(&url)
             .header("Content-Type", "application/json")
@@ -1612,7 +1723,7 @@ Either `wager_reference` or `bet_id` must be provided. If `bet_id` is specified,
         match response {
             Ok(resp) => {
                 if resp.status().is_success() {
-                    let json: serde_json::Value = resp.json().await.unwrap();
+                    let json: Value = resp.json().await.unwrap();
                     println!("Success: {:?}", json);
                 } else {
                     let text = resp.text().await.unwrap();
@@ -1626,8 +1737,45 @@ Either `wager_reference` or `bet_id` must be provided. If `bet_id` is specified,
     }
 
     // Example usage
-    cancel_bet_offer(false, true);  // Using user reference, partial cancellation
-    cancel_bet_offer(true, false);  // Using user ID, cancel all
+    
+    // Partial cancellation with multiple wagers
+    cancel_bet_offer(CancelBetOfferOptions {
+        use_user_id: false,
+        user_id: None,
+        user_reference: Some("user123".to_string()),
+        wager_references: Some(vec!["wager456".to_string(), "wager789".to_string()]),
+        bet_id: None,
+        cancel_amount: Some(100.0),
+        cancel_all: false,
+        minimum_odds: None,
+        maximum_odds: None,
+    });
+    
+    // Cancel all with odds filtering
+    cancel_bet_offer(CancelBetOfferOptions {
+        use_user_id: false,
+        user_id: None,
+        user_reference: Some("user123".to_string()),
+        wager_references: Some(vec!["wager456".to_string()]),
+        bet_id: None,
+        cancel_amount: None,
+        cancel_all: true,
+        minimum_odds: Some(2.0),
+        maximum_odds: Some(5.0),
+    });
+    
+    // Cancel specific bet by ID
+    cancel_bet_offer(CancelBetOfferOptions {
+        use_user_id: true,
+        user_id: Some(123),
+        user_reference: None,
+        wager_references: None,
+        bet_id: Some(789),
+        cancel_amount: Some(50.0),
+        cancel_all: false,
+        minimum_odds: None,
+        maximum_odds: None,
+    });
     ```
 
   </TabItem>
@@ -1638,21 +1786,59 @@ Either `wager_reference` or `bet_id` must be provided. If `bet_id` is specified,
 <Tabs>
   <TabItem  value="Success">
 
-    Http Code: `200`
+    **Single bet cancellation**<br/>
+    Http Code: `201`
     ```json
     {
+        "message": "Bet offer canceled successfully",
         "data": [
             {
                 "bet_id": 123,
-                "requesting_user_reference": "user123",
-                "requesting_user_id": 1,
-                "canceled_amount": 50,
-                "original_amount": 100,
                 "wager_reference": "wager456",
                 "wager_id": 2
             }
-        ],
-        "message": "Bet offer canceled successfully"
+        ]
+    }
+    ```
+
+    **Multiple bets cancellation with odds filtering**<br/>
+    Http Code: `201`
+    ```json
+    {
+        "message": "Bet offer canceled successfully",
+        "data": [
+            {
+                "bet_id": 123,
+                "wager_reference": "wager456",
+                "wager_id": 2
+            },
+            {
+                "bet_id": 124,
+                "wager_reference": "wager456",
+                "wager_id": 2
+            },
+            {
+                "bet_id": 125,
+                "wager_reference": "wager789",
+                "wager_id": 3
+            }
+        ]
+    }
+    ```
+
+    **Partial cancellation (creates new bet for remaining amount)**<br/>
+    Http Code: `201`
+    ```json
+    {
+        "message": "Bet offer canceled successfully",
+        "data": [
+            {
+                "bet_id": 126,
+                "wager_reference": "wager456",
+                "wager_id": 2,
+                "note": "Partial cancellation - remaining amount: 50"
+            }
+        ]
     }
     ```
 
