@@ -28,7 +28,8 @@ This request must have the authorization header. Refer to [Authorization method]
 
 | Property                  | Type         | Required | Default | Description               |
 | ------------------------- | ------------ | -------- | ------- | ------------------------- |
-| wager_reference           | string       | Yes      | -       | Wager reference           |
+| wager_reference           | string       | No       | -       | Wager reference           |
+| bet_id                    | number       | No       | -       | Bet ID (alternative to wager_reference) |
 | requesting_odds           | number (>=1) | Yes      | -       | Requesting odds           |
 | requesting_amount         | number (>0)  | Yes      | -       | Requesting amount         |
 | requesting_user_id        | number       | No       | -       | Requesting user id        |
@@ -41,14 +42,31 @@ Either the `requesting_user_id` or `requesting_user_reference` must be provided
 
 :::
 
+:::note
+
+Either `wager_reference` or `bet_id` must be provided. If `bet_id` is specified, the `wager_reference` field will be ignored.
+
+:::
+
 <Tabs groupId="programming-language">
   <TabItem value="curl" label="cURL">
 
     ```bash
+    # Using wager_reference
     curl -X POST "$baseUrl/bets/make-offer" \
       -H "Content-Type: application/json" \
       -d '{
         "wager_reference": "example_wager_reference",
+        "requesting_odds": 2,
+        "requesting_amount": 100,
+        "requesting_user_id": 12345
+      }'
+    
+    # Using bet_id (wager_reference will be ignored)
+    curl -X POST "$baseUrl/bets/make-offer" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "bet_id": 456,
         "requesting_odds": 2,
         "requesting_amount": 100,
         "requesting_user_id": 12345
@@ -59,14 +77,21 @@ Either the `requesting_user_id` or `requesting_user_reference` must be provided
   <TabItem value="javascript" label="JavaScript">
 
     ```javascript
-    function makeBetOffer() {
+    function makeBetOffer(useBetId = false) {
       const url = `${baseUrl}/bets/make-offer`;
+      
       const data = {
-        wager_reference: "example_wager_reference",
         requesting_odds: 2,
         requesting_amount: 100,
         requesting_user_id: 12345
       };
+      
+      // Add either wager_reference or bet_id
+      if (useBetId) {
+        data.bet_id = 456;
+      } else {
+        data.wager_reference = "example_wager_reference";
+      }
 
       fetch(url, {
         method: 'POST',
@@ -81,7 +106,8 @@ Either the `requesting_user_id` or `requesting_user_reference` must be provided
     }
 
     // Example usage
-    makeBetOffer();
+    makeBetOffer(false); // Using wager_reference
+    makeBetOffer(true);  // Using bet_id
     ```
 
   </TabItem>
@@ -289,7 +315,8 @@ This request must have the authorization header. Refer to [Authorization method]
 
 | Property                  | Type         | Required | Default | Description               |
 | ------------------------- | ------------ | -------- | ------- | ------------------------- |
-| wager_reference           | string       | Yes      | -       | Wager reference           |
+| wager_reference           | string       | No       | -       | Wager reference           |
+| bet_id                    | number       | No       | -       | Bet ID (alternative to wager_reference) |
 | maximum_odds              | number (>=1) | Yes      | -       | Requesting odds           |
 | accepting_amount          | number (>0)  | Yes      | -       | Requesting amount         |
 | accepting_user_id         | number       | No       | -       | Accepting user id         |
@@ -310,14 +337,32 @@ Either the `requesting_user_id` or `requesting_user_reference` can be provided t
 
 :::
 
+:::note
+
+Either `wager_reference` or `bet_id` must be provided. If `bet_id` is specified, the `wager_reference` field will be ignored.
+
+:::
+
 <Tabs groupId="programming-language">
   <TabItem value="curl" label="cURL">
 
     ```bash
+    # Using wager_reference
     curl -X POST "$baseUrl/bets/accept-offer" \
       -H "Content-Type: application/json" \
       -d '{
         "wager_reference": "example_wager_reference",
+        "maximum_odds": 2,
+        "accepting_amount": 100,
+        "accepting_user_id": 12345,
+        "meta": {}
+      }'
+    
+    # Using bet_id (wager_reference will be ignored)
+    curl -X POST "$baseUrl/bets/accept-offer" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "bet_id": 456,
         "maximum_odds": 2,
         "accepting_amount": 100,
         "accepting_user_id": 12345,
@@ -329,15 +374,22 @@ Either the `requesting_user_id` or `requesting_user_reference` can be provided t
   <TabItem value="javascript" label="JavaScript">
 
     ```javascript
-    function acceptBetOffer() {
+    function acceptBetOffer(useBetId = false) {
       const url = `${baseUrl}/bets/accept-offer`;
+      
       const data = {
-        wager_reference: "example_wager_reference",
         maximum_odds: 2,
         accepting_amount: 100,
         accepting_user_id: 12345,
         meta: {}
       };
+      
+      // Add either wager_reference or bet_id
+      if (useBetId) {
+        data.bet_id = 456;
+      } else {
+        data.wager_reference = "example_wager_reference";
+      }
 
       fetch(url, {
         method: 'POST',
@@ -352,7 +404,8 @@ Either the `requesting_user_id` or `requesting_user_reference` can be provided t
     }
 
     // Example usage
-    acceptBetOffer();
+    acceptBetOffer(false); // Using wager_reference
+    acceptBetOffer(true);  // Using bet_id
     ```
 
   </TabItem>
@@ -1314,7 +1367,8 @@ This request must have the authorization header. Refer to [Authorization method]
 | ------------------------- | ------- | -------- | ------- | ---------------------------------------------- |
 | requesting_user_id        | number  | No       | -       | Requesting user id                             |
 | requesting_user_reference | string  | No       | -       | Requesting user reference                      |
-| wager_reference           | string  | Yes      | -       | Wager reference                                |
+| wager_reference           | string  | No       | -       | Wager reference                                |
+| bet_id                    | number  | No       | -       | Bet ID (alternative to wager_reference)       |
 | cancel_amount             | number  | No       | -       | Specific amount to cancel (partial cancel)    |
 | cancel_all                | boolean | No       | false   | Cancel all open bets for this wager           |
 
@@ -1327,6 +1381,12 @@ Either the `requesting_user_id` or `requesting_user_reference` must be provided 
 :::info
 
 Either `cancel_amount` must be provided OR `cancel_all` must be set to `true`. If both are provided, `cancel_all` takes precedence.
+
+:::
+
+:::note
+
+Either `wager_reference` or `bet_id` must be provided. If `bet_id` is specified, the `wager_reference` field will be ignored.
 
 :::
 
@@ -1344,7 +1404,7 @@ Either `cancel_amount` must be provided OR `cancel_all` must be set to `true`. I
   <TabItem value="curl" label="cURL">
 
     ```bash
-    # Cancel specific amount using user reference
+    # Cancel specific amount using user reference and wager_reference
     curl -X POST "$baseUrl/bets/cancel-offer" \
       -H "Content-Type: application/json" \
       -d '{
@@ -1353,21 +1413,21 @@ Either `cancel_amount` must be provided OR `cancel_all` must be set to `true`. I
         "cancel_amount": 50
       }'
     
-    # Cancel specific amount using user ID
+    # Cancel specific amount using user ID and bet_id
     curl -X POST "$baseUrl/bets/cancel-offer" \
       -H "Content-Type: application/json" \
       -d '{
         "requesting_user_id": 123,
-        "wager_reference": "wager456",
+        "bet_id": 789,
         "cancel_amount": 50
       }'
     
-    # Cancel all bets for a wager
+    # Cancel all bets for a wager using bet_id
     curl -X POST "$baseUrl/bets/cancel-offer" \
       -H "Content-Type: application/json" \
       -d '{
         "requesting_user_reference": "user123",
-        "wager_reference": "wager456",
+        "bet_id": 789,
         "cancel_all": true
       }'
     ```
