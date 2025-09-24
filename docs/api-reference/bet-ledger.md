@@ -26,15 +26,16 @@ This request must have the authorization header. Refer to [Authorization method]
 
 #### Body
 
-| Property                  | Type         | Required | Default | Description               |
-| ------------------------- | ------------ | -------- | ------- | ------------------------- |
-| wager_reference           | string       | No       | -       | Wager reference           |
-| bet_id                    | number       | No       | -       | Bet ID (alternative to wager_reference) |
-| requesting_odds           | number (>=1) | Yes      | -       | Requesting odds           |
-| requesting_amount         | number (>0)  | Yes      | -       | Requesting amount         |
-| requesting_user_id        | number       | No       | -       | Requesting user id        |
-| requesting_user_reference | string       | No       | -       | Requesting user reference |
-| meta                      | object       | No       | -       | User specified meta data  |
+| Property                       | Type         | Required | Default | Description               |
+| ------------------------------ | ------------ | -------- | ------- | ------------------------- |
+| wager_reference                | string       | Yes      | -       | Wager reference           |
+| requesting_odds                | number (>=1) | Yes      | -       | Requesting odds           |
+| requesting_amount              | number (>0)  | Yes      | -       | Requesting amount         |
+| requesting_user_id             | number       | No       | -       | Requesting user id        |
+| requesting_user_reference      | string       | No       | -       | Requesting user reference |
+| allowed_acceptor_ids           | number[]     | No       | -       | Array of user IDs allowed to accept this bet |
+| allowed_acceptor_references    | string[]     | No       | -       | Array of user references allowed to accept this bet |
+| meta                           | object       | No       | -       | User specified meta data  |
 
 :::info
 
@@ -42,9 +43,11 @@ Either the `requesting_user_id` or `requesting_user_reference` must be provided
 
 :::
 
-:::note
+:::note Allowed Acceptors
 
-Either `wager_reference` or `bet_id` must be provided. If `bet_id` is specified, the `wager_reference` field will be ignored.
+You can restrict who can accept your bet offer by providing either `allowed_acceptor_ids` or `allowed_acceptor_references`. If both are provided, users matching either condition can accept the bet.
+
+If no allowed acceptor fields are provided, the bet offer will be open to all users.
 
 :::
 
@@ -52,7 +55,7 @@ Either `wager_reference` or `bet_id` must be provided. If `bet_id` is specified,
   <TabItem value="curl" label="cURL">
 
     ```bash
-    # Using wager_reference
+    # Open bet offer (anyone can accept)
     curl -X POST "$baseUrl/bets/make-offer" \
       -H "Content-Type: application/json" \
       -d '{
@@ -62,14 +65,16 @@ Either `wager_reference` or `bet_id` must be provided. If `bet_id` is specified,
         "requesting_user_id": 12345
       }'
     
-    # Using bet_id (wager_reference will be ignored)
+    # Restricted bet offer (only specific users can accept)
     curl -X POST "$baseUrl/bets/make-offer" \
       -H "Content-Type: application/json" \
       -d '{
-        "bet_id": 456,
+        "wager_reference": "example_wager_reference",
         "requesting_odds": 2,
         "requesting_amount": 100,
-        "requesting_user_id": 12345
+        "requesting_user_id": 12345,
+        "allowed_acceptor_ids": [67890, 11111],
+        "allowed_acceptor_references": ["user_abc", "user_xyz"]
       }'
     ```
 
@@ -77,21 +82,41 @@ Either `wager_reference` or `bet_id` must be provided. If `bet_id` is specified,
   <TabItem value="javascript" label="JavaScript">
 
     ```javascript
-    function makeBetOffer(useBetId = false) {
+    // Open bet offer (anyone can accept)
+    function makeOpenBetOffer() {
       const url = `${baseUrl}/bets/make-offer`;
       
       const data = {
+        wager_reference: "example_wager_reference",
         requesting_odds: 2,
         requesting_amount: 100,
         requesting_user_id: 12345
       };
+
+      fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      })
+      .then(response => response.json())
+      .then(data => console.log('Success:', data))
+      .catch(error => console.error('Error:', error));
+    }
+
+    // Restricted bet offer (only specific users can accept)
+    function makeRestrictedBetOffer() {
+      const url = `${baseUrl}/bets/make-offer`;
       
-      // Add either wager_reference or bet_id
-      if (useBetId) {
-        data.bet_id = 456;
-      } else {
-        data.wager_reference = "example_wager_reference";
-      }
+      const data = {
+        wager_reference: "example_wager_reference",
+        requesting_odds: 2,
+        requesting_amount: 100,
+        requesting_user_id: 12345,
+        allowed_acceptor_ids: [67890, 11111],
+        allowed_acceptor_references: ["user_abc", "user_xyz"]
+      };
 
       fetch(url, {
         method: 'POST',
@@ -106,8 +131,8 @@ Either `wager_reference` or `bet_id` must be provided. If `bet_id` is specified,
     }
 
     // Example usage
-    makeBetOffer(false); // Using wager_reference
-    makeBetOffer(true);  // Using bet_id
+    makeOpenBetOffer();      // Open to all users
+    makeRestrictedBetOffer(); // Restricted to specific users
     ```
 
   </TabItem>
@@ -117,7 +142,8 @@ Either `wager_reference` or `bet_id` must be provided. If `bet_id` is specified,
     import requests
     import json
 
-    def make_bet_offer():
+    def make_open_bet_offer():
+        """Make a bet offer open to all users"""
         url = f"{baseUrl}/bets/make-offer"
         data = {
             "wager_reference": "example_wager_reference",
@@ -135,8 +161,30 @@ Either `wager_reference` or `bet_id` must be provided. If `bet_id` is specified,
         else:
             print('Error:', response.text)
 
+    def make_restricted_bet_offer():
+        """Make a bet offer restricted to specific users"""
+        url = f"{baseUrl}/bets/make-offer"
+        data = {
+            "wager_reference": "example_wager_reference",
+            "requesting_odds": 2,
+            "requesting_amount": 100,
+            "requesting_user_id": 12345,
+            "allowed_acceptor_ids": [67890, 11111],
+            "allowed_acceptor_references": ["user_abc", "user_xyz"]
+        }
+        headers = {
+            "Content-Type": "application/json"
+        }
+
+        response = requests.post(url, headers=headers, data=json.dumps(data))
+        if response.status_code == 200:
+            print('Success:', response.json())
+        else:
+            print('Error:', response.text)
+
     # Example usage
-    make_bet_offer()
+    make_open_bet_offer()       # Open to all users
+    make_restricted_bet_offer() # Restricted to specific users
     ```
 
   </TabItem>
@@ -148,7 +196,7 @@ Either `wager_reference` or `bet_id` must be provided. If `bet_id` is specified,
     use tokio;
 
     #[tokio::main]
-    async fn make_bet_offer() {
+    async fn make_open_bet_offer() {
         let base_url = "your_base_url_here";
         let url = format!("{}/bets/make-offer", base_url);
         let client = Client::new();
@@ -181,8 +229,45 @@ Either `wager_reference` or `bet_id` must be provided. If `bet_id` is specified,
         }
     }
 
+    #[tokio::main]
+    async fn make_restricted_bet_offer() {
+        let base_url = "your_base_url_here";
+        let url = format!("{}/bets/make-offer", base_url);
+        let client = Client::new();
+        let data = json!({
+            "wager_reference": "example_wager_reference",
+            "requesting_odds": 2,
+            "requesting_amount": 100,
+            "requesting_user_id": 12345,
+            "allowed_acceptor_ids": [67890, 11111],
+            "allowed_acceptor_references": ["user_abc", "user_xyz"]
+        });
+
+        let response = client.post(&url)
+            .header("Content-Type", "application/json")
+            .json(&data)
+            .send()
+            .await;
+
+        match response {
+            Ok(resp) => {
+                if resp.status().is_success() {
+                    let json: serde_json::Value = resp.json().await.unwrap();
+                    println!("Success: {:?}", json);
+                } else {
+                    let text = resp.text().await.unwrap();
+                    println!("Error: {}", text);
+                }
+            },
+            Err(err) => {
+                println!("Error: {}", err);
+            }
+        }
+    }
+
     // Example usage
-    make_bet_offer();
+    // make_open_bet_offer();       // Open to all users
+    // make_restricted_bet_offer(); // Restricted to specific users
     ```
 
   </TabItem>
@@ -798,6 +883,7 @@ This request must have the authorization header. Refer to [Authorization method]
                 "requesting_user_reference": "a4_user_2YRDqo69dO4DGdin",
                 "requesting_odds": 3,
                 "requesting_amount": 300,
+                "allowed_acceptor_ids": [67890, 11111],
                 "created_at": "2025-03-11T16:11:08.156Z"
             }
         ],
