@@ -33,6 +33,7 @@ This request must have the authorization header. Refer to [Authorization method]
 | name        | string | Yes      | -       | Name of the user             |
 | reference   | string | No       | -       | Preferred User reference     |
 | preferences | object | No       | NULL    | User preferences             |
+| meta        | object | No       | NULL    | User metadata (max 10 string fields) |
 
 :::note
 
@@ -46,6 +47,16 @@ If you have a special way of tracking your users and want to use your own refere
 
 :::
 
+:::note
+
+The `meta` field allows you to store additional user metadata with the following constraints:
+- Maximum of 10 fields
+- All values must be strings
+- Keys can only contain letters, numbers, and underscores
+- Example: `{"custom_id": "12345", "source": "mobile_app", "tier": "premium"}`
+
+:::
+
 <Tabs groupId="programming-language">
   <TabItem value="curl" label="cURL">
 
@@ -55,7 +66,12 @@ If you have a special way of tracking your users and want to use your own refere
       -d '{
         "name": "John Doe",
         "reference": "johndoe123",
-        "preferences": {}
+        "preferences": {},
+        "meta": {
+          "custom_id": "12345",
+          "source": "web_app",
+          "tier": "premium"
+        }
       }'
     ```
 
@@ -83,7 +99,12 @@ If you have a special way of tracking your users and want to use your own refere
     const userData = {
       name: "John Doe",
       reference: "johndoe123",
-      preferences: {}
+      preferences: {},
+      meta: {
+        custom_id: "12345",
+        source: "web_app",
+        tier: "premium"
+      }
     };
 
     createUser(userData);
@@ -112,7 +133,12 @@ If you have a special way of tracking your users and want to use your own refere
     user_data = {
         "name": "John Doe",
         "reference": "johndoe123",
-        "preferences": {}
+        "preferences": {},
+        "meta": {
+            "custom_id": "12345",
+            "source": "web_app",
+            "tier": "premium"
+        }
     }
 
     create_user(user_data)
@@ -148,7 +174,12 @@ If you have a special way of tracking your users and want to use your own refere
         let user_data = json!({
             "name": "John Doe",
             "reference": "johndoe123",
-            "preferences": {}
+            "preferences": {},
+            "meta": {
+                "custom_id": "12345",
+                "source": "web_app",
+                "tier": "premium"
+            }
         });
 
         create_user(user_data).await?;
@@ -229,12 +260,30 @@ This request must have the authorization header. Refer to [Authorization method]
 | search     | string | No       | -       | Case-insensitive partial match on name or reference   |
 | sort_by    | string | No       | created_at | One of: id, name, reference, created_at, balance, exposure |
 | sort_order | string | No       | desc    | asc or desc                                           |
+| meta_*     | string | No       | -       | Filter by meta field values (e.g., meta_tier=premium, meta_source=mobile_app) |
+
+:::note
+
+**Meta Field Filtering**: You can filter users by their meta field values using the `meta_*` pattern:
+- Use `meta_` followed by the field name and its value
+- Example: `meta_tier=premium` filters users where `meta.tier` equals "premium"
+- Multiple meta filters can be combined: `meta_tier=premium&meta_source=mobile_app`
+- Values are matched exactly (case-sensitive)
+
+:::
 
 <Tabs groupId="programming-language">
   <TabItem value="curl" label="cURL">
 
     ```bash
+    # Basic pagination
     curl -X GET "$baseUrl/account/user?page=1&per_page=2"
+    
+    # Filter by meta fields
+    curl -X GET "$baseUrl/account/user?page=1&per_page=10&meta_tier=premium&meta_source=mobile_app"
+    
+    # Combine with search and sorting
+    curl -X GET "$baseUrl/account/user?search=john&sort_by=created_at&sort_order=asc&meta_tier=gold"
     ```
 
   </TabItem>
@@ -247,7 +296,24 @@ This request must have the authorization header. Refer to [Authorization method]
       return res.json();
     };
 
+    // Basic pagination
     listUsers({ page: 1, per_page: 2 }).then(console.log);
+    
+    // Filter by meta fields
+    listUsers({
+      page: 1,
+      per_page: 10,
+      meta_tier: 'premium',
+      meta_source: 'mobile_app'
+    }).then(console.log);
+    
+    // Combine with search and sorting
+    listUsers({
+      search: 'john',
+      sort_by: 'created_at',
+      sort_order: 'asc',
+      meta_tier: 'gold'
+    }).then(console.log);
     ```
 
   </TabItem>
@@ -262,7 +328,24 @@ This request must have the authorization header. Refer to [Authorization method]
         response = requests.get(url, params=params)
         print(response.json())
 
+    # Basic pagination
     list_users({"page": 1, "per_page": 2})
+    
+    # Filter by meta fields
+    list_users({
+        "page": 1,
+        "per_page": 10,
+        "meta_tier": "premium",
+        "meta_source": "mobile_app"
+    })
+    
+    # Combine with search and sorting
+    list_users({
+        "search": "john",
+        "sort_by": "created_at",
+        "sort_order": "asc",
+        "meta_tier": "gold"
+    })
     ```
 
   </TabItem>
@@ -272,8 +355,8 @@ This request must have the authorization header. Refer to [Authorization method]
     use reqwest::Client;
     use std::error::Error;
 
-    async fn list_users() -> Result<(), Box<dyn Error>> {
-        let url = format!("{}/account/user?page=1&per_page=2", base_url);
+    async fn list_users(query_params: &str) -> Result<(), Box<dyn Error>> {
+        let url = format!("{}/account/user{}", base_url, query_params);
         let client = Client::new();
         let resp = client.get(&url).send().await?;
         let data: serde_json::Value = resp.json().await?;
@@ -283,7 +366,16 @@ This request must have the authorization header. Refer to [Authorization method]
 
     #[tokio::main]
     async fn main() -> Result<(), Box<dyn Error>> {
-        list_users().await
+        // Basic pagination
+        list_users("?page=1&per_page=2").await?;
+        
+        // Filter by meta fields
+        list_users("?page=1&per_page=10&meta_tier=premium&meta_source=mobile_app").await?;
+        
+        // Combine with search and sorting
+        list_users("?search=john&sort_by=created_at&sort_order=asc&meta_tier=gold").await?;
+        
+        Ok(())
     }
     ```
 
@@ -307,6 +399,7 @@ This request must have the authorization header. Refer to [Authorization method]
             "name": "Jane Doe",
             "role": "user",
             "preferences": { "allow_negative_balance": true },
+            "meta": { "tier": "premium", "source": "mobile_app" },
             "balance": 0,
             "exposure": 0,
             "created_at": "2025-09-08T12:00:00.000Z"
@@ -318,6 +411,7 @@ This request must have the authorization header. Refer to [Authorization method]
             "name": "John Doe",
             "role": "user",
             "preferences": {},
+            "meta": { "custom_id": "12345", "source": "web_app" },
             "balance": 0,
             "exposure": 0,
             "created_at": "2025-09-08T12:05:10.000Z"
@@ -480,9 +574,14 @@ This request must have the authorization header. Refer to [Authorization method]
         "preferences": {
           "allow_negative_balance": true
         },
+        "meta": {
+          "tier": "premium",
+          "source": "mobile_app",
+          "custom_id": "12345"
+        },
         "balance": 0,
-  "exposure": 0,
-  "created_at": "2025-09-08T12:00:00.000Z"
+        "exposure": 0,
+        "created_at": "2025-09-08T12:00:00.000Z"
       },
       "message": "User fetched successfully"
     }
@@ -632,9 +731,14 @@ This request must have the authorization header. Refer to [Authorization method]
         "preferences": {
           "allow_negative_balance": true
         },
+        "meta": {
+          "tier": "premium",
+          "source": "mobile_app",
+          "custom_id": "12345"
+        },
         "balance": 0,
-  "exposure": 0,
-  "created_at": "2025-09-08T12:00:00.000Z"
+        "exposure": 0,
+        "created_at": "2025-09-08T12:00:00.000Z"
       },
       "message": "User fetched successfully"
     }
@@ -658,6 +762,501 @@ This request must have the authorization header. Refer to [Authorization method]
     {
       "status": 404,
       "error": "User not found"
+    }
+    ```
+
+  </TabItem>
+</Tabs>
+
+## Update User By Id
+
+This endpoint allows you to update a user's information including their name, preferences, and metadata.
+
+:::info
+
+This request must have the authorization header. Refer to [Authorization method](/docs/guides/authentication#authentication-methods) guide for more details
+
+:::
+
+### Request
+
+| Property     | Value                               |
+| :----------- | :---------------------------------- |
+| method       | `PATCH`                             |
+| url          | `$baseUrl/account/user/:userId`     |
+| Content-Type | `application/json`                  |
+
+#### Path Parameters
+
+| Parameter | Description           |
+| --------- | --------------------- |
+| userId    | The ID of the user    |
+
+#### Body
+
+| Property    | Type   | Required | Default | Description                  |
+| ----------- | ------ | -------- | ------- | ---------------------------- |
+| name        | string | No       | -       | Updated name of the user     |
+| preferences | object | No       | -       | Updated user preferences     |
+| meta        | object | No       | -       | Updated user metadata (max 10 string fields) |
+
+:::note
+
+All fields are optional in the update request. Only provided fields will be updated.
+
+The `meta` field follows the same constraints as in user creation:
+- Maximum of 10 fields
+- All values must be strings  
+- Keys can only contain letters, numbers, and underscores
+
+:::
+
+<Tabs groupId="programming-language">
+  <TabItem value="curl" label="cURL">
+
+    ```bash
+    curl -X PATCH "$baseUrl/account/user/123" \
+      -H "Authorization: Bearer $token" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "name": "John Smith",
+        "meta": {
+          "tier": "gold",
+          "updated_source": "admin_panel"
+        }
+      }'
+    ```
+
+  </TabItem>
+  <TabItem value="javascript" label="JavaScript">
+
+    ```javascript
+    const updateUser = async (userId, updateData) => {
+      try {
+        const response = await fetch(`${baseUrl}/account/user/${userId}`, {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(updateData)
+        });
+        
+        const data = await response.json();
+        console.log('User updated:', data);
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    };
+
+    // Example usage:
+    const userId = 123;
+    const updateData = {
+      name: "John Smith",
+      meta: {
+        tier: "gold",
+        updated_source: "admin_panel"
+      }
+    };
+
+    updateUser(userId, updateData);
+    ```
+
+  </TabItem>
+  <TabItem value="python" label="Python">
+
+    ```python
+    import requests
+
+    def update_user(token, user_id, update_data):
+        url = f"{base_url}/account/user/{user_id}"
+        
+        headers = {
+            'Authorization': f'Bearer {token}',
+            'Content-Type': 'application/json'
+        }
+        
+        response = requests.patch(url, headers=headers, json=update_data)
+
+        if response.status_code == 200:
+            print('User updated successfully:', response.json())
+            return response.json()
+        else:
+            print('Error:', response.text)
+            return None
+
+    # Example usage:
+    token = 'your_auth_token'  # Replace with actual token
+    user_id = 123
+    update_data = {
+        "name": "John Smith",
+        "meta": {
+            "tier": "gold",
+            "updated_source": "admin_panel"
+        }
+    }
+
+    result = update_user(token, user_id, update_data)
+    ```
+
+  </TabItem>
+  <TabItem value="rust" label="Rust">
+
+    ```rust
+    use reqwest::Client;
+    use serde_json::{json, Value};
+    use std::error::Error;
+
+    async fn update_user(
+        client: &Client, 
+        base_url: &str, 
+        token: &str,
+        user_id: u64,
+        update_data: Value
+    ) -> Result<(), Box<dyn Error>> {
+        let url = format!("{}/account/user/{}", base_url, user_id);
+        
+        let response = client.patch(&url)
+            .header("Authorization", format!("Bearer {}", token))
+            .header("Content-Type", "application/json")
+            .json(&update_data)
+            .send()
+            .await?;
+
+        if response.status().is_success() {
+            let data: Value = response.json().await?;
+            println!("User updated successfully: {:?}", data);
+        } else {
+            println!("Error: {:?}", response.text().await?);
+        }
+
+        Ok(())
+    }
+
+    #[tokio::main]
+    async fn main() -> Result<(), Box<dyn Error>> {
+        let client = Client::new();
+        let base_url = "your_base_url"; // Replace with actual base URL
+        let token = "your_auth_token"; // Replace with actual token
+        let user_id = 123;
+        
+        let update_data = json!({
+            "name": "John Smith",
+            "meta": {
+                "tier": "gold",
+                "updated_source": "admin_panel"
+            }
+        });
+
+        update_user(&client, base_url, token, user_id, update_data).await?;
+        
+        Ok(())
+    }
+    ```
+
+  </TabItem>
+</Tabs>
+
+### Response
+
+<Tabs>
+  <TabItem value="Success">
+
+    Http Code: `200`
+    ```json
+    {
+      "data": {
+        "id": 123,
+        "reference": "a2_user_Xhwz442NTj74z6F0",
+        "name": "John Smith",
+        "preferences": {
+          "allow_negative_balance": false
+        },
+        "meta": {
+          "tier": "gold",
+          "updated_source": "admin_panel",
+          "custom_id": "12345"
+        },
+        "updated_at": "2025-09-24T12:00:00.000Z"
+      },
+      "message": "User updated successfully"
+    }
+    ```
+
+  </TabItem>
+  <TabItem value="Error">
+
+    **Unauthorized** <br/>
+    Http Code: `401`
+    ```json
+    {
+      "message": "Unauthorized",
+      "statusCode": 401
+    }
+    ```
+
+    **User not found** <br/>
+    Http Code: `404`
+    ```json
+    {
+      "status": 404,
+      "error": "User not found"
+    }
+    ```
+
+    **Validation error** <br/>
+    Http Code: `400`
+    ```json
+    {
+      "message": [
+        "name must be shorter than or equal to 256 characters",
+        "Meta object cannot have more than 10 fields",
+        "All meta values must be strings"
+      ],
+      "error": "Bad Request",
+      "statusCode": 400
+    }
+    ```
+
+  </TabItem>
+</Tabs>
+
+## Update User By Reference
+
+This endpoint allows you to update a user's information using their reference instead of their ID.
+
+:::info
+
+This request must have the authorization header. Refer to [Authorization method](/docs/guides/authentication#authentication-methods) guide for more details
+
+:::
+
+### Request
+
+| Property     | Value                                          |
+| :----------- | :--------------------------------------------- |
+| method       | `PATCH`                                        |
+| url          | `$baseUrl/account/user/:reference/reference`   |
+| Content-Type | `application/json`                             |
+
+#### Path Parameters
+
+| Parameter | Description               |
+| --------- | ------------------------- |
+| reference | The reference of the user |
+
+#### Body
+
+| Property    | Type   | Required | Default | Description                  |
+| ----------- | ------ | -------- | ------- | ---------------------------- |
+| name        | string | No       | -       | Updated name of the user     |
+| preferences | object | No       | -       | Updated user preferences     |
+| meta        | object | No       | -       | Updated user metadata (max 10 string fields) |
+
+<Tabs groupId="programming-language">
+  <TabItem value="curl" label="cURL">
+
+    ```bash
+    curl -X PATCH "$baseUrl/account/user/johndoe123/reference" \
+      -H "Authorization: Bearer $token" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "name": "John Smith",
+        "meta": {
+          "tier": "gold",
+          "updated_source": "admin_panel"
+        }
+      }'
+    ```
+
+  </TabItem>
+  <TabItem value="javascript" label="JavaScript">
+
+    ```javascript
+    const updateUserByReference = async (userReference, updateData) => {
+      try {
+        const response = await fetch(`${baseUrl}/account/user/${userReference}/reference`, {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(updateData)
+        });
+        
+        const data = await response.json();
+        console.log('User updated:', data);
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    };
+
+    // Example usage:
+    const userReference = "johndoe123";
+    const updateData = {
+      name: "John Smith",
+      meta: {
+        tier: "gold",
+        updated_source: "admin_panel"
+      }
+    };
+
+    updateUserByReference(userReference, updateData);
+    ```
+
+  </TabItem>
+  <TabItem value="python" label="Python">
+
+    ```python
+    import requests
+
+    def update_user_by_reference(token, user_reference, update_data):
+        url = f"{base_url}/account/user/{user_reference}/reference"
+        
+        headers = {
+            'Authorization': f'Bearer {token}',
+            'Content-Type': 'application/json'
+        }
+        
+        response = requests.patch(url, headers=headers, json=update_data)
+
+        if response.status_code == 200:
+            print('User updated successfully:', response.json())
+            return response.json()
+        else:
+            print('Error:', response.text)
+            return None
+
+    # Example usage:
+    token = 'your_auth_token'  # Replace with actual token
+    user_reference = "johndoe123"
+    update_data = {
+        "name": "John Smith",
+        "meta": {
+            "tier": "gold",
+            "updated_source": "admin_panel"
+        }
+    }
+
+    result = update_user_by_reference(token, user_reference, update_data)
+    ```
+
+  </TabItem>
+  <TabItem value="rust" label="Rust">
+
+    ```rust
+    use reqwest::Client;
+    use serde_json::{json, Value};
+    use std::error::Error;
+
+    async fn update_user_by_reference(
+        client: &Client, 
+        base_url: &str, 
+        token: &str,
+        user_reference: &str,
+        update_data: Value
+    ) -> Result<(), Box<dyn Error>> {
+        let url = format!("{}/account/user/{}/reference", base_url, user_reference);
+        
+        let response = client.patch(&url)
+            .header("Authorization", format!("Bearer {}", token))
+            .header("Content-Type", "application/json")
+            .json(&update_data)
+            .send()
+            .await?;
+
+        if response.status().is_success() {
+            let data: Value = response.json().await?;
+            println!("User updated successfully: {:?}", data);
+        } else {
+            println!("Error: {:?}", response.text().await?);
+        }
+
+        Ok(())
+    }
+
+    #[tokio::main]
+    async fn main() -> Result<(), Box<dyn Error>> {
+        let client = Client::new();
+        let base_url = "your_base_url"; // Replace with actual base URL
+        let token = "your_auth_token"; // Replace with actual token
+        let user_reference = "johndoe123";
+        
+        let update_data = json!({
+            "name": "John Smith",
+            "meta": {
+                "tier": "gold",
+                "updated_source": "admin_panel"
+            }
+        });
+
+        update_user_by_reference(&client, base_url, token, user_reference, update_data).await?;
+        
+        Ok(())
+    }
+    ```
+
+  </TabItem>
+</Tabs>
+
+### Response
+
+<Tabs>
+  <TabItem value="Success">
+
+    Http Code: `200`
+    ```json
+    {
+      "data": {
+        "id": 123,
+        "reference": "johndoe123",
+        "name": "John Smith",
+        "preferences": {
+          "allow_negative_balance": false
+        },
+        "meta": {
+          "tier": "gold",
+          "updated_source": "admin_panel",
+          "custom_id": "12345"
+        },
+        "updated_at": "2025-09-24T12:00:00.000Z"
+      },
+      "message": "User updated successfully"
+    }
+    ```
+
+  </TabItem>
+  <TabItem value="Error">
+
+    **Unauthorized** <br/>
+    Http Code: `401`
+    ```json
+    {
+      "message": "Unauthorized",
+      "statusCode": 401
+    }
+    ```
+
+    **User not found** <br/>
+    Http Code: `404`
+    ```json
+    {
+      "status": 404,
+      "error": "User not found"
+    }
+    ```
+
+    **Validation error** <br/>
+    Http Code: `400`
+    ```json
+    {
+      "message": [
+        "name must be shorter than or equal to 256 characters",
+        "Meta object cannot have more than 10 fields",
+        "All meta values must be strings"
+      ],
+      "error": "Bad Request",
+      "statusCode": 400
     }
     ```
 
